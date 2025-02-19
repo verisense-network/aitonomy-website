@@ -1,0 +1,75 @@
+import { PlusCircleIcon } from "@heroicons/react/24/outline";
+import {
+  Dropdown,
+  DropdownTrigger,
+  Button,
+  DropdownMenu,
+  DropdownItem,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
+} from "@heroui/react";
+import { Key, Suspense, useCallback, useState } from "react";
+import CommunityCreate from "../community/Create";
+import ThreadCreate from "../thread/Create";
+
+const menuList = [
+  {
+    name: "community",
+    title: "New community",
+  },
+  {
+    name: "thread",
+    title: "Post thread",
+  },
+];
+
+export default function CreateMenu() {
+  const [isOpen, setIsOpen] = useState<string | null>(null);
+
+  const openMenu = useCallback((key: Key) => {
+    const item = menuList.find(it => it.name === key)
+    if (!item) return;
+
+    setIsOpen(item.name);
+  }, [])
+
+  return (
+    <>
+      <Dropdown>
+        <DropdownTrigger>
+          <Button isIconOnly className="bg-transparent">
+            <PlusCircleIcon />
+          </Button>
+        </DropdownTrigger>
+        <DropdownMenu
+          aria-label={`Dropdown menu`}
+          variant="faded"
+          onAction={openMenu}
+        >
+          {menuList.map((item) => (
+            <DropdownItem key={item.name}>{item.title}</DropdownItem>
+          ))}
+        </DropdownMenu>
+      </Dropdown>
+      <Modal isOpen={!!isOpen} onClose={() => setIsOpen(null)}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>Create</ModalHeader>
+              <ModalBody>
+                <Suspense>
+                  {isOpen === "community" && (
+                    <CommunityCreate onClose={onClose} />
+                  )}
+                  {isOpen === "thread" && <ThreadCreate onClose={onClose} />}
+                </Suspense>
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </>
+  );
+}
