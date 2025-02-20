@@ -2,14 +2,17 @@
 
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { formatTimestamp } from "@/utils/tools";
-import { Card, CardBody, CardFooter, Chip, Spinner, User } from "@heroui/react";
+import { Card, CardBody, CardFooter, Chip, Pagination, Spinner, User } from "@heroui/react";
+import { useCallback } from "react";
 
 export default function ThreadComments({ threadId }: { threadId: string }) {
-  const { data, isLoading } = useMeilisearch('comment', threadId);
-
-  console.log("data", data)
+  const { data, isLoading, setParams } = useMeilisearch('comment', threadId);
 
   const comments = data?.hits ?? [];
+
+  const pageChange = useCallback((page: number) => {
+    setParams(prev => ({ ...prev, page }))
+  }, [setParams])
 
   return (
     <div className="space-y-3">
@@ -25,15 +28,13 @@ export default function ThreadComments({ threadId }: { threadId: string }) {
                 <User name={comment.author} />
               </div>
               <div className="flex space-x-2 items-center">
-                <Chip>
-                  {comment.formatedId.community}
-                </Chip>
                 <div>{formatTimestamp(comment.created_time)}</div>
               </div>
             </CardFooter>
           </Card>
         ))
       )}
+      <Pagination className="mt-2" isCompact showControls initialPage={1} page={(data as any)?.page} total={(data as any)?.totalPages || 0} onChange={pageChange} />
     </div>
   );
 }

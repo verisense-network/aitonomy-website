@@ -8,7 +8,6 @@ const client = Jayson.client.http({
   port: Number(process.env.NEXT_PUBLIC_AITONOMY_RPC_PORT),
 })
 
-
 const structArgs = (payload: StringRecord<Codec<any>>) => Struct({
   signature: Signature,
   signer: Pubkey,
@@ -136,6 +135,7 @@ export async function createThreadRpc(
         console.log("response.result", response.result)
 
         const result = decodeResult(response.result)
+        console.log("result", result)
 
         if (result.status === 'error' || !result.data) {
           reject(new Error(result.message || 'unknown error'));
