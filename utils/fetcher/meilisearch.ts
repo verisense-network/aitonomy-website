@@ -1,22 +1,32 @@
-const api_url = process.env.NEXT_PUBLIC_MEILISEARCH_URL
+const api_url = process.env.NEXT_PUBLIC_MEILISEARCH_URL;
 
-import { MeiliSearch } from 'meilisearch'
+import { MeiliSearch, SearchParams } from "meilisearch";
+import { parseId } from "../thread";
 
 const client = new MeiliSearch({
   host: api_url!,
 });
 
-export type MeiliSearchArgs = {
-  search: string
-  page?: number
-  limit?: number
-}
+export async function meiliSearchFetcher(
+  index: string,
+  search?: string,
+  args?: SearchParams
+) {
+  const res = await client.index(index).searchGet(search, args);
 
-export async function meiliSearchFetcher(index: string, args: MeiliSearchArgs) {
-  const res = await client.index(index).searchGet(args.search, {
-    page: args.page,
-    limit: args.limit
-  })
+  /**
+   * parse response format
+   */
+  res.hits = res.hits.map((hit) => {
+    return {
+      ...hit,
+      ...(["thread", 'comment'].includes(index) 
+        ? {
+            formatedId: parseId(hit.id),
+          }
+        : {}),
+    };
+  });
 
-  return res
+  return res;
 }

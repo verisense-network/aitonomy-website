@@ -4,8 +4,8 @@ import { AccountId, ContentId, Pubkey, Signature } from './type';
 import { decodeResult } from './tools';
 
 const client = Jayson.client.http({
-  host: 'localhost',
-  port: 9944,
+  host: process.env.NEXT_PUBLIC_AITONOMY_RPC_HOST,
+  port: Number(process.env.NEXT_PUBLIC_AITONOMY_RPC_PORT),
 })
 
 

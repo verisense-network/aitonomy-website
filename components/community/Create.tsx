@@ -21,7 +21,7 @@ export default function CommunityCreate({ onClose }: Props) {
       onClose();
       addToast({
         title: "create community success",
-        description: `thread id ${res}`,
+        description: `community id ${res}`,
         severity: "success"
       })
     } catch (e) {

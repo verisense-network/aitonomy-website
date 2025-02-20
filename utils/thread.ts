@@ -1,4 +1,4 @@
-import { u128 } from "scale-ts";
+import { u128, u32 } from "scale-ts";
 
 type ThreadId = {
   community: string;

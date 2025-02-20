@@ -17,10 +17,9 @@ export default function ThreadCreate({ onClose }: Props) {
     try {
       const res = await createThread({
         ...data,
-        image: data.image === '' ? null : data.image,
+        image: data.image === '' ? undefined : data.image,
         mention: new Array(0).fill(new Array(32).fill(0)),
       } as CreateThreadArg);
-      console.log(res)
       if (!res) return;
       addToast({
         title: "post a thread success",
