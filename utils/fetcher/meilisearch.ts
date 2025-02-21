@@ -1,7 +1,7 @@
 const api_url = process.env.NEXT_PUBLIC_MEILISEARCH_URL;
 
 import { MeiliSearch, SearchParams } from "meilisearch";
-import { parseId } from "../thread";
+import { decodeId } from "../thread";
 
 const client = new MeiliSearch({
   host: api_url!,
@@ -22,7 +22,7 @@ export async function meiliSearchFetcher(
       ...hit,
       ...(["thread", 'comment'].includes(index) 
         ? {
-            formatedId: parseId(hit.id),
+            formattedId: decodeId(hit.id),
           }
         : {}),
     };

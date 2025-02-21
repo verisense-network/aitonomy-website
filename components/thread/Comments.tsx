@@ -1,12 +1,17 @@
 "use client";
 
 import useMeilisearch from "@/hooks/useMeilisearch";
-import { formatTimestamp } from "@/utils/tools";
+import { decodeId } from "@/utils/thread";
+import { formatTimestamp, hexToLittleEndian } from "@/utils/tools";
 import { Card, CardBody, CardFooter, Chip, Pagination, Spinner, User } from "@heroui/react";
 import { useCallback } from "react";
 
 export default function ThreadComments({ threadId }: { threadId: string }) {
-  const { data, isLoading, setParams } = useMeilisearch('comment', threadId);
+  const { community, thread } = decodeId(threadId);
+  const { data, isLoading, setParams } = useMeilisearch('comment', undefined, {
+    sort: ["created_time:desc"],
+    filter: `id CONTAINS ${hexToLittleEndian(thread)}${hexToLittleEndian(community)}`
+  });
 
   const comments = data?.hits ?? [];
 
@@ -34,7 +39,7 @@ export default function ThreadComments({ threadId }: { threadId: string }) {
           </Card>
         ))
       )}
-      <Pagination className="mt-2" isCompact showControls initialPage={1} page={(data as any)?.page} total={(data as any)?.totalPages || 0} onChange={pageChange} />
+      <Pagination className="mt-2" isCompact showControls initialPage={1} page={(data as any)?.page} total={(data as any)?.totalPages || 1} onChange={pageChange} />
     </div>
   );
 }

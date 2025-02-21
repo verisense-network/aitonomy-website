@@ -1,5 +1,5 @@
 import Jayson from 'jayson'
-import { Struct, u64, str, Vector, Codec, StringRecord, Option, } from 'scale-ts'
+import { Struct, u64, str, Vector, Codec, StringRecord, Option, u8, } from 'scale-ts'
 import { AccountId, ContentId, Pubkey, Signature } from './type';
 import { decodeResult } from './tools';
 
@@ -15,24 +15,59 @@ const structArgs = (payload: StringRecord<Codec<any>>) => Struct({
   payload: Struct(payload)
 })
 
-export interface CreateCommunityArg extends StringRecord<any> {
-  name: string;
-  slug: string;
-  description: string;
-  prompt: string;
-}
+/**
+    pub struct TokenMetadataArg {
+        pub symbol: String,
+        pub total_issuance: u64,
+        pub decimals: u8,
+        pub image: Option<String>,
+    }
+    
+    pub struct CreateCommunityArg {
+        pub name: String,
+        pub logo: String,
+        pub token: TokenMetadataArg,
+        pub slug: String,
+        pub description: String,
+        pub prompt: String,
+    }
+ */
+
+const tokenMetadata = Struct({
+  symbol: str,
+  total_issuance: u64,
+  decimals: u8,
+  image: Option(str),
+})
 
 const structCreateCommunity = structArgs({
   name: str,
+  logo: str,
+  token: tokenMetadata,
   slug: str,
   description: str,
   prompt: str
 })
 
+export interface CreateCommunityArg extends StringRecord<any> {
+  name: string;
+  logo: string;
+  slug: string;
+  description: string;
+  prompt: string;
+  token: {
+    symbol: string;
+    total_issuance: number;
+    decimals: number;
+    image?: string;
+  }
+}
+
 export async function createCommunityRpc(
   nucleusId: string,
   args: CreateCommunityArg
 ): Promise<string> {
+
   const rpcArgs ={
     signature: new Uint8Array(64).fill(0),
     signer: new Uint8Array(32).fill(0),

@@ -11,7 +11,7 @@ import {
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
-import { parseId } from "@/utils/thread";
+import { decodeId } from "@/utils/thread";
 import { formatTimestamp } from "@/utils/tools";
 
 export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -19,8 +19,10 @@ export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 export default function Threads() {
-  const { data, setParams } = useMeilisearch("thread");
   const router = useRouter();
+  const { data, setParams } = useMeilisearch("thread", undefined, {
+    sort: ["created_time:desc"]
+  });
 
   const toThreadPage = useCallback(
     (key: string) => {
@@ -28,7 +30,7 @@ export default function Threads() {
       if (!thread) {
         return;
       }
-      const { community: communityId, thread: threadNumber } = parseId(
+      const { community: communityId, thread: threadNumber } = decodeId(
         thread.id
       );
       router.push("/c/" + communityId + "/" + threadNumber);
@@ -53,7 +55,7 @@ export default function Threads() {
             </div>
             <div className="flex space-x-2 items-center">
               <Chip>
-                {hit.formatedId.community}
+                {hit.community_name}
               </Chip>
               <div>{formatTimestamp(hit.created_time)}</div>
             </div>
@@ -61,7 +63,7 @@ export default function Threads() {
         </Card>
       ))}
     </div>
-    <Pagination className="mt-2" isCompact showControls initialPage={1} page={(data as any)?.page} total={(data as any)?.totalPages || 0} onChange={pageChange} />
+    <Pagination className="mt-2" isCompact showControls initialPage={1} page={(data as any)?.page} total={(data as any)?.totalPages || 1} onChange={pageChange} />
   </>
   );
 }

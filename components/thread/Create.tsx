@@ -1,91 +1,144 @@
-import { createThread } from '@/app/actions';
-import { CreateThreadArg } from '@/utils/aitonomy';
-import { Autocomplete, Button, Form, Input, Textarea } from '@heroui/react';
-import { addToast } from '@heroui/toast';
-import { FormEvent, useCallback } from 'react';
+import { createThread } from "@/app/actions";
+import { CreateThreadArg } from "@/utils/aitonomy";
+import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
+import { Autocomplete, Button, Form, Input, Textarea } from "@heroui/react";
+import { addToast } from "@heroui/toast";
+import { useCallback } from "react";
+import { Controller, useForm } from "react-hook-form";
 
 interface Props {
   onClose: () => void;
 }
 
 export default function ThreadCreate({ onClose }: Props) {
+  const { control, handleSubmit } = useForm<CreateThreadArg>({
+    defaultValues: {
+      community: "",
+      title: "",
+      content: "",
+      mention: [],
+    },
+  });
 
-  const submit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.currentTarget));
+  const onSubmit = useCallback(async (data: CreateThreadArg) => {
     console.log(data);
     try {
       const res = await createThread({
         ...data,
-        image: data.image === '' ? undefined : data.image,
+        image: data.image === "" ? undefined : data.image,
         mention: new Array(0).fill(new Array(32).fill(0)),
       } as CreateThreadArg);
       if (!res) return;
       addToast({
         title: "post a thread success",
         description: `thread id ${res}`,
-        severity: "success"
-      })
+        severity: "success",
+      });
       onClose();
     } catch (e) {
       addToast({
         title: "post a thread error",
         description: `${e}`,
-        severity: "danger"
-      })
+        severity: "danger",
+      });
     }
-  }, [])
+  }, [onClose]);
 
   return (
     <Form
       className="w-full max-w-md flex flex-col gap-4"
-      validationBehavior="native"
-      onSubmit={submit}
+      onSubmit={handleSubmit(onSubmit)}
     >
-      <Input
-        isRequired
-        errorMessage="Please enter a community name"
-        label="Community Name"
-        labelPlacement="outside"
+      <Controller
         name="community"
-        placeholder="Enter your community name"
-        type="text"
+        control={control}
+        rules={{
+          required: "Please enter a community name",
+          validate: (value) => {
+            if (!COMMUNITY_REGEX.test(value)) {
+              return "Invalid community name";
+            }
+            return true;
+          },
+        }}
+        render={({ field, fieldState }) => (
+          <Input
+            {...field}
+            label="Community Name"
+            labelPlacement="outside"
+            placeholder="Enter your community name"
+            isInvalid={!!fieldState.error}
+            errorMessage={fieldState.error?.message}
+          />
+        )}
       />
-      <Input
-        isRequired
-        errorMessage="Please enter a title"
-        label="Title"
-        labelPlacement="outside"
+      <Controller
         name="title"
-        placeholder="Enter your title"
-        type="text"
+        control={control}
+        rules={{
+          required: "Please enter a title",
+        }}
+        render={({ field, fieldState }) => (
+          <Input
+            {...field}
+            label="Title"
+            labelPlacement="outside"
+            placeholder="Enter your title"
+            isInvalid={!!fieldState.error}
+            errorMessage={fieldState.error?.message}
+          />
+        )}
       />
-      <Input
-        className="max-w-md"
-        label="Image"
-        labelPlacement="outside"
+      <Controller
         name="image"
-        placeholder="Enter your image"
-        type="text"
+        control={control}
+        rules={{}}
+        render={({ field, fieldState }) => (
+          <Input
+            {...field}
+            label="Image"
+            labelPlacement="outside"
+            placeholder="Enter your image"
+            isInvalid={!!fieldState.error}
+            errorMessage={fieldState.error?.message}
+          />
+        )}
       />
-      <Textarea
-        className="max-w-md"
-        isRequired
-        errorMessage="Please enter content"
-        label="Content"
-        labelPlacement='outside'
-        placeholder="Please enter content"
+      <Controller
         name="content"
+        control={control}
+        rules={{
+          required: "Please enter content",
+        }}
+        render={({ field, fieldState }) => (
+          <Textarea
+            {...field}
+            className="max-w-md"
+            label="Content"
+            labelPlacement="outside"
+            placeholder="Please enter content"
+            isInvalid={!!fieldState.error}
+            errorMessage={fieldState.error?.message}
+          />
+        )}
       />
-      <Autocomplete
-        className="max-w-md"
-        label="Mention"
-        labelPlacement='outside'
-        placeholder='Enter mentions'
+      <Controller
         name="mention"
-      >
-        {[]}
-      </Autocomplete>
+        control={control}
+        render={({ field, fieldState }) => (
+          <Autocomplete
+            {...field}
+            className="max-w-md"
+            label="Mention"
+            labelPlacement="outside"
+            placeholder="Enter mentions"
+            isInvalid={!!fieldState.error}
+            errorMessage={fieldState.error?.message}
+          >
+            {[]}
+          </Autocomplete>
+        )}
+      />
       <div className="flex gap-2">
         <Button color="primary" type="submit">
           Submit
@@ -95,5 +148,5 @@ export default function ThreadCreate({ onClose }: Props) {
         </Button>
       </div>
     </Form>
-  )
+  );
 }

@@ -6,7 +6,7 @@ type ThreadId = {
   comment?: string;
 }
 
-export function parseId(threadIdHex: string): ThreadId {
+export function decodeId(threadIdHex: string): ThreadId {
   if (!/^[0-9a-fA-F]+$/.test(threadIdHex)) {
     throw new Error('Invalid hex string');
   }
@@ -21,6 +21,6 @@ export function parseId(threadIdHex: string): ThreadId {
 }
 
 export function encodeId({ community, thread }: ThreadId) {
-  const encoded = u128.enc(BigInt('0x' + community) << 64n | BigInt('0x' + thread));
+  const encoded = u128.enc(BigInt('0x' + community) << 64n | BigInt('0x' + thread) << 32n);
   return Buffer.from(encoded).toString('hex');
 }
