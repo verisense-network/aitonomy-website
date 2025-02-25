@@ -1,5 +1,6 @@
 import { createCommunity } from "@/app/actions";
 import { CreateCommunityArg } from "@/utils/aitonomy";
+import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
 import { Button, Form, Input, Textarea } from "@heroui/react";
 import { addToast } from "@heroui/toast";
@@ -10,11 +11,25 @@ interface Props {
   onClose: () => void;
 }
 
+
+const MOCKDATA = {
+  "name": "JOKE",
+  "slug": "推翻人类暴政，地球属于三体！",
+  "logo": "",
+  "description": "推翻人类暴政，地球属于三体！",
+  "prompt": "为地狱笑话帖子和回复评分，如果非常好笑就适当发一些JOKE代  币，不要对听过的笑话奖励",
+  "token": {
+      "symbol": "JOKE",
+      "total_issuance": "10000000000",
+      "decimals": 2
+  }
+}
+
 export default function CommunityCreate({ onClose }: Props) {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    reset
   } = useForm<CreateCommunityArg>({
     defaultValues: {
       name: "",
@@ -30,13 +45,13 @@ export default function CommunityCreate({ onClose }: Props) {
     },
   });
 
-  console.log("errors", errors);
-
   const onSubmit = useCallback(async (data: CreateCommunityArg) => {
     try {
       console.log("data", data);
 
-      const res = await createCommunity(data);
+      const signature = await signPayload(data);
+
+      const res = await createCommunity(data, signature);
       if (!res) return;
       onClose();
       addToast({
@@ -53,6 +68,10 @@ export default function CommunityCreate({ onClose }: Props) {
       });
     }
   }, [onClose])
+
+  const setMockData = useCallback(() => {
+    reset(MOCKDATA);
+  }, [reset])
 
   return (
     <Form
@@ -223,9 +242,9 @@ export default function CommunityCreate({ onClose }: Props) {
               labelPlacement="outside"
               type="number"
               placeholder="Enter your token total issuance"
-              value={field.value?.toString()}
               isInvalid={!!fieldState.error}
               errorMessage={fieldState.error?.message}
+              value={field.value?.toString()}
             />
           )}
         />
@@ -236,6 +255,9 @@ export default function CommunityCreate({ onClose }: Props) {
         </Button>
         <Button type="reset" variant="flat">
           Reset
+        </Button>
+        <Button variant="flat" onPress={setMockData}>
+          Mock Data
         </Button>
       </div>
     </Form>

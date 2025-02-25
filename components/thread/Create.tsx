@@ -1,5 +1,6 @@
 import { createThread } from "@/app/actions";
 import { CreateThreadArg } from "@/utils/aitonomy";
+import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
 import { Autocomplete, Button, Form, Input, Textarea } from "@heroui/react";
 import { addToast } from "@heroui/toast";
@@ -23,11 +24,15 @@ export default function ThreadCreate({ onClose }: Props) {
   const onSubmit = useCallback(async (data: CreateThreadArg) => {
     console.log(data);
     try {
-      const res = await createThread({
+      const payload = {
         ...data,
         image: data.image === "" ? undefined : data.image,
         mention: new Array(0).fill(new Array(32).fill(0)),
-      } as CreateThreadArg);
+      } as CreateThreadArg
+
+      const signature = await signPayload(payload);
+
+      const res = await createThread(payload, signature);
       if (!res) return;
       addToast({
         title: "post a thread success",

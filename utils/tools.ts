@@ -4,8 +4,22 @@ export function stringToHex(str: string) {
   return Buffer.from(str, 'utf-8').toString('hex');
 }
 
-export function hexToU8a(hex: string) {
-  return Buffer.from(hex, 'hex');
+export function hexToU8a(hexString: string) {
+  const hex = hexString.startsWith('0x') ? hexString.substring(2) : hexString;
+  
+  if (!hex.length) return new Uint8Array(0);
+  
+  const cleanHex = hex.length % 2 ? '0' + hex : hex;
+  
+  const bytes = new Uint8Array(cleanHex.length / 2);
+  
+  for (let i = 0; i < bytes.length; i++) {
+    const byteIndex = i * 2;
+    const byte = parseInt(cleanHex.substr(byteIndex, 2), 16);
+    bytes[i] = byte;
+  }
+  
+  return bytes;
 }
 
 export function hexToLittleEndian(hex: string): string {

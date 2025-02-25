@@ -5,5 +5,9 @@ Aitonomy Website
 First, run the development server:
 
 ```bash
+corepack enable pnpm
+```
+
+```bash
 pnpm dev
 ```

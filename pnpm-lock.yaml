@@ -23,6 +23,9 @@ importers:
       '@heroui/toast':
         specifier: ^2.0.3
         version: 2.0.3(@heroui/system@2.4.10(@heroui/theme@2.4.9(tailwindcss@3.4.17))(framer-motion@12.4.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@heroui/theme@2.4.9(tailwindcss@3.4.17))(framer-motion@12.4.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      bs58:
+        specifier: ^6.0.0
+        version: 6.0.0
       dayjs:
         specifier: ^1.11.13
         version: 1.11.13
@@ -53,6 +56,12 @@ importers:
       swr:
         specifier: ^2.3.2
         version: 2.3.2(react@19.0.0)
+      zustand:
+        specifier: ^5.0.3
+        version: 5.0.3(@types/react@19.0.9)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0))
+      zustand-computed:
+        specifier: ^2.0.2
+        version: 2.0.2(react@19.0.0)(zustand@5.0.3(@types/react@19.0.9)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0)))
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3
@@ -1592,6 +1601,9 @@ packages:
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
+  base-x@5.0.0:
+    resolution: {integrity: sha512-sMW3VGSX1QWVFA6l8U62MLKz29rRfpTlYdCqLdpLo1/Yd4zZwSbnUaDfciIAowAqvq7YFnWq9hrhdg1KYgc1lQ==}
+
   binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
@@ -1605,6 +1617,9 @@ packages:
   braces@3.0.3:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
     engines: {node: '>=8'}
+
+  bs58@6.0.0:
+    resolution: {integrity: sha512-PD0wEnEYg6ijszw/u8s+iI3H17cTymlrwkKhDhPZq+Sokl3AU4htyBFTjAeNAlCCmg0f53g6ih3jATyCKftTfw==}
 
   busboy@1.6.0:
     resolution: {integrity: sha512-8SFQbg/0hQ9xy3UNTB0YEnsNBbWfhf7RtnzpL7TkBiTBRfrQ9Fxcnz7VJsleJpyp6rVLvXiuORqjlHi5q+PYuA==}
@@ -2978,6 +2993,30 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  zustand-computed@2.0.2:
+    resolution: {integrity: sha512-G70p9Ve3alqc36p77jHljEJk/UHBbYmaIyZ5zyXXLLR/b1oTh1vG0+3P1rGeWeZyjVZ4fCRfuG9QwB/x5pzC8w==}
+    peerDependencies:
+      react: ^18.2.0
+      zustand: ^5.0.0
+
+  zustand@5.0.3:
+    resolution: {integrity: sha512-14fwWQtU3pH4dE0dOpdMiWjddcH+QzKIgk1cl8epwSE7yag43k/AD/m4L6+K7DytAOr9gGBe3/EXj9g7cdostg==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
 
 snapshots:
 
@@ -5369,6 +5408,8 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
+  base-x@5.0.0: {}
+
   binary-extensions@2.3.0: {}
 
   brace-expansion@1.1.11:
@@ -5383,6 +5424,10 @@ snapshots:
   braces@3.0.3:
     dependencies:
       fill-range: 7.1.1
+
+  bs58@6.0.0:
+    dependencies:
+      base-x: 5.0.0
 
   busboy@1.6.0:
     dependencies:
@@ -6998,3 +7043,14 @@ snapshots:
   yaml@2.7.0: {}
 
   yocto-queue@0.1.0: {}
+
+  zustand-computed@2.0.2(react@19.0.0)(zustand@5.0.3(@types/react@19.0.9)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0))):
+    dependencies:
+      react: 19.0.0
+      zustand: 5.0.3(@types/react@19.0.9)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0))
+
+  zustand@5.0.3(@types/react@19.0.9)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0)):
+    optionalDependencies:
+      '@types/react': 19.0.9
+      react: 19.0.0
+      use-sync-external-store: 1.4.0(react@19.0.0)

@@ -3,11 +3,11 @@
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import {
   HomeModernIcon,
-  UserCircleIcon,
 } from "@heroicons/react/24/solid";
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import CreateMenu from "./header/CreateMenu";
+import UserMenu from "./header/UserMenu";
 
 export default function Header() {
   const router = useRouter();
@@ -26,13 +26,6 @@ export default function Header() {
               height={40}
               className="object-contain text-gray-400"
             />
-            {/* <Image
-                  src=""
-                  alt="Logo"
-                  width={120}
-                  height={40}
-                  className="object-contain"
-              /> */}
           </div>
           <div className="max-w-xl w-full mx-4">
             <div className="relative">
@@ -48,22 +41,7 @@ export default function Header() {
           </div>
           <div className="flex-shrink-0 flex space-x-5">
             <CreateMenu />
-            <button className="flex items-center focus:outline-none">
-              <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden">
-                {/* <Image */}
-                {/*     src="" */}
-                {/*     alt="User Avatar" */}
-                {/*     width={32} */}
-                {/*     height={32} */}
-                {/*     className="h-full w-full object-cover" */}
-                {/* /> */}
-                <UserCircleIcon
-                  width={32}
-                  height={32}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </button>
+            <UserMenu />
           </div>
         </div>
       </header>

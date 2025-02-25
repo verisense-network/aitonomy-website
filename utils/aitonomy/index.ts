@@ -57,21 +57,26 @@ export interface CreateCommunityArg extends StringRecord<any> {
   prompt: string;
   token: {
     symbol: string;
-    total_issuance: number;
+    total_issuance: string;
     decimals: number;
     image?: string;
   }
 }
 
+interface Signature {
+  signature: Uint8Array;
+  signer: Uint8Array;
+  nonce: bigint;
+}
+
 export async function createCommunityRpc(
   nucleusId: string,
-  args: CreateCommunityArg
+  args: CreateCommunityArg,
+  signature: Signature,
 ): Promise<string> {
 
   const rpcArgs ={
-    signature: new Uint8Array(64).fill(0),
-    signer: new Uint8Array(32).fill(0),
-    nonce: 0n,
+    ...signature,
     payload: args,
   };
 
@@ -136,12 +141,11 @@ const structCreateThread = structArgs({
 
 export async function createThreadRpc(
   nucleusId: string,
-  args: CreateThreadArg
+  args: CreateThreadArg,
+  signature: Signature,
 ): Promise<string> {
   const rpcArgs = {
-    signature: new Uint8Array(64).fill(0),
-    signer: new Uint8Array(32).fill(0),
-    nonce: 0n,
+    ...signature,
     payload: args,
   };
 
