@@ -21,6 +21,7 @@ export default function ThreadComments({ threadId }: { threadId: string }) {
 
   return (
     <div className="space-y-3">
+      <h1 className="text-lg font-bold">Comments</h1>
       {isLoading && <Card><Spinner /></Card>}
       {!isLoading && (
         comments.map((comment: any) => (
