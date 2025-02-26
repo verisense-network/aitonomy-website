@@ -22,9 +22,7 @@ export class OkxConnect {
   }
 
   async connect() {
-    if (!this.wallet.isConnected()) {
-      await this.wallet.handleConnect();
-    }
+    await this.checkConnected();
 
     const accounts = await this.wallet.request({
       method: "eth_requestAccounts",
@@ -48,7 +46,14 @@ export class OkxConnect {
     return this.publicKey
   }
 
+  async checkConnected() {
+    if (!this.wallet.isConnected()) {
+      await this.wallet.handleConnect();
+    }
+  }
+
   async signMessage(message: string, address: string): Promise<string> {
+    await this.checkConnected()
     const signature = await this.wallet.request({
       method: "personal_sign",
       params: [message, address],

@@ -2,35 +2,42 @@ import { createCommunity } from "@/app/actions";
 import { CreateCommunityArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
-import { Button, Form, Input, Textarea } from "@heroui/react";
+import { LLmName } from "@/utils/aitonomy/type";
+import {
+  Accordion,
+  AccordionItem,
+  Button,
+  Form,
+  Input,
+  Select,
+  SelectItem,
+  Textarea,
+} from "@heroui/react";
 import { addToast } from "@heroui/toast";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 interface Props {
   onClose: () => void;
 }
 
-
 const MOCKDATA = {
-  "name": "JOKE",
-  "slug": "推翻人类暴政，地球属于三体！",
-  "logo": "",
-  "description": "推翻人类暴政，地球属于三体！",
-  "prompt": "为地狱笑话帖子和回复评分，如果非常好笑就适当发一些JOKE代  币，不要对听过的笑话奖励",
-  "token": {
-      "symbol": "JOKE",
-      "total_issuance": "10000000000",
-      "decimals": 2
-  }
-}
+  name: "JOKE",
+  slug: "推翻人类暴政，地球属于三体！",
+  logo: "",
+  description: "推翻人类暴政，地球属于三体！",
+  prompt:
+    "为地狱笑话帖子和回复评分，如果非常好笑就适当发一些JOKE代  币，不要对听过的笑话奖励",
+  token: {
+    symbol: "JOKE",
+    total_issuance: "10000000000",
+    decimals: 2,
+  },
+};
 
 export default function CommunityCreate({ onClose }: Props) {
-  const {
-    control,
-    handleSubmit,
-    reset
-  } = useForm<CreateCommunityArg>({
+  const [isLoading, setIsLoading] = useState(false)
+  const { control, handleSubmit, reset } = useForm<CreateCommunityArg>({
     defaultValues: {
       name: "",
       slug: "",
@@ -42,36 +49,44 @@ export default function CommunityCreate({ onClose }: Props) {
         total_issuance: undefined,
         decimals: 2,
       },
+      llm_name: LLmName.OpenAI,
+      llm_api_host: "",
+      llm_key: "",
     },
   });
 
-  const onSubmit = useCallback(async (data: CreateCommunityArg) => {
-    try {
-      console.log("data", data);
+  const onSubmit = useCallback(
+    async (data: CreateCommunityArg) => {
+      try {
+        setIsLoading(true)
+        console.log("data", data);
 
-      const signature = await signPayload(data);
+        const signature = await signPayload(data);
 
-      const res = await createCommunity(data, signature);
-      if (!res) return;
-      onClose();
-      addToast({
-        title: "create community success",
-        description: `community id ${res}`,
-        severity: "success",
-      });
-    } catch (e) {
-      console.error("e", e);
-      addToast({
-        title: "create community error",
-        description: `${e}`,
-        severity: "danger",
-      });
-    }
-  }, [onClose])
+        const res = await createCommunity(data, signature);
+        if (!res) return;
+        onClose();
+        addToast({
+          title: "create community success",
+          description: `community id ${res}`,
+          severity: "success",
+        });
+      } catch (e: any) {
+        console.error("e", e);
+        addToast({
+          title: "create community error",
+          description: `${e?.message || e}`,
+          severity: "danger",
+        });
+      }
+      setIsLoading(false)
+    },
+    [onClose]
+  );
 
   const setMockData = useCallback(() => {
     reset(MOCKDATA);
-  }, [reset])
+  }, [reset]);
 
   return (
     <Form
@@ -88,7 +103,7 @@ export default function CommunityCreate({ onClose }: Props) {
               return "Invalid community name";
             }
             return true;
-          }
+          },
         }}
         render={({ field, fieldState }) => (
           <Input
@@ -104,8 +119,7 @@ export default function CommunityCreate({ onClose }: Props) {
       <Controller
         name="logo"
         control={control}
-        rules={{
-        }}
+        rules={{}}
         render={({ field, fieldState }) => (
           <Input
             {...field}
@@ -168,89 +182,160 @@ export default function CommunityCreate({ onClose }: Props) {
           />
         )}
       />
-      <p className="text-sm text-gray-500">Token</p>
-      <div className="flex grid grid-cols-2 gap-2">
-        <Controller
-          name="token.symbol"
-          control={control}
-          rules={{
-            required: "Please enter a token name",
-            validate: (value) => {
-              if (!COMMUNITY_REGEX.test(value)) {
-                return "Invalid token name";
-              }
-              return true;
-            }
-          }}
-          render={({ field, fieldState }) => (
-            <Input
-              {...field}
-              label="Name"
-              placeholder="Enter your token name"
-              labelPlacement="outside"
-              isInvalid={!!fieldState.error}
-              errorMessage={fieldState.error?.message}
+      <Accordion
+        selectionMode="multiple"
+        selectedKeys="all"
+        hideIndicator
+        keepContentMounted>
+        <AccordionItem key="token" aria-label="Token" title="Token">
+          <div className="flex grid grid-cols-2 gap-2 w-full">
+            <Controller
+              name="token.symbol"
+              control={control}
+              rules={{
+                required: "Please enter a token name",
+                validate: (value) => {
+                  if (!COMMUNITY_REGEX.test(value)) {
+                    return "Invalid token name";
+                  }
+                  return true;
+                },
+              }}
+              render={({ field, fieldState }) => (
+                <Input
+                  {...field}
+                  label="Name"
+                  placeholder="Enter your token name"
+                  labelPlacement="outside"
+                  isInvalid={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                />
+              )}
             />
-          )}
-        />
-        <Controller
-          name="token.decimals"
-          control={control}
-          rules={{
-            required: "Please enter a token decimals",
-          }}
-          render={({ field, fieldState }) => (
-            <Input
-              {...field}
-              label="Decimals"
-              labelPlacement="outside"
-              type="number"
-              placeholder="Enter your token name"
-              isInvalid={!!fieldState.error}
-              errorMessage={fieldState.error?.message}
-              value={field.value?.toString()}
+            <Controller
+              name="token.decimals"
+              control={control}
+              rules={{
+                required: "Please enter a token decimals",
+              }}
+              render={({ field, fieldState }) => (
+                <Input
+                  {...field}
+                  label="Decimals"
+                  labelPlacement="outside"
+                  type="number"
+                  placeholder="Enter your token name"
+                  isInvalid={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  value={field.value?.toString()}
+                />
+              )}
             />
-          )}
-        />
-        <Controller
-          name="token.image"
-          control={control}
-          rules={{
-            minLength: 1,
-          }}
-          render={({ field, fieldState }) => (
-            <Input
-              {...field}
-              label="Image"
-              labelPlacement="outside"
-              placeholder="Enter your token image"
-              isInvalid={!!fieldState.error}
-              errorMessage={fieldState.error?.message}
+            <Controller
+              name="token.image"
+              control={control}
+              rules={{
+                minLength: 1,
+              }}
+              render={({ field, fieldState }) => (
+                <Input
+                  {...field}
+                  label="Image"
+                  labelPlacement="outside"
+                  placeholder="Enter your token image"
+                  isInvalid={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                />
+              )}
             />
-          )}
-        />
-        <Controller
-          name="token.total_issuance"
-          control={control}
-          rules={{
-            required: "Please enter a token total issuance",
-          }}
-          render={({ field, fieldState }) => (
-            <Input
-              {...field}
-              label="Total Issuance"
-              labelPlacement="outside"
-              type="number"
-              placeholder="Enter your token total issuance"
-              isInvalid={!!fieldState.error}
-              errorMessage={fieldState.error?.message}
-              value={field.value?.toString()}
+            <Controller
+              name="token.total_issuance"
+              control={control}
+              rules={{
+                required: "Please enter a token total issuance",
+              }}
+              render={({ field, fieldState }) => (
+                <Input
+                  {...field}
+                  label="Total Issuance"
+                  labelPlacement="outside"
+                  type="number"
+                  placeholder="Enter your token total issuance"
+                  isInvalid={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  value={field.value?.toString()}
+                />
+              )}
             />
-          )}
-        />
-      </div>
+          </div>
+        </AccordionItem>
+        <AccordionItem key="llm" aria-label="LLM" title="LLM">
+          <div className="flex grid grid-cols-1 gap-2 w-full">
+            <Controller
+              name="llm_name"
+              control={control}
+              rules={{
+                required: "Select an llm",
+                validate: (value) => {
+                  if (!COMMUNITY_REGEX.test(value)) {
+                    return "Invalid llm name";
+                  }
+                  return true;
+                },
+              }}
+              render={({ field, fieldState }) => (
+                <Select
+                  {...field}
+                  label="Name"
+                  labelPlacement="outside"
+                  placeholder="Select an llm"
+                  isInvalid={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  value={field.value}
+                  defaultSelectedKeys={field.value ? ["OpenAI"] : []}
+                >
+                  {Object.values(LLmName).map((llm) => (
+                    <SelectItem key={llm}>{llm}</SelectItem>
+                  ))}
+                </Select>
+              )}
+            />
+            <Controller
+              name="llm_api_host"
+              control={control}
+              rules={{}}
+              render={({ field, fieldState }) => (
+                <Input
+                  {...field}
+                  label="API Host"
+                  labelPlacement="outside"
+                  placeholder="Enter your llm api host"
+                  isInvalid={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  value={field.value?.toString()}
+                />
+              )}
+            />
+            <Controller
+              name="llm_key"
+              control={control}
+              rules={{}}
+              render={({ field, fieldState }) => (
+                <Input
+                  {...field}
+                  label="Key"
+                  labelPlacement="outside"
+                  placeholder="Enter your llm key"
+                  isInvalid={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                />
+              )}
+            />
+          </div>
+        </AccordionItem>
+      </Accordion>
       <div className="flex gap-2">
-        <Button color="primary" type="submit">
+        <Button color="primary" type="submit" isLoading={isLoading}>
           Submit
         </Button>
         <Button type="reset" variant="flat">

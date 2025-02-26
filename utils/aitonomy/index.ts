@@ -1,6 +1,6 @@
 import Jayson from 'jayson'
 import { Struct, u64, str, Vector, Codec, StringRecord, Option, u8, } from 'scale-ts'
-import { AccountId, ContentId, Pubkey, Signature } from './type';
+import { AccountId, ContentId, LLmName, Pubkey, Signature } from './type';
 import { decodeResult } from './tools';
 
 const client = Jayson.client.http({
@@ -30,6 +30,9 @@ const structArgs = (payload: StringRecord<Codec<any>>) => Struct({
         pub slug: String,
         pub description: String,
         pub prompt: String,
+        pub llm_name: String,
+        pub llm_api_host: Option<String>,
+        pub llm_key: Option<String>,
     }
  */
 
@@ -46,7 +49,10 @@ const structCreateCommunity = structArgs({
   token: tokenMetadata,
   slug: str,
   description: str,
-  prompt: str
+  prompt: str,
+  llm_name: str,
+  llm_api_host: Option(str),
+  llm_key: Option(str),
 })
 
 export interface CreateCommunityArg extends StringRecord<any> {
@@ -61,6 +67,9 @@ export interface CreateCommunityArg extends StringRecord<any> {
     decimals: number;
     image?: string;
   }
+  llm_name: LLmName;
+  llm_api_host?: string;
+  llm_key?: string;
 }
 
 interface Signature {

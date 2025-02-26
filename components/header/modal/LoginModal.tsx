@@ -37,28 +37,38 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     errorMessage: string;
   }>();
 
-  const connectWallet = useCallback(async (key: Key) => {
-    setWalletError(undefined);
-    const wallet = WALLETS.find((it) => it.id === key);
-    if (!wallet) return;
-    console.log("wallet", wallet);
+  const connectWallet = useCallback(
+    async (key: Key) => {
+      setWalletError(undefined);
+      const wallet = WALLETS.find((it) => it.id === key);
+      if (!wallet) return;
+      console.log("wallet", wallet);
 
-    try {
-      await connectToWallet(wallet.id);
-      if (useUserStore.getState().isLogin) {
-        onClose();
+      try {
+        await connectToWallet(wallet.id);
+        if (useUserStore.getState().isLogin) {
+          onClose();
+        }
+      } catch (e: any) {
+        console.error("[LoginModal] connect error", e);
+        setWalletError({
+          walletId: wallet.id,
+          errorMessage: e?.message || e?.toString() || "Failed to connect",
+        });
       }
-    } catch (e: any) {
-      console.error("[LoginModal] connect error", e);
-      setWalletError({
-        walletId: wallet.id,
-        errorMessage: e?.message || e?.toString() || "Failed to connect",
-      });
-    }
-  }, [onClose]);
+    },
+    [onClose]
+  );
 
   return (
-    <Modal isOpen={!!isOpen} onClose={onClose}>
+    <Modal
+      isOpen={!!isOpen}
+      onClose={onClose}
+      classNames={{
+        backdrop: "z-10",
+        wrapper: "z-10",
+      }}
+    >
       <ModalContent>
         {(onClose) => (
           <>

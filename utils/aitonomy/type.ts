@@ -14,3 +14,8 @@ export const Pubkey = AccountId
 export const CommunityId = u32
 export const EventId = u64
 export const ContentId = u128
+
+export enum LLmName {
+  OpenAI = "OpenAI"
+  // DeepSeek = "DeepSeek"
+}
