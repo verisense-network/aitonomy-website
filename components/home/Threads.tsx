@@ -15,6 +15,7 @@ import { useCallback } from "react";
 import { decodeId } from "@/utils/thread";
 import { formatTimestamp, hexToLittleEndian } from "@/utils/tools";
 import { twMerge } from "tailwind-merge";
+import { isYouAddress } from "../thread/utils";
 
 export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full px-1 py-2 rounded-small">{children}</div>
@@ -60,9 +61,7 @@ export default function Threads({ className, communityId }: ThreadsProps) {
     <div className={twMerge("w-full px-5 mx-auto", className)}>
       <h1 className="py-4 text-lg font-bold">Threads</h1>
       <div className="space-y-3">
-        {isLoading && (
-          <Spinner />
-        )}
+        {isLoading && <Spinner />}
         {data?.hits?.map((hit: any) => (
           <Card
             className="w-full p-2"
@@ -75,7 +74,7 @@ export default function Threads({ className, communityId }: ThreadsProps) {
             </CardHeader>
             <CardFooter className="text-sm text-gray-500 justify-between">
               <div>
-                <User name={hit.author} />
+                <User name={isYouAddress(hit.author) ? "You" : hit.author} />
               </div>
               <div className="flex space-x-2 items-center">
                 <Chip>{hit.community_name}</Chip>

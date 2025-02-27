@@ -16,7 +16,7 @@ import {
 } from "@heroui/react";
 import { useCallback } from "react";
 import { Community } from "@/utils/aitonomy/type";
-import { isAgentAddress } from "./utils";
+import { isAgentAddress, isYouAddress } from "./utils";
 import CreateComment from "./comment/Create";
 
 interface Props {
@@ -67,6 +67,8 @@ export default function ThreadComments({ threadId, community }: Props) {
                   name={
                     isAgentAddress(community?.agent_pubkey, comment.author)
                       ? "Agent"
+                      : isYouAddress(comment.author)
+                      ? "You"
                       : comment.author
                   }
                 />

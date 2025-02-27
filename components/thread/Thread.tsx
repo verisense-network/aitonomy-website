@@ -13,6 +13,7 @@ import {
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
+import { isYouAddress } from "./utils";
 
 export default function ThreadView({ threadId }: { threadId: string }) {
   const router = useRouter();
@@ -41,7 +42,11 @@ export default function ThreadView({ threadId }: { threadId: string }) {
             <CardBody>{threadData.content}</CardBody>
             <CardFooter className="text-sm text-gray-500 justify-between">
               <div>
-                <User name={threadData.author} />
+                <User
+                  name={
+                    isYouAddress(threadData.author) ? "You" : threadData.author
+                  }
+                />
               </div>
               <div className="flex space-x-2 items-center">
                 <Chip
