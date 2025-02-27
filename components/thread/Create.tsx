@@ -2,8 +2,11 @@ import { createThread } from "@/app/actions";
 import { CreateThreadArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
+import { decodeId } from "@/utils/thread";
+import { hexToLittleEndian } from "@/utils/tools";
 import { Autocomplete, Button, Form, Input, Textarea } from "@heroui/react";
 import { addToast } from "@heroui/toast";
+import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { Controller, useForm } from "react-hook-form";
 
@@ -12,6 +15,7 @@ interface Props {
 }
 
 export default function ThreadCreate({ onClose }: Props) {
+  const router = useRouter();
   const { control, handleSubmit } = useForm<CreateThreadArg>({
     defaultValues: {
       community: "",
@@ -21,33 +25,44 @@ export default function ThreadCreate({ onClose }: Props) {
     },
   });
 
-  const onSubmit = useCallback(async (data: CreateThreadArg) => {
-    console.log(data);
-    try {
-      const payload = {
-        ...data,
-        image: data.image === "" ? undefined : data.image,
-        mention: new Array(0).fill(new Array(32).fill(0)),
-      } as CreateThreadArg
+  const onSubmit = useCallback(
+    async (data: CreateThreadArg) => {
+      console.log(data);
+      try {
+        const payload = {
+          ...data,
+          image: data.image === "" ? undefined : data.image,
+          mention: new Array(0).fill(new Array(32).fill(0)),
+        } as CreateThreadArg;
 
-      const signature = await signPayload(payload);
+        const signature = await signPayload(payload);
 
-      const res = await createThread(payload, signature);
-      if (!res) return;
-      addToast({
-        title: "post a thread success",
-        description: `thread id ${res}`,
-        severity: "success",
-      });
-      onClose();
-    } catch (e) {
-      addToast({
-        title: "post a thread error",
-        description: `${e}`,
-        severity: "danger",
-      });
-    }
-  }, [onClose]);
+        const contentId = await createThread(payload, signature);
+        console.log("contentId", contentId);
+        if (!contentId) return;
+
+        const { community, thread } = decodeId(hexToLittleEndian(contentId));
+
+        addToast({
+          title: "post a thread success",
+          description: `thread id ${thread}`,
+          severity: "success",
+        });
+        setTimeout(() => {
+          router.push(`/c/${community}/${thread}`);
+        }, 1500);
+        onClose();
+      } catch (e) {
+        console.error("e", e);
+        addToast({
+          title: "post a thread error",
+          description: `${e}`,
+          severity: "danger",
+        });
+      }
+    },
+    [onClose, router]
+  );
 
   return (
     <Form

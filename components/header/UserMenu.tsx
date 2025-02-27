@@ -10,6 +10,7 @@ import {
 import { Key, useCallback, useState } from "react";
 import LoginModal from "./modal/LoginModal";
 import { useUserStore } from "@/store/user";
+import UserProfile from "../user/modal/Profile";
 
 export default function UserMenu() {
   const [isOpenOption, setIsOpenOption] = useState<string | null>(null);
@@ -58,6 +59,10 @@ export default function UserMenu() {
       </Dropdown>
       <LoginModal
         isOpen={isOpenOption === "login"}
+        onClose={() => setIsOpenOption(null)}
+      />
+      <UserProfile
+        isOpen={isOpenOption === "profile"}
         onClose={() => setIsOpenOption(null)}
       />
     </>

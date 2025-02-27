@@ -1,11 +1,17 @@
+import {
+  Connection,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
 import { WalletId } from "./connect";
+import bs58 from "bs58";
 
 export class OkxConnect {
   id = WalletId.OKX;
   wallet: any;
   address: string = "";
-  publicKey: string = "";
-  publicKeyBuffer: Buffer = Buffer.alloc(32);
+  publicKey: Uint8Array = new Uint8Array(32);
 
   constructor() {
     if (
@@ -23,27 +29,13 @@ export class OkxConnect {
 
   async connect() {
     await this.checkConnected();
+    const response = await this.wallet.solana.connect();
+    const publicKey = response.publicKey.toString();
 
-    const accounts = await this.wallet.request({
-      method: "eth_requestAccounts",
-    });
+    this.address = publicKey;
+    this.publicKey = bs58.decode(publicKey);
 
-    if (!accounts.length) {
-      throw new Error("User denied account access");
-    }
-
-    const selectedAddress = accounts[0];
-
-    const publicKey = await this.wallet.request({
-      method: "eth_getEncryptionPublicKey",
-      params: [selectedAddress],
-    });
-
-    this.address = selectedAddress;
-    this.publicKey = publicKey;
-    this.publicKeyBuffer = Buffer.from(publicKey, 'base64');
-
-    return this.publicKey
+    return this.publicKey;
   }
 
   async checkConnected() {
@@ -52,19 +44,50 @@ export class OkxConnect {
     }
   }
 
-  async signMessage(message: string, address: string): Promise<string> {
-    await this.checkConnected()
-    const signature = await this.wallet.request({
-      method: "personal_sign",
-      params: [message, address],
-    });
+  async signMessage(message: any): Promise<Uint8Array> {
+    await this.checkConnected();
+    const encodedMessage = new TextEncoder().encode(message);
 
-    return signature
+    const signature = await this.wallet.solana.signMessage(
+      encodedMessage,
+      "utf8"
+    );
+
+    return signature.signature;
   }
 
-  async signPayload(payload: Record<string, any>, address: string): Promise<string> {
-    const message = JSON.stringify(payload)
-    return this.signMessage(message, address)
+  async signPayload(payload: Record<string, any>): Promise<Uint8Array> {
+    return this.signMessage(JSON.stringify(payload));
   }
 
+  setPublickey(publicKey: Uint8Array) {
+    this.publicKey = publicKey;
+  }
+
+  async createTransaction(toAddress: PublicKey, lamports: number) {
+    const transaction = new Transaction();
+
+    const receiverAddress = new PublicKey(toAddress);
+
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey: new PublicKey(this.publicKey),
+        toPubkey: receiverAddress,
+        lamports,
+      })
+    );
+
+    const connection = new Connection("https://api.devnet.solana.com");
+
+    const { blockhash } = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = new PublicKey(this.publicKey);
+
+    return transaction;
+  }
+
+  async signTransaction(transaction: Transaction): Promise<Transaction> {
+    await this.checkConnected();
+    return this.wallet.solana.signTransaction(transaction);
+  }
 }

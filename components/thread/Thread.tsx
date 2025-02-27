@@ -2,21 +2,32 @@
 
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { formatTimestamp } from "@/utils/tools";
-import { Card, CardBody, CardFooter, CardHeader, Chip, Spinner, User } from "@heroui/react";
+import {
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Chip,
+  Spinner,
+  User,
+} from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 
 export default function ThreadView({ threadId }: { threadId: string }) {
   const router = useRouter();
-  const { data, isLoading } = useMeilisearch('thread', undefined, {
-    filter: `id = ${threadId}`
+  const { data, isLoading } = useMeilisearch("thread", undefined, {
+    filter: `id = ${threadId}`,
   });
 
   const threadData = data?.hits[0];
 
-  const toComunityPage = useCallback((communityId: string) => {
-    router.push("/c/" + communityId);
-  }, [router])
+  const toComunityPage = useCallback(
+    (communityId: string) => {
+      router.push("/c/" + communityId);
+    },
+    [router]
+  );
 
   return (
     <div>
@@ -33,7 +44,12 @@ export default function ThreadView({ threadId }: { threadId: string }) {
                 <User name={threadData.author} />
               </div>
               <div className="flex space-x-2 items-center">
-                <Chip onClick={() => toComunityPage(threadData.formattedId?.community)} className="cursor-pointer">
+                <Chip
+                  onClick={() =>
+                    toComunityPage(threadData.formattedId?.community)
+                  }
+                  className="cursor-pointer"
+                >
                   {threadData.community_name}
                 </Chip>
                 <div>{formatTimestamp(threadData.created_time)}</div>

@@ -1,44 +1,50 @@
-import bs58 from "bs58";
 import { create } from "zustand";
 import { createComputed } from "zustand-computed";
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { persist, createJSONStorage } from "zustand/middleware";
 import { WalletId } from "@/utils/wallet/connect";
 
 type SetUser = {
-  publicKey: string;
+  name: string;
+  publicKey: Uint8Array;
   address: string;
-}
+};
 
 type Store = {
-  wallet?: WalletId;
+  name: string;
+  wallet: WalletId;
   address: string;
-  publicKey: string;
+  publicKey: Uint8Array;
   setWallet: (wallet: WalletId) => void;
-  setUser: ({ publicKey, address }: SetUser) => void;
+  setUser: (data: SetUser) => void;
   logout: () => void;
 };
 
 type ComputedStore = {
-  name: string;
   isLogin: boolean;
 };
 
 const computed = createComputed(
   (state: Store): ComputedStore => ({
-    name: bs58.encode(Buffer.from(state.publicKey, 'base64')).slice(0, 4),
-    isLogin: state.publicKey !== "",
+    isLogin: state.publicKey.length > 0,
   })
 );
 
 export const useUserStore = create<Store>()(
   persist(
     computed((set) => ({
-      wallet: undefined,
+      name: "",
+      wallet: WalletId.OKX,
       address: "",
-      publicKey: "",
+      publicKey: new Uint8Array(0),
       setWallet: (wallet) => set({ wallet }),
       setUser: (data) => set(data),
-      logout: () => set({ publicKey: "", address: "" }),
+      logout: () =>
+        set({
+          wallet: undefined,
+          name: "",
+          publicKey: new Uint8Array(0),
+          address: "",
+        }),
     })),
     { name: "user", storage: createJSONStorage(() => localStorage) }
   )

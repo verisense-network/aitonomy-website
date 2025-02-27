@@ -14,6 +14,7 @@ import {
   Textarea,
 } from "@heroui/react";
 import { addToast } from "@heroui/toast";
+import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
@@ -30,13 +31,18 @@ const MOCKDATA = {
     "为地狱笑话帖子和回复评分，如果非常好笑就适当发一些JOKE代  币，不要对听过的笑话奖励",
   token: {
     symbol: "JOKE",
-    total_issuance: "10000000000",
+    total_issuance: 10000000000,
     decimals: 2,
+    image: null,
   },
+  llm_name: LLmName.OpenAI,
+  llm_api_host: null,
+  llm_key: null,
 };
 
 export default function CommunityCreate({ onClose }: Props) {
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const { control, handleSubmit, reset } = useForm<CreateCommunityArg>({
     defaultValues: {
       name: "",
@@ -45,32 +51,37 @@ export default function CommunityCreate({ onClose }: Props) {
       description: "",
       prompt: "",
       token: {
+        image: null,
         symbol: "",
-        total_issuance: undefined,
+        total_issuance: 2,
         decimals: 2,
       },
       llm_name: LLmName.OpenAI,
-      llm_api_host: "",
-      llm_key: "",
+      llm_api_host: null,
+      llm_key: null,
     },
   });
 
   const onSubmit = useCallback(
     async (data: CreateCommunityArg) => {
       try {
-        setIsLoading(true)
+        setIsLoading(true);
         console.log("data", data);
 
         const signature = await signPayload(data);
 
-        const res = await createCommunity(data, signature);
-        if (!res) return;
+        const communityId = await createCommunity(data, signature);
+        console.log("communityId", communityId);
+        if (!communityId) return;
         onClose();
         addToast({
-          title: "create community success",
-          description: `community id ${res}`,
+          title: "create community success, redirect to community page",
+          description: `community id ${communityId}`,
           severity: "success",
         });
+        setTimeout(() => {
+          router.push(`/c/${communityId}`);
+        }, 1500);
       } catch (e: any) {
         console.error("e", e);
         addToast({
@@ -79,7 +90,7 @@ export default function CommunityCreate({ onClose }: Props) {
           severity: "danger",
         });
       }
-      setIsLoading(false)
+      setIsLoading(false);
     },
     [onClose]
   );
@@ -186,7 +197,8 @@ export default function CommunityCreate({ onClose }: Props) {
         selectionMode="multiple"
         selectedKeys="all"
         hideIndicator
-        keepContentMounted>
+        keepContentMounted
+      >
         <AccordionItem key="token" aria-label="Token" title="Token">
           <div className="flex grid grid-cols-2 gap-2 w-full">
             <Controller
@@ -245,6 +257,7 @@ export default function CommunityCreate({ onClose }: Props) {
                   placeholder="Enter your token image"
                   isInvalid={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
+                  value={field.value?.toString() || ""}
                 />
               )}
             />
@@ -328,6 +341,7 @@ export default function CommunityCreate({ onClose }: Props) {
                   placeholder="Enter your llm key"
                   isInvalid={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
+                  value={field.value?.toString() || ""}
                 />
               )}
             />
