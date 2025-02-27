@@ -1,61 +1,43 @@
-import Jayson from 'jayson'
-import { Struct, u64, str, Vector, Codec, StringRecord, Option, u8, } from 'scale-ts'
-import { AccountId, ContentId, LLmName, Pubkey, Signature } from './type';
-import { decodeResult } from './tools';
+import Jayson from "jayson";
+import {
+  Account,
+  AccountId,
+  ActivateCommunityArg,
+  type CommunityStatus,
+  Community,
+  CommunityId,
+  ContentId,
+  CreateCommunityArg,
+  LLmName,
+  PostThreadArg,
+  registry,
+  Signature,
+  PostCommentArg,
+} from "./type";
+
+import {
+  Result,
+  Option,
+  Tuple,
+  u32,
+  Text,
+  Null,
+  Vec,
+  u64,
+} from "@polkadot/types-codec";
 
 const client = Jayson.client.http({
   host: process.env.NEXT_PUBLIC_AITONOMY_RPC_HOST,
   port: Number(process.env.NEXT_PUBLIC_AITONOMY_RPC_PORT),
-})
+});
 
-const structArgs = (payload: StringRecord<Codec<any>>) => Struct({
-  signature: Signature,
-  signer: Pubkey,
-  nonce: u64,
-  payload: Struct(payload)
-})
+interface Signature {
+  signature: Uint8Array;
+  signer: Uint8Array;
+  nonce: number;
+}
 
-/**
-    pub struct TokenMetadataArg {
-        pub symbol: String,
-        pub total_issuance: u64,
-        pub decimals: u8,
-        pub image: Option<String>,
-    }
-    
-    pub struct CreateCommunityArg {
-        pub name: String,
-        pub logo: String,
-        pub token: TokenMetadataArg,
-        pub slug: String,
-        pub description: String,
-        pub prompt: String,
-        pub llm_name: String,
-        pub llm_api_host: Option<String>,
-        pub llm_key: Option<String>,
-    }
- */
-
-const tokenMetadata = Struct({
-  symbol: str,
-  total_issuance: u64,
-  decimals: u8,
-  image: Option(str),
-})
-
-const structCreateCommunity = structArgs({
-  name: str,
-  logo: str,
-  token: tokenMetadata,
-  slug: str,
-  description: str,
-  prompt: str,
-  llm_name: str,
-  llm_api_host: Option(str),
-  llm_key: Option(str),
-})
-
-export interface CreateCommunityArg extends StringRecord<any> {
+export interface CreateCommunityArg {
   name: string;
   logo: string;
   slug: string;
@@ -63,42 +45,33 @@ export interface CreateCommunityArg extends StringRecord<any> {
   prompt: string;
   token: {
     symbol: string;
-    total_issuance: string;
+    total_issuance: number;
     decimals: number;
-    image?: string;
-  }
+    image: string | null;
+  };
   llm_name: LLmName;
-  llm_api_host?: string;
-  llm_key?: string;
-}
-
-interface Signature {
-  signature: Uint8Array;
-  signer: Uint8Array;
-  nonce: bigint;
+  llm_api_host: string | null;
+  llm_key: string | null;
 }
 
 export async function createCommunityRpc(
   nucleusId: string,
   args: CreateCommunityArg,
-  signature: Signature,
+  signature: Signature
 ): Promise<string> {
-
-  const rpcArgs ={
+  const rpcArgs = {
     ...signature,
     payload: args,
   };
+  console.log("rpcArgs", rpcArgs);
 
-  console.log("rpcArgs", rpcArgs)
-
-  const payload = Buffer.from(structCreateCommunity.enc(rpcArgs)).toString('hex')
-
-  console.log("payload", payload)
+  const payload = new CreateCommunityArg(registry, rpcArgs).toHex();
+  console.log("payload", payload);
 
   return new Promise((resolve, reject) => {
     client.request(
-      'nucleus_post',
-      [nucleusId, 'create_community', payload],
+      "nucleus_post",
+      [nucleusId, "create_community", payload],
       (err: any, response: any) => {
         if (err) {
           reject(err);
@@ -106,25 +79,37 @@ export async function createCommunityRpc(
         }
 
         if (response.error) {
-          console.error(response.error)
+          console.error(response.error);
           reject(new Error(response.error.message));
           return;
         }
 
-        const result = decodeResult(response.result)
+        console.log("response.result", response.result);
 
-        if (result.status === 'error' || !result.data) {
-          reject(new Error(result.message || 'unknown error'));
-          return;
+        const responseBytes = Buffer.from(response.result, "hex");
+
+        /**
+         * Result<CommunityId, String>
+         */
+        const ResultStruct = Result.with({
+          Ok: CommunityId,
+          Err: Text,
+        });
+
+        const decoded = new ResultStruct(registry, responseBytes);
+
+        if (decoded.isErr) {
+          reject(new Error(decoded.asErr.toString()));
+        } else if (decoded.isOk) {
+          const idHex = decoded.asOk.toHex();
+          resolve(idHex.slice(2));
         }
-
-        resolve(result.data.toString(16))
       }
     );
   });
 }
 
-export interface CreateThreadArg extends StringRecord<any> {
+export interface CreateThreadArg {
   community: string;
   title: string;
   content: string;
@@ -132,42 +117,26 @@ export interface CreateThreadArg extends StringRecord<any> {
   mention: string[];
 }
 
-/**
-        pub community: String,
-        pub title: String,
-        pub content: String,
-        pub image: Option<String>,
-        pub mention: Vec<AccountId>,
- */
-
-const structCreateThread = structArgs({
-  community: str,
-  title: str,
-  content: str,
-  image: Option(str),
-  mention: Vector(AccountId),
-})
-
 export async function createThreadRpc(
   nucleusId: string,
   args: CreateThreadArg,
-  signature: Signature,
+  signature: Signature
 ): Promise<string> {
   const rpcArgs = {
     ...signature,
     payload: args,
   };
 
-  console.log("rpcArgs", rpcArgs)
+  console.log("rpcArgs", rpcArgs);
 
-  const payload = Buffer.from(structCreateThread.enc(rpcArgs)).toString('hex')
+  const payload = new PostThreadArg(registry, rpcArgs).toHex();
 
-  console.log("payload", payload)
+  console.log("payload", payload);
 
   return new Promise((resolve, reject) => {
     client.request(
-      'nucleus_post',
-      [nucleusId, 'post_thread', payload],
+      "nucleus_post",
+      [nucleusId, "post_thread", payload],
       (err: any, response: any) => {
         if (err) {
           reject(err);
@@ -175,24 +144,279 @@ export async function createThreadRpc(
         }
 
         if (response.error) {
-          console.error(response.error)
+          console.error(response.error);
           reject(new Error(response.error.message));
           return;
         }
 
-        console.log("response.result", response.result)
+        console.log("response", response);
 
-        const result = decodeResult(response.result)
-        console.log("result", result)
+        const responseBytes = Buffer.from(response.result, "hex");
 
-        if (result.status === 'error' || !result.data) {
-          reject(new Error(result.message || 'unknown error'));
+        /**
+         * Result<ContentId, String>
+         */
+        const ResultStruct = Result.with({
+          Ok: ContentId,
+          Err: Text,
+        });
+
+        const decoded = new ResultStruct(registry, responseBytes);
+
+        if (decoded.isErr) {
+          reject(new Error(decoded.asErr.toString()));
+        } else if (decoded.isOk) {
+          const idHex = decoded.asOk.toHex();
+          console.log("idHex", idHex);
+          resolve(idHex);
+        }
+      }
+    );
+  });
+}
+
+export interface CreateCommentArg {
+  thread: Uint8Array;
+  content: string;
+  image?: string;
+  mention: string[];
+  reply_to?: string;
+}
+
+export async function createCommentRpc(
+  nucleusId: string,
+  args: CreateCommentArg,
+  signature: Signature
+): Promise<string> {
+  const rpcArgs = {
+    ...signature,
+    payload: args,
+  };
+
+  console.log("rpcArgs", rpcArgs);
+
+  const payload = new PostCommentArg(registry, rpcArgs).toHex();
+
+  console.log("payload", payload);
+
+  return new Promise((resolve, reject) => {
+    client.request(
+      "nucleus_post",
+      [nucleusId, "post_comment", payload],
+      (err: any, response: any) => {
+        if (err) {
+          reject(err);
           return;
         }
 
-        const threadId = result.data.toString(16)
+        if (response.error) {
+          console.error(response.error);
+          reject(new Error(response.error.message));
+          return;
+        }
 
-        resolve(threadId);
+        console.log("response", response);
+
+        const responseBytes = Buffer.from(response.result, "hex");
+
+        /**
+         * Result<ContentId, String>
+         */
+        const ResultStruct = Result.with({
+          Ok: ContentId,
+          Err: Text,
+        });
+
+        const decoded = new ResultStruct(registry, responseBytes);
+
+        if (decoded.isErr) {
+          reject(new Error(decoded.asErr.toString()));
+        } else if (decoded.isOk) {
+          const idHex = decoded.asOk.toHex();
+          resolve(idHex.slice(2));
+        }
+      }
+    );
+  });
+}
+
+export interface ActivateCommunityArg {
+  community: string;
+  tx: string;
+}
+
+export async function activateCommunityRpc(
+  nucleusId: string,
+  args: ActivateCommunityArg
+) {
+  const rpcArgs = args;
+
+  console.log("rpcArgs", rpcArgs);
+
+  const payload = new ActivateCommunityArg(registry, rpcArgs).toHex();
+
+  console.log("payload", payload);
+
+  return new Promise((resolve, reject) => {
+    client.request(
+      "nucleus_post",
+      [nucleusId, "activate_community", payload],
+      (err: any, response: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        if (response.error) {
+          console.error(response.error);
+          reject(new Error(response.error.message));
+          return;
+        }
+
+        console.log("response", response);
+
+        const responseBytes = Buffer.from(response.result, "hex");
+
+        /**
+         * Result<(), String>
+         */
+        const ResultStruct = Result.with({
+          Ok: Null,
+          Err: Text,
+        });
+
+        const decoded = new ResultStruct(registry, responseBytes);
+
+        if (decoded.isErr) {
+          reject(new Error(decoded.toString()));
+        }
+
+        resolve(decoded.asOk.toHuman());
+      }
+    );
+  });
+}
+
+export interface GetBalancesArg {
+  account_id: Uint8Array;
+  gt?: Uint8Array;
+  limit: number;
+}
+
+export type GetBalancesResponse = [Community, number];
+
+export async function getBalancesRpc(
+  nucleusId: string,
+  args: GetBalancesArg
+): Promise<GetBalancesResponse[]> {
+  /**
+    account_id: AccountId,
+    gt: Option<CommunityId>,
+    limit: u32,
+   */
+  const tuple = new Tuple(
+    registry,
+    [AccountId, Option.with(CommunityId), u32],
+    [args.account_id, null, args.limit]
+  );
+  const payload = tuple.toHex();
+
+  return new Promise((resolve, reject) => {
+    client.request(
+      "nucleus_get",
+      [nucleusId, "get_balances", payload],
+      (err: any, response: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        if (response.error) {
+          console.error("res.err:", response.error);
+          reject(new Error(response.error.message));
+          return;
+        }
+
+        console.log("response", response);
+
+        const responseBytes = Buffer.from(response.result, "hex");
+
+        /**
+         * Result<Vec<(Community, u64)>, String>
+         */
+        const ResultStruct = Result.with({
+          Ok: Vec.with(Tuple.with([Community, u64])),
+          Err: Text,
+        });
+
+        const decoded = new ResultStruct(registry, responseBytes);
+
+        if (decoded.isErr) {
+          reject(new Error(decoded.toString()));
+        }
+
+        const result = decoded.asOk.toJSON() as any;
+        console.log("result", result);
+
+        resolve(result);
+      }
+    );
+  });
+}
+
+export interface GetAccountInfoArg {
+  account_id: Uint8Array;
+}
+
+/**
+ * Result<Option<Account>, String>
+ */
+const ResultStruct = Result.with({
+  Ok: Option.with(Account),
+  Err: Text,
+});
+
+export async function getAccountInfoRpc(
+  nucleusId: string,
+  args: GetAccountInfoArg
+): Promise<{
+  nonce: string;
+  pubkey: string;
+  alias?: string;
+}> {
+  console.log("args", args);
+  const payload = new AccountId(registry, args.account_id).toHex();
+  console.log("payload", payload);
+
+  return new Promise((resolve, reject) => {
+    client.request(
+      "nucleus_get",
+      [nucleusId, "get_account_info", payload],
+      (err: any, response: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        if (response.error) {
+          console.error("res.err:", response.error);
+          reject(new Error(response.error.message));
+          return;
+        }
+
+        console.log("response", response);
+
+        const responseBytes = Buffer.from(response.result, "hex");
+
+        const decoded = new ResultStruct(registry, responseBytes);
+
+        if (decoded.isErr) {
+          reject(new Error(decoded.toString()));
+        }
+
+        const result = decoded.asOk.toHuman() as any;
+
+        resolve(result);
       }
     );
   });

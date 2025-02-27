@@ -1,26 +1,37 @@
-import { u128, u32 } from "scale-ts";
+import { u128 } from "@polkadot/types-codec";
+import { registry } from "./aitonomy/type";
 
 type ThreadId = {
   community: string;
   thread: string;
   comment?: string;
-}
+};
 
 export function decodeId(threadIdHex: string): ThreadId {
-  if (!/^[0-9a-fA-F]+$/.test(threadIdHex)) {
-    throw new Error('Invalid hex string');
+  const hex = threadIdHex.startsWith("0x")
+    ? threadIdHex.substring(2)
+    : threadIdHex;
+
+  if (!/^[0-9a-fA-F]+$/.test(hex)) {
+    throw new Error("Invalid hex string");
   }
-  
-  const decoded = u128.dec(threadIdHex).toString(16)
+
+  const buf = Buffer.from(hex, "hex");
+
+  const decoded = new u128(registry, buf).toString(16);
 
   return {
-    community: decoded.slice(0, 8).toString(),
-    thread: decoded.slice(8, 16).toString(),
-    comment: decoded.slice(16, 24).toString(),
+    community: decoded.slice(0, 8),
+    thread: decoded.slice(8, 16),
+    comment: decoded.slice(16, 24),
   };
 }
 
 export function encodeId({ community, thread }: ThreadId) {
-  const encoded = u128.enc(BigInt('0x' + community) << 64n | BigInt('0x' + thread) << 32n);
-  return Buffer.from(encoded).toString('hex');
+  const encoded = new u128(
+    registry,
+    (BigInt("0x" + community) << 64n) | (BigInt("0x" + thread) << 32n)
+  );
+
+  return encoded.toHex(true).slice(2);
 }
