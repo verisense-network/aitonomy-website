@@ -92,9 +92,15 @@ export default function UserProfile({ isOpen, onClose }: Props) {
                     <TableRow key={item.community.name}>
                       {(columnKey) => {
                         const cell = getKeyValue(item, columnKey);
+                        const community = getKeyValue(
+                          item,
+                          "community"
+                        ) as Community;
                         let value = cell;
                         if (columnKey === "community") {
-                          value = (cell as Community).name;
+                          value = community.name;
+                        } else if (columnKey === "balance") {
+                          value = `${cell} ${community?.token_info?.symbol}`;
                         }
                         return <TableCell>{value}</TableCell>;
                       }}

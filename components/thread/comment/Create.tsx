@@ -1,5 +1,6 @@
 import { createComment, CreateCommentParams } from "@/app/actions";
 import { signPayload } from "@/utils/aitonomy/sign";
+import { PostCommentPayload } from "@/utils/aitonomy/type";
 import { decodeId } from "@/utils/thread";
 import { hexToLittleEndian } from "@/utils/tools";
 import { PhotoIcon } from "@heroicons/react/24/solid";
@@ -30,7 +31,7 @@ export default function CreateComment({ threadId, replyTo, onSuccess }: Props) {
       try {
         const payload = data as CreateCommentParams;
 
-        const signature = await signPayload(payload);
+        const signature = await signPayload(payload, PostCommentPayload);
 
         const contentId = await createComment(payload, signature);
         console.log("contentId", contentId);

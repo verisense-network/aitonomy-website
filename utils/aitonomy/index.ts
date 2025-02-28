@@ -289,9 +289,12 @@ export async function activateCommunityRpc(
 
         if (decoded.isErr) {
           reject(new Error(decoded.toString()));
-        }
+        } else if (decoded.isOk) {
+          const result = decoded.asOk.toHuman() as any;
+          console.log("result", result);
 
-        resolve(decoded.asOk.toHuman());
+          resolve(result);
+        }
       }
     );
   });
@@ -309,6 +312,7 @@ export async function getBalancesRpc(
   nucleusId: string,
   args: GetBalancesArg
 ): Promise<GetBalancesResponse[]> {
+  console.log("args", args);
   /**
     account_id: AccountId,
     gt: Option<CommunityId>,
@@ -317,7 +321,7 @@ export async function getBalancesRpc(
   const tuple = new Tuple(
     registry,
     [AccountId, Option.with(CommunityId), u32],
-    [args.account_id, null, args.limit]
+    [args.account_id, args.gt, args.limit]
   );
   const payload = tuple.toHex();
 
@@ -353,12 +357,10 @@ export async function getBalancesRpc(
 
         if (decoded.isErr) {
           reject(new Error(decoded.toString()));
+        } else if (decoded.isOk) {
+          const result = decoded.asOk.toJSON() as any;
+          resolve(result);
         }
-
-        const result = decoded.asOk.toJSON() as any;
-        console.log("result", result);
-
-        resolve(result);
       }
     );
   });

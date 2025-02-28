@@ -8,8 +8,8 @@ import { WalletId } from "./connect";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 
-export class OkxConnect {
-  id = WalletId.OKX;
+export class PhantomConnect {
+  id = WalletId.PHANTOM;
   wallet: any;
   address: string = "";
   publicKey: Uint8Array = new Uint8Array(32);
@@ -17,20 +17,20 @@ export class OkxConnect {
   constructor() {
     if (
       typeof window !== "undefined" &&
-      window.okxwallet &&
-      window.okxwallet.isOkxWallet
+      window.solana &&
+      window.solana.isPhantom
     ) {
-      this.wallet = window.okxwallet;
+      this.wallet = window.solana;
     } else {
       throw new Error(
-        "OKX Wallet extension not found. Please install it first."
+        "Phantom Wallet extension not found. Please install it first."
       );
     }
   }
 
   async connect() {
     await this.checkConnected();
-    const response = await this.wallet.solana.connect();
+    const response = await this.wallet.connect();
     const publicKey = response.publicKey.toString();
 
     this.address = publicKey;
@@ -40,15 +40,15 @@ export class OkxConnect {
   }
 
   async checkConnected() {
-    if (!this.wallet.isConnected()) {
-      await this.wallet.handleConnect();
+    if (!this.wallet.isConnected) {
+      await this.wallet.connect();
     }
   }
 
   async signMessage(message: string): Promise<Uint8Array> {
     await this.checkConnected();
     const encoded = new TextEncoder().encode(message);
-    const { signature } = await this.wallet.solana.signMessage(encoded);
+    const { signature } = await this.wallet.signMessage(encoded, "utf8");
     return new Uint8Array(signature);
   }
 
@@ -98,6 +98,6 @@ export class OkxConnect {
 
   async signTransaction(transaction: Transaction): Promise<Transaction> {
     await this.checkConnected();
-    return this.wallet.solana.signTransaction(transaction);
+    return await this.wallet.signTransaction(transaction);
   }
 }

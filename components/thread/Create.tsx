@@ -2,6 +2,7 @@ import { createThread } from "@/app/actions";
 import { CreateThreadArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
+import { PostThreadPayload } from "@/utils/aitonomy/type";
 import { decodeId } from "@/utils/thread";
 import { hexToLittleEndian } from "@/utils/tools";
 import { Autocomplete, Button, Form, Input, Textarea } from "@heroui/react";
@@ -35,7 +36,7 @@ export default function ThreadCreate({ onClose }: Props) {
           mention: new Array(0).fill(new Array(32).fill(0)),
         } as CreateThreadArg;
 
-        const signature = await signPayload(payload);
+        const signature = await signPayload(payload, PostThreadPayload);
 
         const contentId = await createThread(payload, signature);
         console.log("contentId", contentId);

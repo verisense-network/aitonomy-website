@@ -91,9 +91,10 @@ interface GetBalancesParams {
 }
 
 export async function getBalances(data: GetBalancesParams) {
+  console.log("data", data);
   const threadArgs = {
     account_id: bs58.decode(data.accountId),
-    gt: data.gt ? bs58.decode(data.gt) : undefined,
+    gt: data.gt ? hexToBytes(data.gt) : undefined,
     limit: data.limit,
   };
 

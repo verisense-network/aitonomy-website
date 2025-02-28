@@ -31,6 +31,8 @@ export default function Threads({ className, communityId }: ThreadsProps) {
 
   const { isLoading, data, setParams } = useMeilisearch("thread", undefined, {
     sort: ["created_time:desc"],
+    page: 1,
+    hitsPerPage: 7,
     filter: communityId
       ? `id CONTAINS ${hexToLittleEndian(communityId)}`
       : undefined,

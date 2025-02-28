@@ -10,17 +10,21 @@ export default function PopularCommunity() {
   const router = useRouter();
   const { data, isLoading } = useMeilisearch("community", undefined, {
     sort: ["created_time:desc"],
+    hitsPerPage: 20,
   });
 
-  const toCommunityPage = useCallback((id: string) => {
-    const communityId = hexToLittleEndian(id)
-    router.push("/c/" + communityId)
-  }, [router])
+  const toCommunityPage = useCallback(
+    (id: string) => {
+      const communityId = hexToLittleEndian(id);
+      router.push("/c/" + communityId);
+    },
+    [router]
+  );
 
   return (
     <div className="space-y-2">
       <h1 className="text-lg font-bold py-4">Communities</h1>
-      <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2">
         {isLoading && (
           <div>
             <Spinner />
@@ -34,7 +38,7 @@ export default function PopularCommunity() {
               className="w-full"
               onPress={() => toCommunityPage(it.id)}
             >
-              <CardBody>
+              <CardBody className="flex gap-2 justify-center items-center">
                 <Avatar name={it.name} />
                 <div>{it.name}</div>
               </CardBody>

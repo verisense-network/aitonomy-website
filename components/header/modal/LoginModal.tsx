@@ -19,11 +19,11 @@ const WALLETS = [
     title: "OKX",
     icon: null,
   },
-  // {
-  //   id: WalletId.METAMASK,
-  //   title: "Metamask",
-  //   icon: null,
-  // },
+  {
+    id: WalletId.PHANTOM,
+    title: "Phantom",
+    icon: null,
+  },
 ];
 
 interface Props {

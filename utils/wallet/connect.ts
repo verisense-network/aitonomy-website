@@ -2,8 +2,9 @@ import { useUserStore } from "@/store/user";
 import { getWalletConnect } from "./index";
 
 export enum WalletId {
-  METAMASK = "metamask",
   OKX = "okx",
+  PHANTOM = "phantom",
+  METAMASK = "metamask",
 }
 
 export async function connectToWallet(walletId: WalletId) {

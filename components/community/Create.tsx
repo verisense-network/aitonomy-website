@@ -2,7 +2,7 @@ import { createCommunity } from "@/app/actions";
 import { CreateCommunityArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
-import { LLmName } from "@/utils/aitonomy/type";
+import { CreateCommunityPayload, LLmName } from "@/utils/aitonomy/type";
 import {
   Accordion,
   AccordionItem,
@@ -68,8 +68,9 @@ export default function CommunityCreate({ onClose }: Props) {
         setIsLoading(true);
         console.log("data", data);
 
-        const signature = await signPayload(data);
+        const signature = await signPayload(data, CreateCommunityPayload);
 
+        console.log("signature", signature);
         const communityId = await createCommunity(data, signature);
         console.log("communityId", communityId);
         if (!communityId) return;

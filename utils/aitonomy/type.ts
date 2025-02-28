@@ -177,12 +177,12 @@ export enum LLmName {
         pub payload: T,
     }
  */
-export function createWithArgs<S extends TypesDef>(payload: S) {
+export function createWithArgs<S extends CodecClass<Struct<any>>>(payload: S) {
   return Struct.with({
     signature: Signature,
     signer: Pubkey,
     nonce: u64,
-    payload: Struct.with(payload),
+    payload,
   });
 }
 
@@ -214,7 +214,7 @@ export const TokenMetadataArg = Struct.with({
         pub llm_key: Option<String>,
     }
  */
-export const CreateCommunityArg = createWithArgs({
+export const CreateCommunityPayload = Struct.with({
   name: Text,
   logo: Text,
   token: TokenMetadataArg,
@@ -226,6 +226,8 @@ export const CreateCommunityArg = createWithArgs({
   llm_key: Option.with(Text),
 });
 
+export const CreateCommunityArg = createWithArgs(CreateCommunityPayload);
+
 /**
     pub struct PostThreadArg {
         pub community: String,
@@ -235,13 +237,15 @@ export const CreateCommunityArg = createWithArgs({
         pub mention: Vec<AccountId>,
     }
  */
-export const PostThreadArg = createWithArgs({
+export const PostThreadPayload = Struct.with({
   community: Text,
   title: Text,
   content: Text,
   image: Option.with(Text),
   mention: Vec.with(AccountId),
 });
+
+export const PostThreadArg = createWithArgs(PostThreadPayload);
 
 /**
     pub struct PostCommentArg {
@@ -252,14 +256,15 @@ export const PostThreadArg = createWithArgs({
         pub reply_to: Option<ContentId>,
     }
  */
-
-export const PostCommentArg = createWithArgs({
+export const PostCommentPayload = Struct.with({
   thread: ContentId,
   content: Text,
   image: Option.with(Text),
   mention: Vec.with(AccountId),
   reply_to: Option.with(ContentId),
 });
+
+export const PostCommentArg = createWithArgs(PostCommentPayload);
 
 /**
  * 
@@ -286,6 +291,18 @@ export const Account = Struct.with({
   alias: Option.with(Text),
 });
 
+/**
+pub enum AccountData {
+    Pubkey(Account),
+    AliasOf(AccountId),
+}
+ */
+
+export const AccountData = Enum.with({
+  Pubkey: Account,
+  AliasOf: AccountId,
+});
+
 registry.register({
   Signature,
   Account,
@@ -298,4 +315,6 @@ registry.register({
   CreateCommunityArg,
   PostThreadArg,
   ActivateCommunityArg,
+  PostCommentArg,
+  AccountData,
 });
