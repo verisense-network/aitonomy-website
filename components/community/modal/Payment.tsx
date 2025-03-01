@@ -53,7 +53,7 @@ export default function PaymentModal({
 
   const onMock = useCallback(() => {
     const tx =
-      "277a14821100000018a314001723bf67277a1482110000000ea814001723bf67277a148211000000fe8601001723bf674f8cfc9e01000000102700001723bf674f8cfc9e01000000102700001723bf674f8cfc9e01000000a08601001723bf67277a148211000000f95ece001723bf67";
+      "4ueKzjCVZJ9Zi32Z6XdmzQeuBbGtjt7rTZKVrbk1whBh2e5iEaWPfqsZWWZh44BxoujQzAha8Dhhobqsbtgxwfat";
     onSuccess(tx);
   }, [onSuccess]);
 
