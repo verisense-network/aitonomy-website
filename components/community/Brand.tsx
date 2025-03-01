@@ -58,11 +58,12 @@ export default function CommunityBrand({ communityId }: Props) {
         if (retryCount < 3) {
           if (!txHash) return;
           const payload = { community: community?.name, tx: txHash };
+          console.log("payload", payload);
           await activateCommunity(payload);
           console.log(
             `Checking community activation status: attempt ${retryCount + 1}/4`
           );
-          await new Promise((resolve) => setTimeout(resolve, 5000));
+          await new Promise((resolve) => setTimeout(resolve, 10000));
           await checkCommunityActivateStatus(txHash, retryCount + 1);
         } else {
           console.log(
@@ -83,6 +84,7 @@ export default function CommunityBrand({ communityId }: Props) {
     async (txHash: string) => {
       const payload = { community: community?.name, tx: txHash };
       storePaymentSignature({ community: community?.name, signature: txHash });
+      console.log("onSuccess", payload);
       const res = await activateCommunity(payload);
       console.log("res", res);
       checkCommunityActivateStatus(txHash);
@@ -122,7 +124,7 @@ export default function CommunityBrand({ communityId }: Props) {
     setTimeout(() => {
       mutate(undefined, { revalidate: false });
       setIsActivatingLoading(false);
-    }, 5000);
+    }, 10000);
     console.log("res", res);
   }, [community?.name, mutate]);
 
