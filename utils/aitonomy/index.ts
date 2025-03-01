@@ -1,9 +1,8 @@
-import Jayson from "jayson";
+import client from "@/lib/jayson";
 import {
   Account,
   AccountId,
   ActivateCommunityArg,
-  type CommunityStatus,
   Community,
   CommunityId,
   ContentId,
@@ -15,7 +14,6 @@ import {
   PostCommentArg,
   SetAliasArg,
 } from "./type";
-
 import {
   Result,
   Option,
@@ -26,11 +24,6 @@ import {
   Vec,
   u64,
 } from "@polkadot/types-codec";
-
-const client = Jayson.client.http({
-  host: process.env.NEXT_PUBLIC_AITONOMY_RPC_HOST,
-  port: Number(process.env.NEXT_PUBLIC_AITONOMY_RPC_PORT),
-});
 
 interface Signature {
   signature: Uint8Array;
