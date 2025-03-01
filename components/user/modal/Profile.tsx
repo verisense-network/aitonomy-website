@@ -1,9 +1,11 @@
-import { getAccountInfo, getBalances } from "@/app/actions";
+import { getAccountInfo, getBalances, setAlias } from "@/app/actions";
 import { useUserStore } from "@/store/user";
 import { GetBalancesResponse } from "@/utils/aitonomy";
-import { Community } from "@/utils/aitonomy/type";
+import { signPayload } from "@/utils/aitonomy/sign";
+import { Community, SetAliasPayload } from "@/utils/aitonomy/type";
 import { formatAddress } from "@/utils/tools";
 import {
+  Button,
   getKeyValue,
   Listbox,
   ListboxItem,
@@ -54,6 +56,17 @@ export default function UserProfile({ isOpen, onClose }: Props) {
     setBalances(balances);
   }, [address, name]);
 
+  const updateAccountName = useCallback(async () => {
+    const payload = {
+      alias: "hello_world",
+    };
+    const signature = await signPayload(payload, SetAliasPayload);
+    // console.log("signature", signature);
+    const res = await setAlias(payload, signature);
+    console.log("res", res);
+    // setAccountName(account?.alias || name || address);
+  }, []);
+
   useEffect(() => {
     if (!address || !isOpen) return;
     getUserProfile();
@@ -70,6 +83,7 @@ export default function UserProfile({ isOpen, onClose }: Props) {
                 <div className="flex space-x-2">
                   <label>Name:</label>
                   <span>{accountName}</span>
+                  <Button onPress={updateAccountName}>Update Name</Button>
                 </div>
                 <div className="flex space-x-2">
                   <label>Address:</label>

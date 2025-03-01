@@ -303,6 +303,17 @@ export const AccountData = Enum.with({
   AliasOf: AccountId,
 });
 
+/**
+    pub struct SetAliasArg {
+        pub alias: String,
+    }
+ */
+export const SetAliasPayload = Struct.with({
+  alias: Text,
+});
+
+export const SetAliasArg = createWithArgs(SetAliasPayload);
+
 registry.register({
   Signature,
   Account,
@@ -317,4 +328,5 @@ registry.register({
   ActivateCommunityArg,
   PostCommentArg,
   AccountData,
+  SetAliasArg,
 });

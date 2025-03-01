@@ -1,7 +1,5 @@
 import dayjs from "@/lib/dayjs";
 
-export const LAMPORTS_PER_SOL = 1_000_000_000;
-
 export function stringToHex(str: string) {
   return Buffer.from(str, "utf-8").toString("hex");
 }

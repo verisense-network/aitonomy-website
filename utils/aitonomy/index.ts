@@ -13,6 +13,7 @@ import {
   registry,
   Signature,
   PostCommentArg,
+  SetAliasArg,
 } from "./type";
 
 import {
@@ -370,14 +371,6 @@ export interface GetAccountInfoArg {
   account_id: Uint8Array;
 }
 
-/**
- * Result<Option<Account>, String>
- */
-const ResultStruct = Result.with({
-  Ok: Option.with(Account),
-  Err: Text,
-});
-
 export async function getAccountInfoRpc(
   nucleusId: string,
   args: GetAccountInfoArg
@@ -410,15 +403,78 @@ export async function getAccountInfoRpc(
 
         const responseBytes = Buffer.from(response.result, "hex");
 
+        /**
+         * Result<Account, String>
+         */
+        const ResultStruct = Result.with({
+          Ok: Account,
+          Err: Text,
+        });
         const decoded = new ResultStruct(registry, responseBytes);
 
         if (decoded.isErr) {
           reject(new Error(decoded.toString()));
+        } else if (decoded.isOk) {
+          const result = decoded.asOk.toHuman() as any;
+
+          resolve(result);
+        }
+      }
+    );
+  });
+}
+
+export interface SetAliasArg {
+  alias: string;
+}
+
+export async function setAliasRpc(
+  nucleusId: string,
+  args: SetAliasArg,
+  signature: Signature
+): Promise<string> {
+  console.log("args", args);
+  const rpcArgs = {
+    ...signature,
+    payload: args,
+  };
+  const payload = new SetAliasArg(registry, rpcArgs).toHex();
+
+  return new Promise((resolve, reject) => {
+    client.request(
+      "nucleus_post",
+      [nucleusId, "set_alias", payload],
+      (err: any, response: any) => {
+        if (err) {
+          reject(err);
+          return;
         }
 
-        const result = decoded.asOk.toHuman() as any;
+        if (response.error) {
+          console.error("res.err:", response.error);
+          reject(new Error(response.error.message));
+          return;
+        }
 
-        resolve(result);
+        console.log("response", response);
+
+        const responseBytes = Buffer.from(response.result, "hex");
+
+        /**
+         * Result<(), String>
+         */
+        const ResultStruct = Result.with({
+          Ok: Null,
+          Err: Text,
+        });
+        const decoded = new ResultStruct(registry, responseBytes);
+
+        if (decoded.isErr) {
+          reject(new Error(decoded.toString()));
+        } else if (decoded.isOk) {
+          const result = decoded.asOk.toHuman() as any;
+          resolve(result);
+        }
       }
     );
   });

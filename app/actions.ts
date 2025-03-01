@@ -11,6 +11,8 @@ import {
   createThreadRpc,
   getAccountInfoRpc,
   getBalancesRpc,
+  SetAliasArg,
+  setAliasRpc,
 } from "@/utils/aitonomy";
 import { Signature } from "@/utils/aitonomy/sign";
 import { hexToBytes } from "@/utils/tools";
@@ -99,6 +101,14 @@ export async function getBalances(data: GetBalancesParams) {
   };
 
   const res = await getBalancesRpc(nucleusId, threadArgs);
+
+  return res;
+}
+
+export async function setAlias(data: SetAliasArg, signature: Signature) {
+  const threadArgs = data;
+
+  const res = await setAliasRpc(nucleusId, threadArgs, signature);
 
   return res;
 }

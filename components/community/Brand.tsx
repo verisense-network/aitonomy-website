@@ -1,7 +1,7 @@
 "use client";
 
 import useMeilisearch from "@/hooks/useMeilisearch";
-import { hexToLittleEndian, LAMPORTS_PER_SOL } from "@/utils/tools";
+import { hexToLittleEndian } from "@/utils/tools";
 import {
   Avatar,
   Button,
@@ -14,6 +14,7 @@ import { useCallback, useEffect, useState } from "react";
 import PaymentModal from "./modal/Payment";
 import { activateCommunity, getBalances } from "@/app/actions";
 import { useUserStore } from "@/store/user";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 interface Props {
   communityId: string;
@@ -101,13 +102,15 @@ export default function CommunityBrand({ communityId }: Props) {
                 </div>
               )}
             </div>
-            <div className="flex items-center space-x-2">
-              <div>Balance: {currentBalance}</div>
-              <Avatar
-                src={community?.token_info?.image}
-                name={community?.token_info?.symbol}
-              />
-            </div>
+            {currentBalance && (
+              <div className="flex items-center space-x-2">
+                <div>Balance: {currentBalance}</div>
+                <Avatar
+                  src={community?.token_info?.image}
+                  name={community?.token_info?.symbol}
+                />
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardBody>{community?.description}</CardBody>
