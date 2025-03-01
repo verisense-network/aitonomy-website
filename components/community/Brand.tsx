@@ -11,7 +11,7 @@ import {
   Chip,
   Spinner,
 } from "@heroui/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import PaymentModal from "./modal/Payment";
 import { activateCommunity, getBalances } from "@/app/actions";
 import { useUserStore } from "@/store/user";
@@ -62,18 +62,18 @@ export default function CommunityBrand({ communityId }: Props) {
           console.log(
             `Checking community activation status: attempt ${retryCount + 1}/4`
           );
-          await new Promise((resolve) => setTimeout(resolve, 10000));
+          await new Promise((resolve) => setTimeout(resolve, 5000));
           await checkCommunityActivateStatus(txHash, retryCount + 1);
         } else {
           console.log(
             "Maximum retry attempts reached. Community still not active."
           );
-          mutate();
+          mutate(undefined, { revalidate: false });
         }
       } else {
         console.log("Community is now active!");
         setIsActivatingLoading(false);
-        mutate();
+        mutate(undefined, { revalidate: false });
       }
     },
     [community, mutate]
@@ -120,9 +120,9 @@ export default function CommunityBrand({ communityId }: Props) {
       tx: signature,
     });
     setTimeout(() => {
-      mutate();
+      mutate(undefined, { revalidate: false });
       setIsActivatingLoading(false);
-    }, 10000);
+    }, 5000);
     console.log("res", res);
   }, [community?.name, mutate]);
 

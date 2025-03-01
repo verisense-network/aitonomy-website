@@ -105,7 +105,6 @@ export default function PaymentModal({
                 </CardBody>
               </Card>
               <Button onPress={toPay}>Payment</Button>
-              <Button onPress={onMock}>Mock</Button>
             </ModalBody>
           </>
         )}
