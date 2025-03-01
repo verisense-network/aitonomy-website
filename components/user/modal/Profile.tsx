@@ -44,6 +44,7 @@ export default function UserProfile({ isOpen, onClose }: Props) {
   const [balances, setBalances] = useState<GetBalancesResponse[]>([]);
 
   const getUserProfile = useCallback(async () => {
+    if (!address) return;
     const account = await getAccountInfo({
       accountId: address,
     });

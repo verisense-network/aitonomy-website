@@ -1,18 +1,18 @@
 "use client";
 
+import { use } from "react";
 import ThreadComments from "@/components/thread/Comments";
 import ThreadView from "@/components/thread/Thread";
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { Community } from "@/utils/aitonomy/type";
 import { encodeId } from "@/utils/thread";
 import { hexToLittleEndian } from "@/utils/tools";
-import { use } from "react";
 
 interface Props {
   params: { community: string; thread: string };
 }
 
-export default function ThreadPage({ params }: Props) {
+export default function ThreadPage({ params }: Props): React.ReactNode {
   const { community: communityId, thread: threadId } = use<Props["params"]>(
     params as any
   );

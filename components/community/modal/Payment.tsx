@@ -12,6 +12,7 @@ import {
 } from "@heroui/react";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { useCallback, useMemo } from "react";
+import bs58 from "bs58";
 
 interface Props {
   isOpen: boolean;
@@ -39,8 +40,10 @@ export default function PaymentModal({
         new PublicKey(toAddress),
         paymentLamports
       );
-      const txSigned = await walletConnect.signTransaction(tx);
-      console.log(txSigned);
+      const sig = await walletConnect.signTransaction(tx);
+      const signatureHex = bs58.encode(sig);
+      console.log(sig);
+      onSuccess(signatureHex);
     } catch (e: any) {
       console.error("Error paying", e);
       addToast({
@@ -49,11 +52,11 @@ export default function PaymentModal({
         severity: "danger",
       });
     }
-  }, [toAddress, paymentLamports, wallet]);
+  }, [wallet, toAddress, paymentLamports, onSuccess]);
 
   const onMock = useCallback(() => {
     const tx =
-      "4ueKzjCVZJ9Zi32Z6XdmzQeuBbGtjt7rTZKVrbk1whBh2e5iEaWPfqsZWWZh44BxoujQzAha8Dhhobqsbtgxwfat";
+      "3mhtBtxYVhRCHEvj4qkFyVMjXf8UWTFcJmHhmSp1hA6URvvJ3wrE1x13aKBGSZeF6ZwVH9AnpVje21vuPVhmP3t9";
     onSuccess(tx);
   }, [onSuccess]);
 

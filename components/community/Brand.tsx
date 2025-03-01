@@ -42,7 +42,6 @@ export default function CommunityBrand({ communityId }: Props) {
   const onSuccess = useCallback(
     async (tx: string) => {
       const payload = { community: community?.name, tx };
-      // const signature = await signPayload(payload);
       const res = await activateCommunity(payload);
       console.log("res", res);
       setIsOpenPaymentModal(false);

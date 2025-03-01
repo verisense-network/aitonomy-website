@@ -1,5 +1,6 @@
 import {
   Connection,
+  LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
   Transaction,
@@ -7,12 +8,17 @@ import {
 import { WalletId } from "./connect";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
+import { useUserStore } from "@/store/user";
 
 export class OkxConnect {
   id = WalletId.OKX;
   wallet: any;
   address: string = "";
   publicKey: Uint8Array = new Uint8Array(32);
+  connection: Connection = new Connection(
+    "https://mainnet.helius-rpc.com/?api-key=64dbe6d2-9641-43c6-bb86-0e3d748f31b1",
+    "confirmed"
+  );
 
   constructor() {
     if (
@@ -21,11 +27,19 @@ export class OkxConnect {
       window.okxwallet.isOkxWallet
     ) {
       this.wallet = window.okxwallet;
+
+      this.checkStoredPublicKey();
     } else {
       throw new Error(
         "OKX Wallet extension not found. Please install it first."
       );
     }
+  }
+
+  checkStoredPublicKey() {
+    const userPublicKey = useUserStore.getState().publicKey;
+    if (userPublicKey.length === 0) return;
+    this.publicKey = new Uint8Array(Object.values(userPublicKey));
   }
 
   async connect() {
@@ -70,34 +84,36 @@ export class OkxConnect {
     return isValid;
   }
 
-  setPublickey(publicKey: Uint8Array) {
-    this.publicKey = publicKey;
-  }
-
-  async createTransaction(toAddress: PublicKey, lamports: number) {
+  async createTransaction(toAddress: PublicKey, sol: number) {
     const transaction = new Transaction();
 
     const receiverAddress = new PublicKey(toAddress);
+
+    const amount = sol * LAMPORTS_PER_SOL;
 
     transaction.add(
       SystemProgram.transfer({
         fromPubkey: new PublicKey(this.publicKey),
         toPubkey: receiverAddress,
-        lamports,
+        lamports: amount,
       })
     );
 
-    const connection = new Connection("https://api.devnet.solana.com");
-
-    const { blockhash } = await connection.getLatestBlockhash();
+    const { blockhash } = await this.connection.getLatestBlockhash();
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = new PublicKey(this.publicKey);
 
     return transaction;
   }
 
-  async signTransaction(transaction: Transaction): Promise<Transaction> {
+  async signTransaction(transaction: Transaction): Promise<Uint8Array> {
     await this.checkConnected();
-    return this.wallet.solana.signTransaction(transaction);
+    const signedTx = await this.wallet.solana.signTransaction(transaction);
+    const serializedTransaction = signedTx.serialize();
+    await this.connection.sendRawTransaction(serializedTransaction, {
+      skipPreflight: false,
+      preflightCommitment: "confirmed",
+    });
+    return signedTx.signature;
   }
 }
