@@ -9,13 +9,11 @@ import { encodeId } from "@/utils/thread";
 import { hexToLittleEndian } from "@/utils/tools";
 
 interface Props {
-  params: { community: string; thread: string };
+  params: Promise<{ community: string; thread: string }>;
 }
 
 export default function ThreadPage({ params }: Props): React.ReactNode {
-  const { community: communityId, thread: threadId } = use<Props["params"]>(
-    params as any
-  );
+  const { community: communityId, thread: threadId } = use(params);
 
   const { data } = useMeilisearch("community", "", {
     filter: `id = ${hexToLittleEndian(communityId)}`,
