@@ -42,7 +42,6 @@ export default function PaymentModal({
       );
       const sig = await walletConnect.signTransaction(tx);
       const signatureHex = bs58.encode(sig);
-      console.log(sig);
       onSuccess(signatureHex);
     } catch (e: any) {
       console.error("Error paying", e);

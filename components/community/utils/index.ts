@@ -1,3 +1,7 @@
-export function hasWaitingTx(status: any) {
-  return 'WaitingTx' in status && status.WaitingTx > 0;
+export enum CommunityStatus {
+  PendingCreation = "PendingCreation",
+  WaitingTx = "WaitingTx",
+  CreateFailed = "CreateFailed",
+  Active = "Active",
+  Frozen = "Frozen",
 }

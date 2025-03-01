@@ -74,8 +74,9 @@ export const LlmVendor = Enum.with({
 /**
  * 
 pub enum CommunityStatus {
-    PendingCreation, // size = 8, align = 0x1
+    PendingCreation,
     WaitingTx(u64),
+    CreateFailed(String),
     Active,
     Frozen(u64),
 }
@@ -83,6 +84,7 @@ pub enum CommunityStatus {
 export const CommunityStatus = Enum.with({
   PendingCreation: Null,
   WaitingTx: u64,
+  CreateFailed: Text,
   Active: Null,
   Frozen: u64,
 });

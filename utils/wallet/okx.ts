@@ -84,18 +84,16 @@ export class OkxConnect {
     return isValid;
   }
 
-  async createTransaction(toAddress: PublicKey, sol: number) {
+  async createTransaction(toAddress: PublicKey, lamports: number) {
     const transaction = new Transaction();
 
     const receiverAddress = new PublicKey(toAddress);
-
-    const amount = sol * LAMPORTS_PER_SOL;
 
     transaction.add(
       SystemProgram.transfer({
         fromPubkey: new PublicKey(this.publicKey),
         toPubkey: receiverAddress,
-        lamports: amount,
+        lamports,
       })
     );
 
