@@ -11,6 +11,9 @@ if (isProduction) {
   (wsClient.ws as any).on("open", () => {
     console.log("Jayson Connection opened");
   });
+  (wsClient.ws as any).on("error", (error: any) => {
+    console.error("Jayson Connection error", error);
+  });
   (wsClient.ws as any).on("close", () => {
     console.log("Jayson Connection closed");
   });
@@ -21,6 +24,12 @@ if (isProduction) {
   });
   client.on("open", () => {
     console.log("Jayson Connection opened");
+  });
+  client.on("error", (error) => {
+    console.error("Jayson Connection error", error);
+  });
+  client.on("close", () => {
+    console.log("Jayson Connection closed");
   });
 }
 
