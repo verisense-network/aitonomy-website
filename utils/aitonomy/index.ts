@@ -66,7 +66,7 @@ export async function createCommunityRpc(
   console.log("payload", payload);
   try {
     const provider = await getRpcClient();
-    const response = await provider.send("nucleus_post", [
+    const response = await provider.send<any>("nucleus_post", [
       nucleusId,
       "create_community",
       payload,
@@ -124,7 +124,7 @@ export async function createThreadRpc(
 
   try {
     const provider = await getRpcClient();
-    const response = await provider.send("nucleus_post", [
+    const response = await provider.send<any>("nucleus_post", [
       nucleusId,
       "post_thread",
       payload,
@@ -181,7 +181,7 @@ export async function createCommentRpc(
 
   try {
     const provider = await getRpcClient();
-    const response = await provider.send("nucleus_post", [
+    const response = await provider.send<any>("nucleus_post", [
       nucleusId,
       "post_comment",
       payload,
@@ -230,7 +230,7 @@ export async function activateCommunityRpc(
   console.log("payload", payload);
   try {
     const provider = await getRpcClient();
-    const response = await provider.send("nucleus_post", [
+    const response = await provider.send<any>("nucleus_post", [
       nucleusId,
       "activate_community",
       payload,
@@ -289,7 +289,7 @@ export async function getBalancesRpc(
 
   try {
     const provider = await getRpcClient();
-    const response = await provider.send("nucleus_get", [
+    const response = await provider.send<any>("nucleus_get", [
       nucleusId,
       "get_balances",
       payload,
@@ -336,7 +336,7 @@ export async function getAccountInfoRpc(
   console.log("payload", payload);
   try {
     const provider = await getRpcClient();
-    const response = await provider.send("nucleus_get", [
+    const response = await provider.send<any>("nucleus_get", [
       nucleusId,
       "get_account_info",
       payload,
@@ -385,7 +385,7 @@ export async function setAliasRpc(
 
   try {
     const provider = await getRpcClient();
-    const response = await provider.send("nucleus_post", [
+    const response = await provider.send<any>("nucleus_post", [
       nucleusId,
       "set_alias",
       payload,

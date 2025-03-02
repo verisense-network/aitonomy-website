@@ -1,6 +1,6 @@
-import { WsProvider } from "@polkadot/rpc-provider";
+import { HttpProvider } from "@polkadot/rpc-provider";
 
-const provider = new WsProvider(
+const provider = new HttpProvider(
   `${process.env.NEXT_PUBLIC_AITONOMY_RPC_HOST}:${process.env.NEXT_PUBLIC_AITONOMY_RPC_PORT}`
 );
 
@@ -13,11 +13,10 @@ provider.on("error", (error: any) => {
 });
 
 export async function getRpcClient() {
-  if (!(await provider.isReady)) {
-    await provider.connectWithRetry();
+  if (!provider.isConnected) {
+    await provider.connect();
     console.log("provider reconnected");
-    if (!(await provider.isReady)) {
-      await provider.connectWithRetry();
+    if (!provider.isConnected) {
       throw new Error("provider not connected");
     }
   }
