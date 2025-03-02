@@ -1,8 +1,7 @@
 import { getAccountInfo, getBalances, setAlias } from "@/app/actions";
 import { useUserStore } from "@/store/user";
 import { GetBalancesResponse } from "@/utils/aitonomy";
-import { signPayload } from "@/utils/aitonomy/sign";
-import { Community, SetAliasPayload } from "@/utils/aitonomy/type";
+import { Community } from "@/utils/aitonomy/type";
 import { formatAddress } from "@/utils/tools";
 import {
   addToast,
@@ -19,8 +18,10 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
+  Tooltip,
 } from "@heroui/react";
 import { useCallback, useEffect, useState } from "react";
+import UpdateAliasName from "./UpdateAliasName";
 
 interface Props {
   isOpen: boolean;
@@ -43,6 +44,7 @@ export default function UserProfile({ isOpen, onClose }: Props) {
   const [accountName, setAccountName] = useState<string>("");
   const [balances, setBalances] = useState<GetBalancesResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isShowUpdateName, setIsShowUpdateName] = useState(false);
 
   const getUserProfile = useCallback(async () => {
     try {
@@ -70,15 +72,13 @@ export default function UserProfile({ isOpen, onClose }: Props) {
   }, [address, name]);
 
   const updateAccountName = useCallback(async () => {
-    const payload = {
-      alias: "hello_world",
-    };
-    const signature = await signPayload(payload, SetAliasPayload);
-    // console.log("signature", signature);
-    const res = await setAlias(payload, signature);
-    console.log("res", res);
-    // setAccountName(account?.alias || name || address);
+    setIsShowUpdateName(true);
   }, []);
+
+  const updateAliasNameOnSuccess = useCallback(() => {
+    setIsShowUpdateName(false);
+    getUserProfile();
+  }, [getUserProfile]);
 
   useEffect(() => {
     if (!address || !isOpen) return;
@@ -93,15 +93,28 @@ export default function UserProfile({ isOpen, onClose }: Props) {
             <ModalHeader>Profile</ModalHeader>
             <ModalBody>
               <div className="space-y-2">
-                <div className="flex space-x-2">
-                  <label>Name:</label>
-                  <span>{accountName}</span>
+                <div className="flex space-x-2 items-center">
+                  <label className="font-bold">Name:</label>
                   {isLoading && <Spinner />}
-                  <Button onPress={updateAccountName}>Update Name</Button>
+                  {isShowUpdateName ? (
+                    <UpdateAliasName
+                      defaultName={accountName}
+                      onSuccess={updateAliasNameOnSuccess}
+                    />
+                  ) : (
+                    <>
+                      <span>{accountName}</span>
+                      <Button onPress={updateAccountName} size="sm">
+                        Update Name
+                      </Button>
+                    </>
+                  )}
                 </div>
                 <div className="flex space-x-2">
-                  <label>Address:</label>
-                  <span>{formatAddress(address)}</span>
+                  <label className="font-bold">Address:</label>
+                  <Tooltip content={address}>
+                    <span>{formatAddress(address)}</span>
+                  </Tooltip>
                 </div>
               </div>
               <Table aria-label="Balances" title="Balances">

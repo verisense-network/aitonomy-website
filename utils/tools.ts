@@ -4,6 +4,8 @@ export function stringToHex(str: string) {
   return Buffer.from(str, "utf-8").toString("hex");
 }
 
+export const isDev = process.env.NODE_ENV === "development";
+
 export function hexToBytes(hexString: string) {
   const hex = hexString.startsWith("0x") ? hexString.substring(2) : hexString;
 

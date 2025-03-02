@@ -14,10 +14,10 @@ import {
   setAliasRpc,
 } from "@/utils/aitonomy";
 import { Signature } from "@/utils/aitonomy/sign";
+import { NUCLEUS_ID } from "@/utils/aitonomy/tools";
 import { hexToBytes } from "@/utils/tools";
 import bs58 from "bs58";
 
-const NUCLEUS_ID = process.env.NEXT_PUBLIC_NUCLEUS_ID || "";
 if (!NUCLEUS_ID) {
   throw new Error("Nucleus ID is not defined");
 }

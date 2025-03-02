@@ -3,6 +3,7 @@ import { CreateCommunityArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
 import { CreateCommunityPayload, LLmName } from "@/utils/aitonomy/type";
+import { isDev } from "@/utils/tools";
 import {
   Accordion,
   AccordionItem,
@@ -356,9 +357,11 @@ export default function CommunityCreate({ onClose }: Props) {
         <Button type="reset" variant="flat">
           Reset
         </Button>
-        <Button variant="flat" onPress={setMockData}>
-          Mock Data
-        </Button>
+        {isDev && (
+          <Button variant="flat" onPress={setMockData}>
+            Mock Data
+          </Button>
+        )}
       </div>
     </Form>
   );
