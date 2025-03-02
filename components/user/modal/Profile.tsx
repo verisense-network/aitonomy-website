@@ -5,14 +5,14 @@ import { signPayload } from "@/utils/aitonomy/sign";
 import { Community, SetAliasPayload } from "@/utils/aitonomy/type";
 import { formatAddress } from "@/utils/tools";
 import {
+  addToast,
   Button,
   getKeyValue,
-  Listbox,
-  ListboxItem,
   Modal,
   ModalBody,
   ModalContent,
   ModalHeader,
+  Spinner,
   Table,
   TableBody,
   TableCell,
@@ -42,19 +42,31 @@ export default function UserProfile({ isOpen, onClose }: Props) {
   const { name, address } = useUserStore();
   const [accountName, setAccountName] = useState<string>("");
   const [balances, setBalances] = useState<GetBalancesResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getUserProfile = useCallback(async () => {
-    if (!address) return;
-    const account = await getAccountInfo({
-      accountId: address,
-    });
-    setAccountName(account?.alias || name || address);
-    const balances = await getBalances({
-      accountId: address,
-      gt: undefined,
-      limit: 10,
-    });
-    setBalances(balances);
+    try {
+      if (!address) return;
+      setIsLoading(true);
+      const account = await getAccountInfo({
+        accountId: address,
+      });
+      setAccountName(account?.alias || name || address);
+      const balances = await getBalances({
+        accountId: address,
+        gt: undefined,
+        limit: 10,
+      });
+      setBalances(balances);
+      setIsLoading(false);
+    } catch (e) {
+      console.error(e);
+      addToast({
+        title: "Error",
+        description: "Failed to get user profile",
+      });
+      setIsLoading(false);
+    }
   }, [address, name]);
 
   const updateAccountName = useCallback(async () => {
@@ -84,6 +96,7 @@ export default function UserProfile({ isOpen, onClose }: Props) {
                 <div className="flex space-x-2">
                   <label>Name:</label>
                   <span>{accountName}</span>
+                  {isLoading && <Spinner />}
                   <Button onPress={updateAccountName}>Update Name</Button>
                 </div>
                 <div className="flex space-x-2">

@@ -1,4 +1,7 @@
-import client from "@/lib/jayson";
+"use server";
+
+import { getRpcClient } from "@/lib/rpcClient";
+
 import {
   Account,
   AccountId,
@@ -61,46 +64,38 @@ export async function createCommunityRpc(
 
   const payload = new CreateCommunityArg(registry, rpcArgs).toHex();
   console.log("payload", payload);
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send("nucleus_post", [
+      nucleusId,
+      "create_community",
+      payload,
+    ]);
 
-  return new Promise((resolve, reject) => {
-    client.request(
-      "nucleus_post",
-      [nucleusId, "create_community", payload],
-      (err: any, response: any) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+    console.log("response", response);
 
-        if (response.error) {
-          console.error(response.error);
-          reject(new Error(response.error.message));
-          return;
-        }
+    const responseBytes = Buffer.from(response, "hex");
 
-        console.log("response.result", response.result);
+    /**
+     * Result<CommunityId, String>
+     */
+    const ResultStruct = Result.with({
+      Ok: CommunityId,
+      Err: Text,
+    });
 
-        const responseBytes = Buffer.from(response.result, "hex");
+    const decoded = new ResultStruct(registry, responseBytes);
 
-        /**
-         * Result<CommunityId, String>
-         */
-        const ResultStruct = Result.with({
-          Ok: CommunityId,
-          Err: Text,
-        });
+    if (decoded.isErr) {
+      throw new Error(decoded.asErr.toString());
+    }
 
-        const decoded = new ResultStruct(registry, responseBytes);
-
-        if (decoded.isErr) {
-          reject(new Error(decoded.asErr.toString()));
-        } else if (decoded.isOk) {
-          const idHex = decoded.asOk.toHex();
-          resolve(idHex.slice(2));
-        }
-      }
-    );
-  });
+    const idHex = decoded.asOk.toHex();
+    return idHex.slice(2);
+  } catch (error: any) {
+    console.error(error);
+    throw new Error(error);
+  }
 }
 
 export interface CreateThreadArg {
@@ -127,46 +122,37 @@ export async function createThreadRpc(
 
   console.log("payload", payload);
 
-  return new Promise((resolve, reject) => {
-    client.request(
-      "nucleus_post",
-      [nucleusId, "post_thread", payload],
-      (err: any, response: any) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send("nucleus_post", [
+      nucleusId,
+      "post_thread",
+      payload,
+    ]);
 
-        if (response.error) {
-          console.error(response.error);
-          reject(new Error(response.error.message));
-          return;
-        }
+    console.log("response", response);
 
-        console.log("response", response);
+    const responseBytes = Buffer.from(response, "hex");
 
-        const responseBytes = Buffer.from(response.result, "hex");
+    /**
+     * Result<ContentId, String>
+     */
+    const ResultStruct = Result.with({
+      Ok: ContentId,
+      Err: Text,
+    });
 
-        /**
-         * Result<ContentId, String>
-         */
-        const ResultStruct = Result.with({
-          Ok: ContentId,
-          Err: Text,
-        });
+    const decoded = new ResultStruct(registry, responseBytes);
 
-        const decoded = new ResultStruct(registry, responseBytes);
-
-        if (decoded.isErr) {
-          reject(new Error(decoded.asErr.toString()));
-        } else if (decoded.isOk) {
-          const idHex = decoded.asOk.toHex();
-          console.log("idHex", idHex);
-          resolve(idHex);
-        }
-      }
-    );
-  });
+    if (decoded.isErr) {
+      throw new Error(decoded.asErr.toString());
+    }
+    const idHex = decoded.asOk.toHex();
+    console.log("idHex", idHex);
+    return idHex;
+  } catch (e) {
+    throw e;
+  }
 }
 
 export interface CreateCommentArg {
@@ -193,45 +179,37 @@ export async function createCommentRpc(
 
   console.log("payload", payload);
 
-  return new Promise((resolve, reject) => {
-    client.request(
-      "nucleus_post",
-      [nucleusId, "post_comment", payload],
-      (err: any, response: any) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send("nucleus_post", [
+      nucleusId,
+      "post_comment",
+      payload,
+    ]);
 
-        if (response.error) {
-          console.error(response.error);
-          reject(new Error(response.error.message));
-          return;
-        }
+    console.log("response", response);
 
-        console.log("response", response);
+    const responseBytes = Buffer.from(response, "hex");
 
-        const responseBytes = Buffer.from(response.result, "hex");
+    /**
+     * Result<ContentId, String>
+     */
+    const ResultStruct = Result.with({
+      Ok: ContentId,
+      Err: Text,
+    });
 
-        /**
-         * Result<ContentId, String>
-         */
-        const ResultStruct = Result.with({
-          Ok: ContentId,
-          Err: Text,
-        });
+    const decoded = new ResultStruct(registry, responseBytes);
 
-        const decoded = new ResultStruct(registry, responseBytes);
-
-        if (decoded.isErr) {
-          reject(new Error(decoded.asErr.toString()));
-        } else if (decoded.isOk) {
-          const idHex = decoded.asOk.toHex();
-          resolve(idHex.slice(2));
-        }
-      }
-    );
-  });
+    if (decoded.isErr) {
+      throw new Error(decoded.asErr.toString());
+    }
+    const idHex = decoded.asOk.toHex();
+    return idHex.slice(2);
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
 }
 
 export interface ActivateCommunityArg {
@@ -250,48 +228,38 @@ export async function activateCommunityRpc(
   const payload = new ActivateCommunityArg(registry, rpcArgs).toHex();
 
   console.log("payload", payload);
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send("nucleus_post", [
+      nucleusId,
+      "activate_community",
+      payload,
+    ]);
 
-  return new Promise((resolve, reject) => {
-    client.request(
-      "nucleus_post",
-      [nucleusId, "activate_community", payload],
-      (err: any, response: any) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+    console.log("response", response);
+    const responseBytes = Buffer.from(response, "hex");
 
-        if (response.error) {
-          console.error(response.error);
-          reject(new Error(response.error.message));
-          return;
-        }
+    /**
+     * Result<(), String>
+     */
+    const ResultStruct = Result.with({
+      Ok: Null,
+      Err: Text,
+    });
 
-        console.log("response", response);
+    const decoded = new ResultStruct(registry, responseBytes);
 
-        const responseBytes = Buffer.from(response.result, "hex");
+    if (decoded.isErr) {
+      throw new Error(decoded.toString());
+    }
+    const result = decoded.isOk && (decoded.asOk.toHuman() as any);
+    console.log("result", result);
 
-        /**
-         * Result<(), String>
-         */
-        const ResultStruct = Result.with({
-          Ok: Null,
-          Err: Text,
-        });
-
-        const decoded = new ResultStruct(registry, responseBytes);
-
-        if (decoded.isErr) {
-          reject(new Error(decoded.toString()));
-        } else if (decoded.isOk) {
-          const result = decoded.asOk.toHuman() as any;
-          console.log("result", result);
-
-          resolve(result);
-        }
-      }
-    );
-  });
+    return result;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
 }
 
 export interface GetBalancesArg {
@@ -319,45 +287,36 @@ export async function getBalancesRpc(
   );
   const payload = tuple.toHex();
 
-  return new Promise((resolve, reject) => {
-    client.request(
-      "nucleus_get",
-      [nucleusId, "get_balances", payload],
-      (err: any, response: any) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send("nucleus_get", [
+      nucleusId,
+      "get_balances",
+      payload,
+    ]);
+    console.log("response", response);
 
-        if (response.error) {
-          console.error("res.err:", response.error);
-          reject(new Error(response.error.message));
-          return;
-        }
+    const responseBytes = Buffer.from(response, "hex");
 
-        console.log("response", response);
+    /**
+     * Result<Vec<(Community, u64)>, String>
+     */
+    const ResultStruct = Result.with({
+      Ok: Vec.with(Tuple.with([Community, u64])),
+      Err: Text,
+    });
 
-        const responseBytes = Buffer.from(response.result, "hex");
+    const decoded = new ResultStruct(registry, responseBytes);
 
-        /**
-         * Result<Vec<(Community, u64)>, String>
-         */
-        const ResultStruct = Result.with({
-          Ok: Vec.with(Tuple.with([Community, u64])),
-          Err: Text,
-        });
-
-        const decoded = new ResultStruct(registry, responseBytes);
-
-        if (decoded.isErr) {
-          reject(new Error(decoded.toString()));
-        } else if (decoded.isOk) {
-          const result = decoded.asOk.toJSON() as any;
-          resolve(result);
-        }
-      }
-    );
-  });
+    if (decoded.isErr) {
+      throw new Error(decoded.toString());
+    }
+    const result = decoded.asOk.toJSON() as any;
+    return result;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
 }
 
 export interface GetAccountInfoArg {
@@ -375,46 +334,37 @@ export async function getAccountInfoRpc(
   console.log("args", args);
   const payload = new AccountId(registry, args.account_id).toHex();
   console.log("payload", payload);
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send("nucleus_get", [
+      nucleusId,
+      "get_account_info",
+      payload,
+    ]);
 
-  return new Promise((resolve, reject) => {
-    client.request(
-      "nucleus_get",
-      [nucleusId, "get_account_info", payload],
-      (err: any, response: any) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+    console.log("response", response);
 
-        if (response.error) {
-          console.error("res.err:", response.error);
-          reject(new Error(response.error.message));
-          return;
-        }
+    const responseBytes = Buffer.from(response, "hex");
 
-        console.log("response", response);
+    /**
+     * Result<Account, String>
+     */
+    const ResultStruct = Result.with({
+      Ok: Account,
+      Err: Text,
+    });
+    const decoded = new ResultStruct(registry, responseBytes);
 
-        const responseBytes = Buffer.from(response.result, "hex");
+    if (decoded.isErr) {
+      throw new Error(decoded.toString());
+    }
+    const result = decoded.asOk.toHuman() as any;
 
-        /**
-         * Result<Account, String>
-         */
-        const ResultStruct = Result.with({
-          Ok: Account,
-          Err: Text,
-        });
-        const decoded = new ResultStruct(registry, responseBytes);
-
-        if (decoded.isErr) {
-          reject(new Error(decoded.toString()));
-        } else if (decoded.isOk) {
-          const result = decoded.asOk.toHuman() as any;
-
-          resolve(result);
-        }
-      }
-    );
-  });
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
 }
 
 export interface SetAliasArg {
@@ -433,42 +383,33 @@ export async function setAliasRpc(
   };
   const payload = new SetAliasArg(registry, rpcArgs).toHex();
 
-  return new Promise((resolve, reject) => {
-    client.request(
-      "nucleus_post",
-      [nucleusId, "set_alias", payload],
-      (err: any, response: any) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send("nucleus_post", [
+      nucleusId,
+      "set_alias",
+      payload,
+    ]);
+    console.log("response", response);
 
-        if (response.error) {
-          console.error("res.err:", response.error);
-          reject(new Error(response.error.message));
-          return;
-        }
+    const responseBytes = Buffer.from(response, "hex");
 
-        console.log("response", response);
+    /**
+     * Result<(), String>
+     */
+    const ResultStruct = Result.with({
+      Ok: Null,
+      Err: Text,
+    });
+    const decoded = new ResultStruct(registry, responseBytes);
 
-        const responseBytes = Buffer.from(response.result, "hex");
-
-        /**
-         * Result<(), String>
-         */
-        const ResultStruct = Result.with({
-          Ok: Null,
-          Err: Text,
-        });
-        const decoded = new ResultStruct(registry, responseBytes);
-
-        if (decoded.isErr) {
-          reject(new Error(decoded.toString()));
-        } else if (decoded.isOk) {
-          const result = decoded.asOk.toHuman() as any;
-          resolve(result);
-        }
-      }
-    );
-  });
+    if (decoded.isErr) {
+      throw new Error(decoded.toString());
+    }
+    const result = decoded.asOk.toHuman() as any;
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
 }

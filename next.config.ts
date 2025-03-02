@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
       allowedOrigins: ["aitonomy-website.vercel.app", "*.vercel.app"],
     },
   },
-  transpilePackages: ["jayson"],
 };
 
 export default nextConfig;
