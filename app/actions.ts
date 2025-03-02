@@ -3,7 +3,6 @@
 import {
   ActivateCommunityArg,
   activateCommunityRpc,
-  CreateCommentArg,
   createCommentRpc,
   CreateCommunityArg,
   createCommunityRpc,
@@ -18,7 +17,10 @@ import { Signature } from "@/utils/aitonomy/sign";
 import { hexToBytes } from "@/utils/tools";
 import bs58 from "bs58";
 
-const nucleusId = "kGk1FJCoPv4JTxez4aaWgGVaTPvsc2YPStz6ZWni4e61FVUW6";
+const NUCLEUS_ID = process.env.NEXT_PUBLIC_NUCLEUS_ID || "";
+if (!NUCLEUS_ID) {
+  throw new Error("Nucleus ID is not defined");
+}
 
 export async function createCommunity(
   form: CreateCommunityArg,
@@ -26,7 +28,7 @@ export async function createCommunity(
 ) {
   const communityArgs = form;
 
-  const res = await createCommunityRpc(nucleusId, communityArgs, signature);
+  const res = await createCommunityRpc(NUCLEUS_ID, communityArgs, signature);
 
   return res;
 }
@@ -37,7 +39,7 @@ export async function createThread(
 ) {
   const threadArgs = form;
 
-  const res = await createThreadRpc(nucleusId, threadArgs, signature);
+  const res = await createThreadRpc(NUCLEUS_ID, threadArgs, signature);
 
   return res;
 }
@@ -59,7 +61,7 @@ export async function createComment(
     thread: hexToBytes(form.thread),
   };
 
-  const res = await createCommentRpc(nucleusId, commentArgs, signature);
+  const res = await createCommentRpc(NUCLEUS_ID, commentArgs, signature);
 
   return res;
 }
@@ -67,7 +69,7 @@ export async function createComment(
 export async function activateCommunity(data: ActivateCommunityArg) {
   const threadArgs = data;
 
-  const res = await activateCommunityRpc(nucleusId, threadArgs);
+  const res = await activateCommunityRpc(NUCLEUS_ID, threadArgs);
 
   return res;
 }
@@ -81,7 +83,7 @@ export async function getAccountInfo(data: GetAccountInfoParams) {
     account_id: bs58.decode(data.accountId),
   };
 
-  const res = await getAccountInfoRpc(nucleusId, threadArgs);
+  const res = await getAccountInfoRpc(NUCLEUS_ID, threadArgs);
 
   return res;
 }
@@ -100,7 +102,7 @@ export async function getBalances(data: GetBalancesParams) {
     limit: data.limit,
   };
 
-  const res = await getBalancesRpc(nucleusId, threadArgs);
+  const res = await getBalancesRpc(NUCLEUS_ID, threadArgs);
 
   return res;
 }
@@ -108,7 +110,7 @@ export async function getBalances(data: GetBalancesParams) {
 export async function setAlias(data: SetAliasArg, signature: Signature) {
   const threadArgs = data;
 
-  const res = await setAliasRpc(nucleusId, threadArgs, signature);
+  const res = await setAliasRpc(NUCLEUS_ID, threadArgs, signature);
 
   return res;
 }
