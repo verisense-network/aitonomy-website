@@ -1,7 +1,7 @@
 "use client";
 
 import useMeilisearch from "@/hooks/useMeilisearch";
-import { formatTimestamp } from "@/utils/tools";
+import { formatTimestamp, sleep } from "@/utils/tools";
 import {
   Card,
   CardBody,
@@ -12,14 +12,18 @@ import {
   User,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { isYouAddress } from "./utils";
 
 export default function ThreadView({ threadId }: { threadId: string }) {
   const router = useRouter();
-  const { data, isLoading } = useMeilisearch("thread", undefined, {
-    filter: `id = ${threadId}`,
-  });
+  const { data, isLoading, isValidating, forceUpdate } = useMeilisearch(
+    "thread",
+    undefined,
+    {
+      filter: `id = ${threadId}`,
+    }
+  );
 
   const threadData = data?.hits[0];
 
@@ -29,6 +33,26 @@ export default function ThreadView({ threadId }: { threadId: string }) {
     },
     [router]
   );
+
+  useEffect(() => {
+    (async () => {
+      if (isLoading || isValidating) return;
+
+      if (!data?.hits?.length) {
+        console.log("not found force update");
+        await sleep(1500);
+        forceUpdate();
+        return;
+      }
+      const hasThread = data?.hits?.some((hit: any) => hit.id === threadId);
+      if (!hasThread) {
+        console.log("not has");
+        await sleep(1500);
+        console.log("not has force update");
+        forceUpdate();
+      }
+    })();
+  }, [data, forceUpdate, isLoading, isValidating, threadId]);
 
   return (
     <div>

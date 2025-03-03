@@ -4,7 +4,6 @@ import { GetBalancesResponse } from "@/utils/aitonomy";
 import { Community } from "@/utils/aitonomy/type";
 import { formatAddress } from "@/utils/tools";
 import {
-  addToast,
   Button,
   getKeyValue,
   Modal,
@@ -22,6 +21,7 @@ import {
 } from "@heroui/react";
 import { useCallback, useEffect, useState } from "react";
 import UpdateAliasName from "./UpdateAliasName";
+import { toast } from "react-toastify";
 
 interface Props {
   isOpen: boolean;
@@ -58,10 +58,7 @@ export default function UserProfile({ isOpen, onClose }: Props) {
       setIsLoading(false);
     } catch (e) {
       console.error(e);
-      addToast({
-        title: "Error",
-        description: "Failed to get user profile",
-      });
+      toast.error("Failed to get user profile");
       setIsLoading(false);
     }
   }, [address]);

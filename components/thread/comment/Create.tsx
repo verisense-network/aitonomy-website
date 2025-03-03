@@ -4,9 +4,10 @@ import { PostCommentPayload } from "@/utils/aitonomy/type";
 import { decodeId } from "@/utils/thread";
 import { hexToLittleEndian } from "@/utils/tools";
 import { PhotoIcon } from "@heroicons/react/24/solid";
-import { Form, Button, Card, Textarea, addToast } from "@heroui/react";
+import { Form, Button, Card, Textarea } from "@heroui/react";
 import { useCallback } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 
 interface Props {
   threadId: string;
@@ -39,20 +40,12 @@ export default function CreateComment({ threadId, replyTo, onSuccess }: Props) {
 
         const { comment } = decodeId(hexToLittleEndian(contentId));
 
-        addToast({
-          title: "post a comment success",
-          description: `comment id ${comment}`,
-          severity: "success",
-        });
+        toast.success("post a comment success");
 
         onSuccess(comment!);
       } catch (e) {
         console.error("e", e);
-        addToast({
-          title: "post a comment error",
-          description: `${e}`,
-          severity: "danger",
-        });
+        toast.error("post a comment error");
       }
     },
     [onSuccess]

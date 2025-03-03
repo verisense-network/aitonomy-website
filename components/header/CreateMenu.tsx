@@ -9,12 +9,12 @@ import {
   ModalBody,
   ModalContent,
   ModalHeader,
-  addToast,
 } from "@heroui/react";
 import { Key, Suspense, useCallback, useState } from "react";
 import CommunityCreate from "../community/Create";
 import ThreadCreate from "../thread/Create";
 import { useUserStore } from "@/store/user";
+import { toast } from "react-toastify";
 
 const menuList = [
   {
@@ -31,20 +31,20 @@ export default function CreateMenu() {
   const [isOpen, setIsOpen] = useState<string | null>(null);
   const { isLogin } = useUserStore();
 
-  const openMenu = useCallback((key: Key) => {
-    if (!isLogin) {
-      addToast({
-        title: "Please login",
-        description: "You need to login first",
-      });
-      return;
-    }
+  const openMenu = useCallback(
+    (key: Key) => {
+      if (!isLogin) {
+        toast.info("You need to login first");
+        return;
+      }
 
-    const item = menuList.find((it) => it.name === key);
-    if (!item) return;
+      const item = menuList.find((it) => it.name === key);
+      if (!item) return;
 
-    setIsOpen(item.name);
-  }, [isLogin])
+      setIsOpen(item.name);
+    },
+    [isLogin]
+  );
 
   return (
     <>
@@ -52,9 +52,9 @@ export default function CreateMenu() {
         <DropdownTrigger>
           <Button isIconOnly className="bg-transparent">
             <PlusCircleIcon
-                width={32}
-                height={32}
-                className="h-full w-full object-cover"
+              width={32}
+              height={32}
+              className="h-full w-full object-cover"
             />
           </Button>
         </DropdownTrigger>

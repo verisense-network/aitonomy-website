@@ -1,7 +1,6 @@
 import { useUserStore } from "@/store/user";
 import { getWalletConnect } from "@/utils/wallet";
 import {
-  addToast,
   Button,
   Card,
   CardBody,
@@ -13,6 +12,7 @@ import {
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { useCallback, useMemo } from "react";
 import bs58 from "bs58";
+import { toast } from "react-toastify";
 
 interface Props {
   isOpen: boolean;
@@ -48,11 +48,7 @@ export default function PaymentModal({
       onSuccess(signatureHex);
     } catch (e: any) {
       console.error("Error paying", e);
-      addToast({
-        title: "Error paying",
-        description: e.message,
-        severity: "danger",
-      });
+      toast.error(`Error paying: ${e.message}`);
     }
   }, [wallet, toAddress, paymentLamports, onSuccess]);
 

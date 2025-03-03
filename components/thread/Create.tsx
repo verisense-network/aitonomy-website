@@ -1,15 +1,23 @@
 import { createThread } from "@/app/actions";
+import useMeilisearch from "@/hooks/useMeilisearch";
 import { CreateThreadArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
 import { PostThreadPayload } from "@/utils/aitonomy/type";
 import { decodeId } from "@/utils/thread";
-import { hexToLittleEndian } from "@/utils/tools";
-import { Autocomplete, Button, Form, Input, Textarea } from "@heroui/react";
-import { addToast } from "@heroui/toast";
+import { debounce, hexToLittleEndian } from "@/utils/tools";
+import {
+  Autocomplete,
+  AutocompleteItem,
+  Button,
+  Form,
+  Input,
+  Textarea,
+} from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 
 interface Props {
   onClose: () => void;
@@ -17,14 +25,30 @@ interface Props {
 
 export default function ThreadCreate({ onClose }: Props) {
   const router = useRouter();
-  const { control, handleSubmit } = useForm<CreateThreadArg>({
-    defaultValues: {
-      community: "",
-      title: "",
-      content: "",
-      mention: [],
-    },
-  });
+  const { getValues, control, handleSubmit, setValue } =
+    useForm<CreateThreadArg>({
+      defaultValues: {
+        community: "",
+        title: "",
+        content: "",
+        mention: [],
+      },
+    });
+
+  const searchCommunityRef = useRef(null);
+  const [searchCommunity, setSearchCommunity] = useState("");
+
+  const { data: communitiesData, isLoading } = useMeilisearch(
+    "community",
+    searchCommunity,
+    {
+      limit: 10,
+    }
+  );
+
+  console.log("formState", getValues());
+
+  const communities = communitiesData?.hits ?? [];
 
   const onSubmit = useCallback(
     async (data: CreateThreadArg) => {
@@ -44,26 +68,22 @@ export default function ThreadCreate({ onClose }: Props) {
 
         const { community, thread } = decodeId(hexToLittleEndian(contentId));
 
-        addToast({
-          title: "post a thread success",
-          description: `thread id ${thread}`,
-          severity: "success",
-        });
+        toast.success("post a thread success");
         setTimeout(() => {
           router.push(`/c/${community}/${thread}`);
         }, 1500);
         onClose();
       } catch (e) {
         console.error("e", e);
-        addToast({
-          title: "post a thread error",
-          description: `${e}`,
-          severity: "danger",
-        });
+        toast.error("post a thread error");
       }
     },
     [onClose, router]
   );
+
+  useEffect(() => {
+    // setParams();
+  }, [onClose]);
 
   return (
     <Form
@@ -83,14 +103,28 @@ export default function ThreadCreate({ onClose }: Props) {
           },
         }}
         render={({ field, fieldState }) => (
-          <Input
+          <Autocomplete
             {...field}
+            ref={searchCommunityRef}
             label="Community Name"
             labelPlacement="outside"
             placeholder="Enter your community name"
             isInvalid={!!fieldState.error}
             errorMessage={fieldState.error?.message}
-          />
+            isLoading={isLoading}
+            value={field.value}
+            onInputChange={debounce((value) => {
+              if (value === field.value) return;
+              setSearchCommunity(value);
+            }, 500)}
+            onSelectionChange={(value) => {
+              setValue("community", value as string);
+            }}
+          >
+            {communities.map((it) => (
+              <AutocompleteItem key={it.name}>{it.name}</AutocompleteItem>
+            ))}
+          </Autocomplete>
         )}
       />
       <Controller
@@ -105,21 +139,6 @@ export default function ThreadCreate({ onClose }: Props) {
             label="Title"
             labelPlacement="outside"
             placeholder="Enter your title"
-            isInvalid={!!fieldState.error}
-            errorMessage={fieldState.error?.message}
-          />
-        )}
-      />
-      <Controller
-        name="image"
-        control={control}
-        rules={{}}
-        render={({ field, fieldState }) => (
-          <Input
-            {...field}
-            label="Image"
-            labelPlacement="outside"
-            placeholder="Enter your image"
             isInvalid={!!fieldState.error}
             errorMessage={fieldState.error?.message}
           />
@@ -141,23 +160,6 @@ export default function ThreadCreate({ onClose }: Props) {
             isInvalid={!!fieldState.error}
             errorMessage={fieldState.error?.message}
           />
-        )}
-      />
-      <Controller
-        name="mention"
-        control={control}
-        render={({ field, fieldState }) => (
-          <Autocomplete
-            {...field}
-            className="max-w-md"
-            label="Mention"
-            labelPlacement="outside"
-            placeholder="Enter mentions"
-            isInvalid={!!fieldState.error}
-            errorMessage={fieldState.error?.message}
-          >
-            {[]}
-          </Autocomplete>
         )}
       />
       <div className="flex gap-2">

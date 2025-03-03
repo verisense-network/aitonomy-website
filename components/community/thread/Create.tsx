@@ -1,15 +1,15 @@
-import { createComment, CreateCommentParams } from "@/app/actions";
-import { signPayload } from "@/utils/aitonomy/sign";
-import { PostCommentPayload } from "@/utils/aitonomy/type";
-import { decodeId } from "@/utils/thread";
-import { hexToLittleEndian } from "@/utils/tools";
-import { PhotoIcon } from "@heroicons/react/24/solid";
-import { Form, Button, Card, Textarea, addToast } from "@heroui/react";
-import { useCallback } from "react";
-import { Controller, useForm } from "react-hook-form";
+import ThreadCreate from "@/components/thread/Create";
+import {
+  Card,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
+} from "@heroui/react";
+import { Suspense, useState } from "react";
 
 interface Props {
-  communityId: string;
+  communityId?: string;
   replyTo?: string;
   onSuccess: (id: string) => void;
 }
@@ -19,78 +19,37 @@ export default function CreateThread({
   replyTo,
   onSuccess,
 }: Props) {
-  const { control, handleSubmit } = useForm<CreateCommentParams>({
-    defaultValues: {
-      thread: communityId,
-      image: "",
-      content: "",
-      mention: [],
-      reply_to: replyTo,
-    },
-  });
+  const [isOpen, setIsOpen] = useState(false);
 
-  const onSubmit = useCallback(
-    async (data: CreateCommentParams) => {
-      console.log(data);
-      try {
-        const payload = data as CreateCommentParams;
-
-        const signature = await signPayload(payload, PostCommentPayload);
-
-        const contentId = await createComment(payload, signature);
-        console.log("contentId", contentId);
-        if (!contentId) return;
-
-        const { comment } = decodeId(hexToLittleEndian(contentId));
-
-        addToast({
-          title: "post a comment success",
-          description: `comment id ${comment}`,
-          severity: "success",
-        });
-
-        onSuccess(comment!);
-      } catch (e) {
-        console.error("e", e);
-        addToast({
-          title: "post a comment error",
-          description: `${e}`,
-          severity: "danger",
-        });
-      }
-    },
-    [onSuccess]
-  );
+  const openCreateModal = () => {
+    setIsOpen(true);
+  };
 
   return (
-    <Card className="relative">
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <Controller
-          control={control}
-          name="content"
-          rules={{
-            required: true,
-          }}
-          render={({ field, fieldState }) => (
-            <Textarea
-              {...field}
-              classNames={{
-                inputWrapper: "p-5 pb-10 bg-white",
-              }}
-              placeholder="Write a comment..."
-              errorMessage={fieldState.error?.message}
-            />
-          )}
-        />
-        <div className="absolute bottom-2 left-5 z-50">
-          <Button isIconOnly>
-            <PhotoIcon width={25} height={25} />
-          </Button>
+    <>
+      <Card
+        className="flex w-full text-right px-6 py-6 hover:bg-gray-200"
+        isPressable
+        onPress={() => openCreateModal()}
+      >
+        <div className="flex items-center space-x-4">
+          <span className="text-lg text-gray-500">What&apos;s new?</span>
         </div>
-        <Button type="submit" className="absolute bottom-2 right-2 z-50">
-          Submit
-        </Button>
-      </Form>
-    </Card>
+      </Card>
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>Create</ModalHeader>
+              <ModalBody>
+                <Suspense>
+                  {isOpen && <ThreadCreate onClose={onClose} />}
+                </Suspense>
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </>
   );
 }

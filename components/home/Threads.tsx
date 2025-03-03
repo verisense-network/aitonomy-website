@@ -16,6 +16,7 @@ import { decodeId } from "@/utils/thread";
 import { formatTimestamp, hexToLittleEndian } from "@/utils/tools";
 import { twMerge } from "tailwind-merge";
 import { isYouAddress } from "../thread/utils";
+import CreateThread from "../community/thread/Create";
 
 export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full px-1 py-2 rounded-small">{children}</div>
@@ -64,6 +65,7 @@ export default function Threads({ className, communityId }: ThreadsProps) {
       <h1 className="py-4 text-lg font-bold">Threads</h1>
       <div className="space-y-3">
         {isLoading && <Spinner />}
+        <CreateThread communityId={communityId} onSuccess={() => {}} />
         {data?.hits?.map((hit: any) => (
           <Card
             className="w-full p-2"

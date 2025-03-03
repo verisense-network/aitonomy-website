@@ -3,9 +3,10 @@ import { SetAliasArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { NAME_REGEX } from "@/utils/aitonomy/tools";
 import { SetAliasPayload } from "@/utils/aitonomy/type";
-import { addToast, Button, Form, Input } from "@heroui/react";
+import { Button, Form, Input } from "@heroui/react";
 import { useCallback } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 
 interface UpdateNameProps {
   defaultName: string;
@@ -36,11 +37,7 @@ export default function UpdateAliasName({
         onSuccess();
       } else {
         console.error(res);
-        addToast({
-          title: "set alias name error",
-          description: `error: ${res}`,
-          severity: "danger",
-        });
+        toast.error("set alias name error");
       }
     },
     [onSuccess]

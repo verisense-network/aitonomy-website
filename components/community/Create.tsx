@@ -21,11 +21,11 @@ import {
   Textarea,
   Tooltip,
 } from "@heroui/react";
-import { addToast } from "@heroui/toast";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDropzone } from "react-dropzone";
+import { toast } from "react-toastify";
 
 interface Props {
   onClose: () => void;
@@ -132,21 +132,13 @@ export default function CommunityCreate({ onClose }: Props) {
         console.log("communityId", communityId);
         if (!communityId) return;
         onClose();
-        addToast({
-          title: "create community success, redirect to community page",
-          description: `community id ${communityId}`,
-          severity: "success",
-        });
+        toast.success("create community success, redirect to community page");
         setTimeout(() => {
           router.push(`/c/${communityId}`);
         }, 1500);
       } catch (e: any) {
         console.error("e", e);
-        addToast({
-          title: "create community error",
-          description: `${e?.message || e}`,
-          severity: "danger",
-        });
+        toast.error(`${e?.message || e}`);
       }
       setIsLoading(false);
     },
@@ -256,6 +248,10 @@ export default function CommunityCreate({ onClose }: Props) {
         control={control}
         rules={{
           required: "Please enter a description",
+          maxLength: {
+            value: 60,
+            message: "Description is too long",
+          },
         }}
         render={({ field, fieldState }) => (
           <Textarea
@@ -265,6 +261,7 @@ export default function CommunityCreate({ onClose }: Props) {
             placeholder="Enter your description"
             isInvalid={!!fieldState.error}
             errorMessage={fieldState.error?.message}
+            maxLength={60}
           />
         )}
       />

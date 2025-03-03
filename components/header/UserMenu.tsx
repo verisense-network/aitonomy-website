@@ -6,7 +6,6 @@ import {
   DropdownMenu,
   DropdownItem,
   Avatar,
-  addToast,
   Spinner,
 } from "@heroui/react";
 import { Key, useCallback, useEffect, useState } from "react";
@@ -14,6 +13,7 @@ import LoginModal from "./modal/LoginModal";
 import { useUserStore } from "@/store/user";
 import UserProfile from "../user/modal/Profile";
 import { getAccountInfo } from "@/app/actions";
+import { toast } from "react-toastify";
 
 export default function UserMenu() {
   const [isOpenOption, setIsOpenOption] = useState<string | null>(null);
@@ -32,10 +32,7 @@ export default function UserMenu() {
       setIsLoading(false);
     } catch (e) {
       console.error(e);
-      addToast({
-        title: "Error",
-        description: "Failed to get user profile",
-      });
+      toast.error("Failed to get user profile");
       setIsLoading(false);
     }
   }, [address, name, setUserName]);
