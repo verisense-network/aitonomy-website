@@ -61,14 +61,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
   );
 
   return (
-    <Modal
-      isOpen={!!isOpen}
-      onClose={onClose}
-      classNames={{
-        backdrop: "z-10",
-        wrapper: "z-10",
-      }}
-    >
+    <Modal isOpen={!!isOpen} onClose={onClose}>
       <ModalContent>
         {(onClose) => (
           <>

@@ -68,14 +68,7 @@ export default function CreateMenu() {
           ))}
         </DropdownMenu>
       </Dropdown>
-      <Modal
-        isOpen={!!isOpen}
-        onClose={() => setIsOpen(null)}
-        classNames={{
-          backdrop: "z-10",
-          wrapper: "z-10",
-        }}
-      >
+      <Modal isOpen={!!isOpen} onClose={() => setIsOpen(null)}>
         <ModalContent>
           {(onClose) => (
             <>

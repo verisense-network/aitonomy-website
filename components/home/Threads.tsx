@@ -30,6 +30,13 @@ interface ThreadsProps {
 export default function Threads({ className, communityId }: ThreadsProps) {
   const router = useRouter();
 
+  const { data: communities } = useMeilisearch("community", undefined, {
+    filter: `id = ${hexToLittleEndian(communityId || "")}`,
+    limit: 1,
+  });
+
+  const community = communities?.hits[0];
+
   const { isLoading, data, setParams } = useMeilisearch("thread", undefined, {
     sort: ["created_time:desc"],
     page: 1,
@@ -65,7 +72,9 @@ export default function Threads({ className, communityId }: ThreadsProps) {
       <h1 className="py-4 text-lg font-bold">Threads</h1>
       <div className="space-y-3">
         {isLoading && <Spinner />}
-        <CreateThread communityId={communityId} onSuccess={() => {}} />
+        {!isLoading && (
+          <CreateThread communityName={community?.name} onSuccess={() => {}} />
+        )}
         {data?.hits?.map((hit: any) => (
           <Card
             className="w-full p-2"

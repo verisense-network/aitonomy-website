@@ -70,14 +70,7 @@ export default function PaymentModal({
   }, [fromAddress, toAddress, amount]);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      classNames={{
-        backdrop: "z-10",
-        wrapper: "z-10",
-      }}
-    >
+    <Modal isOpen={isOpen} onClose={onClose}>
       <ModalContent>
         {(onClose) => (
           <>

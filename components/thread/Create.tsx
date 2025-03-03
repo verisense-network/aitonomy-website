@@ -12,28 +12,37 @@ import {
   Button,
   Form,
   Input,
-  Textarea,
+  Spinner,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
+import dynamic from "next/dynamic";
+
+const ContentEditor = dynamic(() => import("./ContentEditor"), { ssr: false });
+
 interface Props {
+  defaultCommunity?: string;
+  replyTo?: string;
   onClose: () => void;
 }
 
-export default function ThreadCreate({ onClose }: Props) {
+export default function ThreadCreate({
+  defaultCommunity,
+  replyTo,
+  onClose,
+}: Props) {
   const router = useRouter();
-  const { getValues, control, handleSubmit, setValue } =
-    useForm<CreateThreadArg>({
-      defaultValues: {
-        community: "",
-        title: "",
-        content: "",
-        mention: [],
-      },
-    });
+  const { control, handleSubmit } = useForm<CreateThreadArg>({
+    defaultValues: {
+      community: defaultCommunity || "",
+      title: "",
+      content: "",
+      mention: [],
+    },
+  });
 
   const searchCommunityRef = useRef(null);
   const [searchCommunity, setSearchCommunity] = useState("");
@@ -45,8 +54,6 @@ export default function ThreadCreate({ onClose }: Props) {
       limit: 10,
     }
   );
-
-  console.log("formState", getValues());
 
   const communities = communitiesData?.hits ?? [];
 
@@ -81,13 +88,9 @@ export default function ThreadCreate({ onClose }: Props) {
     [onClose, router]
   );
 
-  useEffect(() => {
-    // setParams();
-  }, [onClose]);
-
   return (
     <Form
-      className="w-full max-w-md flex flex-col gap-4"
+      className="w-full max-w-xl flex flex-col gap-4"
       onSubmit={handleSubmit(onSubmit)}
     >
       <Controller
@@ -111,14 +114,18 @@ export default function ThreadCreate({ onClose }: Props) {
             placeholder="Enter your community name"
             isInvalid={!!fieldState.error}
             errorMessage={fieldState.error?.message}
+            defaultInputValue={defaultCommunity}
             isLoading={isLoading}
             value={field.value}
+            onValueChange={(value) => {
+              field.onChange(value);
+            }}
             onInputChange={debounce((value) => {
               if (value === field.value) return;
               setSearchCommunity(value);
             }, 500)}
             onSelectionChange={(value) => {
-              setValue("community", value as string);
+              field.onChange(value);
             }}
           >
             {communities.map((it) => (
@@ -151,15 +158,23 @@ export default function ThreadCreate({ onClose }: Props) {
           required: "Please enter content",
         }}
         render={({ field, fieldState }) => (
-          <Textarea
-            {...field}
-            className="max-w-md"
-            label="Content"
-            labelPlacement="outside"
-            placeholder="Please enter content"
-            isInvalid={!!fieldState.error}
-            errorMessage={fieldState.error?.message}
-          />
+          <div className="w-full">
+            <span className={fieldState.error ? "text-red-500" : ""}>
+              content
+            </span>
+            <Suspense fallback={<Spinner />}>
+              <ContentEditor
+                className="mt-2 w-full min-h-56 border-gray-200 border-2 rounded-small"
+                {...field}
+                markdown={field.value}
+              />
+              {fieldState.error?.message && (
+                <p className="mt-2 text-sm text-red-500">
+                  {fieldState.error.message}
+                </p>
+              )}
+            </Suspense>
+          </div>
         )}
       />
       <div className="flex gap-2">

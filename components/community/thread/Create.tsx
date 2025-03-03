@@ -9,17 +9,19 @@ import {
 import { Suspense, useState } from "react";
 
 interface Props {
-  communityId?: string;
+  communityName?: string;
   replyTo?: string;
   onSuccess: (id: string) => void;
 }
 
 export default function CreateThread({
-  communityId,
+  communityName,
   replyTo,
   onSuccess,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+
+  console.log("communityName", communityName);
 
   const openCreateModal = () => {
     setIsOpen(true);
@@ -36,14 +38,20 @@ export default function CreateThread({
           <span className="text-lg text-gray-500">What&apos;s new?</span>
         </div>
       </Card>
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} size="xl">
         <ModalContent>
           {(onClose) => (
             <>
               <ModalHeader>Create</ModalHeader>
               <ModalBody>
                 <Suspense>
-                  {isOpen && <ThreadCreate onClose={onClose} />}
+                  {isOpen && (
+                    <ThreadCreate
+                      onClose={onClose}
+                      defaultCommunity={communityName}
+                      replyTo={replyTo}
+                    />
+                  )}
                 </Suspense>
               </ModalBody>
             </>
