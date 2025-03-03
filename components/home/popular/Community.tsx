@@ -39,7 +39,7 @@ export default function PopularCommunity() {
               onPress={() => toCommunityPage(it.id)}
             >
               <CardBody className="flex gap-2 justify-center items-center">
-                <Avatar name={it.name} />
+                <Avatar name={it.name} src={it.logo} />
                 <div>{it.name}</div>
               </CardBody>
             </Card>

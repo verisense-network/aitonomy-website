@@ -10,11 +10,13 @@ import { Controller, useForm } from "react-hook-form";
 interface UpdateNameProps {
   defaultName: string;
   onSuccess: () => void;
+  onClose: () => void;
 }
 
 export default function UpdateAliasName({
   defaultName,
   onSuccess,
+  onClose,
 }: UpdateNameProps) {
   const { control, handleSubmit } = useForm<SetAliasArg>({
     defaultValues: {
@@ -60,16 +62,21 @@ export default function UpdateAliasName({
                 return true;
               },
             }}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Input
-                placeholder="Please enter your name"
                 {...field}
+                placeholder="Please enter your name"
+                isInvalid={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
                 defaultValue={defaultName}
               />
             )}
           />
           <Button type="submit" size="md">
             Submit
+          </Button>
+          <Button size="md" onPress={onClose}>
+            Close
           </Button>
         </div>
       </Form>

@@ -1,5 +1,6 @@
 "use server";
 
+import uploadImageWithPostImages from "@/lib/uploadImage";
 import {
   ActivateCommunityArg,
   activateCommunityRpc,
@@ -20,6 +21,10 @@ import bs58 from "bs58";
 
 if (!NUCLEUS_ID) {
   throw new Error("Nucleus ID is not defined");
+}
+
+export async function uploadImage(file: File) {
+  return uploadImageWithPostImages(file);
 }
 
 export async function createCommunity(

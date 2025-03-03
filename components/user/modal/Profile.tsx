@@ -1,4 +1,4 @@
-import { getAccountInfo, getBalances, setAlias } from "@/app/actions";
+import { getBalances } from "@/app/actions";
 import { useUserStore } from "@/store/user";
 import { GetBalancesResponse } from "@/utils/aitonomy";
 import { Community } from "@/utils/aitonomy/type";
@@ -41,7 +41,6 @@ const TABLE_COLUMNS = [
 
 export default function UserProfile({ isOpen, onClose }: Props) {
   const { name, address } = useUserStore();
-  const [accountName, setAccountName] = useState<string>("");
   const [balances, setBalances] = useState<GetBalancesResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isShowUpdateName, setIsShowUpdateName] = useState(false);
@@ -50,10 +49,6 @@ export default function UserProfile({ isOpen, onClose }: Props) {
     try {
       if (!address) return;
       setIsLoading(true);
-      const account = await getAccountInfo({
-        accountId: address,
-      });
-      setAccountName(account?.alias || name || address);
       const balances = await getBalances({
         accountId: address,
         gt: undefined,
@@ -69,7 +64,7 @@ export default function UserProfile({ isOpen, onClose }: Props) {
       });
       setIsLoading(false);
     }
-  }, [address, name]);
+  }, [address]);
 
   const updateAccountName = useCallback(async () => {
     setIsShowUpdateName(true);
@@ -98,12 +93,13 @@ export default function UserProfile({ isOpen, onClose }: Props) {
                   {isLoading && <Spinner />}
                   {isShowUpdateName ? (
                     <UpdateAliasName
-                      defaultName={accountName}
+                      defaultName={name}
                       onSuccess={updateAliasNameOnSuccess}
+                      onClose={() => setIsShowUpdateName(false)}
                     />
                   ) : (
                     <>
-                      <span>{accountName}</span>
+                      <span>{name}</span>
                       <Button onPress={updateAccountName} size="sm">
                         Update Name
                       </Button>

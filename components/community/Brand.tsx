@@ -185,7 +185,7 @@ export default function CommunityBrand({ communityId }: Props) {
         <CardHeader>
           <div className="flex justify-between items-center w-full">
             <div className="flex space-x-4 items-center">
-              <Avatar name={community?.name} size="lg" />
+              <Avatar name={community?.name} src={community?.logo} size="lg" />
               <h1 className="text-2xl font-bold">{community?.name}</h1>
               {shouldShowActivateCommunity && paymentSol > 0 && (
                 <div className="flex">
@@ -246,15 +246,16 @@ export default function CommunityBrand({ communityId }: Props) {
               {isLoading && <Spinner />}
               {isActivatingLoading && <Spinner title="Activating..." />}
             </div>
-            {currentBalance && (
-              <div className="flex items-center space-x-2">
-                <div>Balance: {currentBalance}</div>
+            <div className="flex items-center space-x-2">
+              {currentBalance && <div>Balance: {currentBalance}</div>}
+              <div className="flex flex-col items-center">
                 <Avatar
                   src={community?.token_info?.image}
                   name={community?.token_info?.symbol}
                 />
+                <span className="text-md">{community?.token_info?.symbol}</span>
               </div>
-            )}
+            </div>
           </div>
         </CardHeader>
         <CardBody>

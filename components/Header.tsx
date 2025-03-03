@@ -1,9 +1,7 @@
 "use client";
 
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import {
-  HomeModernIcon,
-} from "@heroicons/react/24/solid";
+import { HomeModernIcon } from "@heroicons/react/24/solid";
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import CreateMenu from "./header/CreateMenu";

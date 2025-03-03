@@ -16,6 +16,7 @@ type Store = {
   publicKey: Uint8Array;
   setWallet: (wallet: WalletId) => void;
   setUser: (data: SetUser) => void;
+  setUserName: (name: string) => void;
   logout: () => void;
 };
 
@@ -25,7 +26,7 @@ type ComputedStore = {
 
 const computed = createComputed(
   (state: Store): ComputedStore => ({
-    isLogin: state.publicKey.length > 0,
+    isLogin: Object.values(state.publicKey).length > 0,
   })
 );
 
@@ -38,6 +39,7 @@ export const useUserStore = create<Store>()(
       publicKey: new Uint8Array(0),
       setWallet: (wallet) => set({ wallet }),
       setUser: (data) => set(data),
+      setUserName: (name: string) => set({ name }),
       logout: () =>
         set({
           wallet: undefined,
