@@ -107,14 +107,21 @@ export class PhantomConnect {
     return transaction;
   }
 
-  async signTransaction(transaction: Transaction): Promise<Uint8Array> {
+  async signTransaction(transaction: Transaction): Promise<any> {
     await this.checkConnected();
     const signedTx = await this.wallet.signTransaction(transaction);
+    return signedTx;
+  }
+
+  async boardcastTransaction(signedTx: any) {
     const serializedTransaction = signedTx.serialize();
-    await this.connection.sendRawTransaction(serializedTransaction, {
-      skipPreflight: false,
-      preflightCommitment: "confirmed",
-    });
-    return signedTx.signature;
+    const res = await this.connection.sendRawTransaction(
+      serializedTransaction,
+      {
+        skipPreflight: false,
+        preflightCommitment: "confirmed",
+      }
+    );
+    return res;
   }
 }

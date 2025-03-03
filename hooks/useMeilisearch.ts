@@ -1,9 +1,9 @@
 "use client";
 
-import { meiliSearchFetcher } from "@/utils/fetcher/meilisearch";
-import { SearchParams } from "meilisearch";
-import { useState } from "react";
 import useSWR from "swr";
+import { SearchParams } from "meilisearch";
+import { useCallback, useState } from "react";
+import { meiliSearchFetcher } from "@/utils/fetcher/meilisearch";
 
 export default function useMeilisearch(
   index: string,
@@ -19,5 +19,11 @@ export default function useMeilisearch(
     meiliSearchFetcher(index, search, args)
   );
 
-  return { ...swrResult, setParams };
+  const forceUpdate = useCallback(async () => {
+    return await swrResult.mutate(undefined, {
+      revalidate: true,
+    });
+  }, [swrResult]);
+
+  return { ...swrResult, setParams, forceUpdate };
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import useMeilisearch from "@/hooks/useMeilisearch";
-import { hexToLittleEndian } from "@/utils/tools";
+import { hexToLittleEndian, sleep } from "@/utils/tools";
 import {
   Avatar,
   Button,
@@ -19,6 +19,7 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { isYouAddress } from "../thread/utils";
 import { usePaymentCommunityStore } from "@/store/paymentCommunity";
 import { CommunityStatus } from "./utils";
+import { getWalletConnect } from "@/utils/wallet";
 
 interface Props {
   communityId: string;
@@ -26,22 +27,35 @@ interface Props {
 
 export default function CommunityBrand({ communityId }: Props) {
   const [isOpenPaymentModal, setIsOpenPaymentModal] = useState(false);
-  const { data, isLoading, mutate } = useMeilisearch("community", undefined, {
-    filter: `id = ${hexToLittleEndian(communityId)}`,
-    limit: 1,
-  });
+  const { data, isLoading, forceUpdate, isValidating } = useMeilisearch(
+    "community",
+    undefined,
+    {
+      filter: `id = ${hexToLittleEndian(communityId)}`,
+      limit: 1,
+    }
+  );
+
   const [isActivatingLoading, setIsActivatingLoading] = useState(false);
-  const { isLogin, address } = useUserStore();
-  const { setSignature: storePaymentSignature } = usePaymentCommunityStore();
+  const { isLogin, address, wallet } = useUserStore();
+  const {
+    setSignature: storePaymentSignature,
+    community: storedCommunity,
+    signature: storedSignature,
+  } = usePaymentCommunityStore();
 
   const [currentBalance, setCurrentBalance] = useState<number | null>(null);
 
   const community = data?.hits[0];
+
   const paymentLamports = community?.status?.WaitingTx;
   const paymentSol = paymentLamports / LAMPORTS_PER_SOL;
 
   const isCreateFailed =
     community && community?.status?.[CommunityStatus.CreateFailed];
+
+  const hasStoredSignature =
+    community?.name === storedCommunity && storedSignature;
 
   const shouldShowActivateCommunity =
     isLogin && isYouAddress(community?.creator);
@@ -55,39 +69,54 @@ export default function CommunityBrand({ communityId }: Props) {
       if (!community) return;
       if (!(CommunityStatus.Active in community.status)) {
         setIsActivatingLoading(true);
-        if (retryCount < 3) {
+        const userWallet = getWalletConnect(wallet);
+        const connection = userWallet.connection;
+        if (retryCount < 10) {
           if (!txHash) return;
           const payload = { community: community?.name, tx: txHash };
           console.log("payload", payload);
+          const tx = await connection.getTransaction(txHash, {
+            commitment: "finalized",
+            maxSupportedTransactionVersion: 0,
+          });
+
+          console.log("tx", tx);
+
+          if (!tx || tx?.meta?.err) {
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+            await checkCommunityActivateStatus(txHash, retryCount + 1);
+            return;
+          }
+
           await activateCommunity(payload);
           console.log(
-            `Checking community activation status: attempt ${retryCount + 1}/4`
+            `Checking community activation status: attempt ${retryCount + 1}/10`
           );
-          await new Promise((resolve) => setTimeout(resolve, 10000));
-          await checkCommunityActivateStatus(txHash, retryCount + 1);
+          await new Promise((resolve) => setTimeout(resolve, 2000));
         } else {
           console.log(
             "Maximum retry attempts reached. Community still not active."
           );
-          mutate(undefined, { revalidate: false });
         }
       } else {
         console.log("Community is now active!");
-        setIsActivatingLoading(false);
-        mutate(undefined, { revalidate: false });
+        forceUpdate();
       }
+      setTimeout(() => {
+        forceUpdate();
+        setIsActivatingLoading(false);
+      }, 3000);
     },
-    [community, mutate]
+    [community, forceUpdate, wallet]
   );
 
   const onSuccess = useCallback(
     async (txHash: string) => {
+      console.log("onSuccess", txHash);
       const payload = { community: community?.name, tx: txHash };
       storePaymentSignature({ community: community?.name, signature: txHash });
-      console.log("onSuccess", payload);
-      const res = await activateCommunity(payload);
-      console.log("res", res);
-      checkCommunityActivateStatus(txHash);
+      console.log("storePaymentSignature", payload);
+      await checkCommunityActivateStatus(txHash);
       setIsOpenPaymentModal(false);
     },
     [checkCommunityActivateStatus, community?.name, storePaymentSignature]
@@ -100,7 +129,6 @@ export default function CommunityBrand({ communityId }: Props) {
       limit: 1,
     });
     const current = balances[0];
-    console.log("current", current);
     if (!current) {
       // setCurrentBalance(0);
       return;
@@ -121,16 +149,35 @@ export default function CommunityBrand({ communityId }: Props) {
       community: community?.name,
       tx: signature,
     });
-    setTimeout(() => {
-      mutate(undefined, { revalidate: false });
-      setIsActivatingLoading(false);
-    }, 10000);
+    checkCommunityActivateStatus(signature);
     console.log("res", res);
-  }, [community?.name, mutate]);
+  }, [checkCommunityActivateStatus, community?.name]);
 
   useEffect(() => {
     getBalance();
   }, [getBalance]);
+
+  useEffect(() => {
+    (async () => {
+      if (isLoading || isValidating) return;
+
+      if (!data?.hits?.length) {
+        console.log("not found force update");
+        await sleep(1500);
+        forceUpdate();
+        return;
+      }
+      const hasCommunity = data?.hits?.some(
+        (hit: any) => hit.id === hexToLittleEndian(communityId)
+      );
+      if (!hasCommunity) {
+        console.log("not has");
+        await sleep(1500);
+        console.log("not has force update");
+        forceUpdate();
+      }
+    })();
+  }, [communityId, data, forceUpdate, isLoading, isValidating]);
 
   return (
     <>
@@ -151,14 +198,26 @@ export default function CommunityBrand({ communityId }: Props) {
                     }}
                   >
                     <span>Waiting tx {paymentSol} SOL</span>
-                    <Button
-                      variant="shadow"
-                      size="sm"
-                      color="primary"
-                      onPress={toPayment}
-                    >
-                      Payment
-                    </Button>
+                    {!isLoading &&
+                      (hasStoredSignature ? (
+                        <Button
+                          variant="shadow"
+                          size="sm"
+                          color="primary"
+                          onPress={retryWithStoreSignature}
+                        >
+                          Retry
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="shadow"
+                          size="sm"
+                          color="primary"
+                          onPress={toPayment}
+                        >
+                          Payment
+                        </Button>
+                      ))}
                   </Chip>
                 </div>
               )}
@@ -172,14 +231,16 @@ export default function CommunityBrand({ communityId }: Props) {
                   }}
                 >
                   <span>Create Failed</span>
-                  <Button
-                    variant="shadow"
-                    size="sm"
-                    color="primary"
-                    onPress={retryWithStoreSignature}
-                  >
-                    Retry
-                  </Button>
+                  {!isLoading && hasStoredSignature && (
+                    <Button
+                      variant="shadow"
+                      size="sm"
+                      color="primary"
+                      onPress={retryWithStoreSignature}
+                    >
+                      Retry
+                    </Button>
+                  )}
                 </Chip>
               )}
               {isLoading && <Spinner />}

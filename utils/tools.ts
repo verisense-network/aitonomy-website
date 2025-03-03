@@ -41,3 +41,15 @@ export function formatTimestamp(
 export function formatAddress(address: string) {
   return address.slice(0, 4) + "..." + address.slice(-4);
 }
+
+export function debounce(func: () => void, delay: number) {
+  let timeout: NodeJS.Timeout;
+  return () => {
+    clearTimeout(timeout);
+    timeout = setTimeout(func, delay);
+  };
+}
+
+export async function sleep(timeout: number) {
+  return new Promise((resolve) => setTimeout(resolve, timeout));
+}

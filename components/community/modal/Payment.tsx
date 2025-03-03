@@ -40,8 +40,11 @@ export default function PaymentModal({
         new PublicKey(toAddress),
         paymentLamports
       );
-      const sig = await walletConnect.signTransaction(tx);
-      const signatureHex = bs58.encode(sig);
+      const signTx = await walletConnect.signTransaction(tx);
+
+      await walletConnect.boardcastTransaction(signTx);
+
+      const signatureHex = bs58.encode(signTx.signature);
       onSuccess(signatureHex);
     } catch (e: any) {
       console.error("Error paying", e);
@@ -52,12 +55,6 @@ export default function PaymentModal({
       });
     }
   }, [wallet, toAddress, paymentLamports, onSuccess]);
-
-  const onMock = useCallback(() => {
-    const tx =
-      "3mhtBtxYVhRCHEvj4qkFyVMjXf8UWTFcJmHhmSp1hA6URvvJ3wrE1x13aKBGSZeF6ZwVH9AnpVje21vuPVhmP3t9";
-    onSuccess(tx);
-  }, [onSuccess]);
 
   const listData = useMemo(() => {
     return [

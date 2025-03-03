@@ -169,7 +169,7 @@ export const Community = Struct.with({
 
 export enum LLmName {
   OpenAI = "OpenAI",
-  // DeepSeek = "DeepSeek"
+  DeepSeek = "DeepSeek",
 }
 /**
     pub struct Args<T> {
