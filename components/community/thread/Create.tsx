@@ -38,7 +38,7 @@ export default function CreateThread({
           <span className="text-lg text-gray-500">What&apos;s new?</span>
         </div>
       </Card>
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} size="xl">
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} size="2xl">
         <ModalContent>
           {(onClose) => (
             <>

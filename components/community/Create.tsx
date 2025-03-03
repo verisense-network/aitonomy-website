@@ -151,7 +151,7 @@ export default function CommunityCreate({ onClose }: Props) {
 
   return (
     <Form
-      className="w-full max-w-md flex flex-col gap-4"
+      className="w-full max-w-xl flex flex-col gap-4"
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="flex items-center space-x-4 w-full">

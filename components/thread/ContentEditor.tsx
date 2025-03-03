@@ -11,7 +11,6 @@ import {
   UndoRedo,
   BoldItalicUnderlineToggles,
   imagePlugin,
-  BlockTypeSelect,
 } from "@mdxeditor/editor";
 import { ForwardedRef } from "react";
 import "@mdxeditor/editor/style.css";
@@ -30,7 +29,6 @@ export default function ContentEditor({ editorRef, ...props }: EditorProps) {
           toolbarContents: () => (
             <>
               <UndoRedo />
-              <BlockTypeSelect />
               <BoldItalicUnderlineToggles />
             </>
           ),

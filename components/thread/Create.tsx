@@ -15,7 +15,7 @@ import {
   Spinner,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
@@ -90,7 +90,7 @@ export default function ThreadCreate({
 
   return (
     <Form
-      className="w-full max-w-xl flex flex-col gap-4"
+      className="w-full max-w-2xl flex flex-col gap-4"
       onSubmit={handleSubmit(onSubmit)}
     >
       <Controller
@@ -164,7 +164,7 @@ export default function ThreadCreate({
             </span>
             <Suspense fallback={<Spinner />}>
               <ContentEditor
-                className="mt-2 w-full min-h-56 border-gray-200 border-2 rounded-small"
+                className="mt-2 w-full min-h-72 border-gray-200 border-1 rounded-xl"
                 {...field}
                 markdown={field.value}
               />
