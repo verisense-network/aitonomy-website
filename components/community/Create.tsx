@@ -121,6 +121,9 @@ export default function CommunityCreate({ onClose }: Props) {
 
   const onSubmit = useCallback(
     async (data: CreateCommunityArg) => {
+      const toastId = toast.loading(
+        "Creating community continue to complete in your wallet"
+      );
       try {
         setIsLoading(true);
         console.log("data", data);
@@ -132,13 +135,23 @@ export default function CommunityCreate({ onClose }: Props) {
         console.log("communityId", communityId);
         if (!communityId) return;
         onClose();
-        toast.success("create community success, redirect to community page");
+        toast.update(toastId, {
+          render: "Success, redirecting...",
+          type: "success",
+          isLoading: false,
+          autoClose: 1500,
+        });
         setTimeout(() => {
           router.push(`/c/${communityId}`);
         }, 1500);
       } catch (e: any) {
         console.error("e", e);
-        toast.error(`${e?.message || e}`);
+        toast.update(toastId, {
+          render: `Failed: ${e?.message || e}`,
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
       }
       setIsLoading(false);
     },

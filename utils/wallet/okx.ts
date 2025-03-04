@@ -53,6 +53,7 @@ export class OkxConnect {
   }
 
   async checkConnected() {
+    await this.wallet.enable();
     if (!this.wallet.isConnected()) {
       await this.wallet.handleConnect();
     }

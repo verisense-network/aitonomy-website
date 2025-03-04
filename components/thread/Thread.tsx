@@ -14,6 +14,8 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
 import { isYouAddress } from "./utils";
+import DOMPurify from "dompurify";
+import { parse } from "marked";
 
 export default function ThreadView({ threadId }: { threadId: string }) {
   const router = useRouter();
@@ -63,7 +65,18 @@ export default function ThreadView({ threadId }: { threadId: string }) {
             <CardHeader>
               <h1 className="text-xl font-bold">{threadData.title}</h1>
             </CardHeader>
-            <CardBody>{threadData.content}</CardBody>
+            <CardBody>
+              <div
+                className="prose max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(
+                    parse(threadData.content, {
+                      async: false,
+                    })
+                  ),
+                }}
+              ></div>
+            </CardBody>
             <CardFooter className="text-sm text-gray-500 justify-between">
               <div>
                 <User

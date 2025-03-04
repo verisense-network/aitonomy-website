@@ -11,9 +11,13 @@ import {
   UndoRedo,
   BoldItalicUnderlineToggles,
   imagePlugin,
+  InsertImage,
+  BlockTypeSelect,
 } from "@mdxeditor/editor";
 import { ForwardedRef } from "react";
 import "@mdxeditor/editor/style.css";
+import { twMerge } from "tailwind-merge";
+import AddImage from "../mdxEditor/AddImage";
 
 interface EditorProps extends MDXEditorProps {
   editorRef?: ForwardedRef<MDXEditorMethods> | null;
@@ -22,14 +26,15 @@ interface EditorProps extends MDXEditorProps {
 export default function ContentEditor({ editorRef, ...props }: EditorProps) {
   return (
     <MDXEditor
-      contentEditableClassName="prose max-w-none"
       plugins={[
         toolbarPlugin({
           toolbarClassName: "my-classname",
           toolbarContents: () => (
             <>
               <UndoRedo />
+              <BlockTypeSelect />
               <BoldItalicUnderlineToggles />
+              <AddImage />
             </>
           ),
         }),
@@ -42,6 +47,10 @@ export default function ContentEditor({ editorRef, ...props }: EditorProps) {
       ]}
       {...props}
       ref={editorRef}
+      contentEditableClassName={twMerge(
+        "prose z-20",
+        props.contentEditableClassName
+      )}
     />
   );
 }

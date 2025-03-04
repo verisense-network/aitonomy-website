@@ -20,6 +20,7 @@ import { isYouAddress } from "../thread/utils";
 import { usePaymentCommunityStore } from "@/store/paymentCommunity";
 import { CommunityStatus } from "./utils";
 import { getWalletConnect } from "@/utils/wallet";
+import { Id, toast } from "react-toastify";
 
 interface Props {
   communityId: string;
@@ -65,7 +66,7 @@ export default function CommunityBrand({ communityId }: Props) {
   }, []);
 
   const checkCommunityActivateStatus = useCallback(
-    async (txHash: string, retryCount: number = 0) => {
+    async (txHash: string, toastId: Id, retryCount: number = 0) => {
       if (!community) return;
       if (!(CommunityStatus.Active in community.status)) {
         setIsActivatingLoading(true);
@@ -84,7 +85,7 @@ export default function CommunityBrand({ communityId }: Props) {
 
           if (!tx || tx?.meta?.err) {
             await new Promise((resolve) => setTimeout(resolve, 3000));
-            await checkCommunityActivateStatus(txHash, retryCount + 1);
+            await checkCommunityActivateStatus(txHash, toastId, retryCount + 1);
             return;
           }
 
@@ -92,31 +93,47 @@ export default function CommunityBrand({ communityId }: Props) {
           console.log(
             `Checking community activation status: attempt ${retryCount + 1}/10`
           );
+          toast.update(toastId, {
+            render: `Checking community activation status...${
+              retryCount + 1
+            }/10`,
+          });
           await new Promise((resolve) => setTimeout(resolve, 2000));
         } else {
           console.log(
             "Maximum retry attempts reached. Community still not active."
           );
+          toast.update(toastId, {
+            render:
+              "Maximum retry attempts reached. Community still not active.",
+            type: "error",
+            isLoading: false,
+            autoClose: 2000,
+          });
         }
-      } else {
-        console.log("Community is now active!");
-        forceUpdate();
       }
       setTimeout(() => {
         forceUpdate();
         setIsActivatingLoading(false);
-      }, 3000);
+        console.log("Community is now active!");
+        toast.update(toastId, {
+          render: "Community is now active!",
+          type: "success",
+          isLoading: false,
+          autoClose: 2000,
+        });
+      }, 2000);
     },
     [community, forceUpdate, wallet]
   );
 
   const onSuccess = useCallback(
-    async (txHash: string) => {
+    async (txHash: string, toastId: Id) => {
       console.log("onSuccess", txHash);
-      const payload = { community: community?.name, tx: txHash };
+      const payload = { community: community?.name, signature: txHash };
       storePaymentSignature({ community: community?.name, signature: txHash });
       console.log("storePaymentSignature", payload);
-      await checkCommunityActivateStatus(txHash);
+      await checkCommunityActivateStatus(txHash, toastId, 0);
       setIsOpenPaymentModal(false);
     },
     [checkCommunityActivateStatus, community?.name, storePaymentSignature]
@@ -149,7 +166,8 @@ export default function CommunityBrand({ communityId }: Props) {
       community: community?.name,
       tx: signature,
     });
-    checkCommunityActivateStatus(signature);
+    const toastId = toast.loading("checking activation status");
+    checkCommunityActivateStatus(signature, toastId, 0);
     console.log("res", res);
   }, [checkCommunityActivateStatus, community?.name]);
 

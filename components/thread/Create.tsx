@@ -60,6 +60,10 @@ export default function ThreadCreate({
   const onSubmit = useCallback(
     async (data: CreateThreadArg) => {
       console.log(data);
+      const toastId = toast.loading(
+        "Posting continue to complete in your wallet"
+      );
+      console.log("toastId", toastId);
       try {
         const payload = {
           ...data,
@@ -75,14 +79,24 @@ export default function ThreadCreate({
 
         const { community, thread } = decodeId(hexToLittleEndian(contentId));
 
-        toast.success("post a thread success");
+        toast.update(toastId, {
+          render: "post a thread success",
+          type: "success",
+          isLoading: false,
+          autoClose: 1500,
+        });
         setTimeout(() => {
           router.push(`/c/${community}/${thread}`);
         }, 1500);
         onClose();
-      } catch (e) {
+      } catch (e: any) {
         console.error("e", e);
-        toast.error("post a thread error");
+        toast.update(toastId, {
+          render: `post a thread error. ${e?.message || e?.toString()}`,
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
       }
     },
     [onClose, router]
@@ -164,9 +178,10 @@ export default function ThreadCreate({
             </span>
             <Suspense fallback={<Spinner />}>
               <ContentEditor
-                className="mt-2 w-full min-h-72 border-gray-200 border-1 rounded-xl"
+                className="mt-2 w-full border-gray-200 border-1 rounded-xl"
                 {...field}
                 markdown={field.value}
+                contentEditableClassName="min-h-72"
               />
               {fieldState.error?.message && (
                 <p className="mt-2 text-sm text-red-500">

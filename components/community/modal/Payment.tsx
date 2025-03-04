@@ -12,14 +12,14 @@ import {
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { useCallback, useMemo } from "react";
 import bs58 from "bs58";
-import { toast } from "react-toastify";
+import { Id, toast } from "react-toastify";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   toAddress: string;
   paymentLamports: number;
-  onSuccess: (tx: string) => void;
+  onSuccess: (tx: string, toastId: Id) => void;
 }
 
 export default function PaymentModal({
@@ -34,6 +34,9 @@ export default function PaymentModal({
   const amount = paymentLamports / LAMPORTS_PER_SOL;
 
   const toPay = useCallback(async () => {
+    const toastId = toast.loading(
+      "Posting continue to complete in your wallet"
+    );
     try {
       const walletConnect = getWalletConnect(wallet);
       const tx = await walletConnect.createTransaction(
@@ -45,10 +48,15 @@ export default function PaymentModal({
       await walletConnect.boardcastTransaction(signTx);
 
       const signatureHex = bs58.encode(signTx.signature);
-      onSuccess(signatureHex);
+      onSuccess(signatureHex, toastId);
     } catch (e: any) {
       console.error("Error paying", e);
-      toast.error(`Error paying: ${e.message}`);
+      toast.update(toastId, {
+        render: `Error paying: ${e.message}`,
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
     }
   }, [wallet, toAddress, paymentLamports, onSuccess]);
 

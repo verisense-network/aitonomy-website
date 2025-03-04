@@ -30,10 +30,14 @@ interface ThreadsProps {
 export default function Threads({ className, communityId }: ThreadsProps) {
   const router = useRouter();
 
-  const { data: communities } = useMeilisearch("community", undefined, {
-    filter: `id = ${hexToLittleEndian(communityId || "")}`,
-    limit: 1,
-  });
+  const { data: communities, forceUpdate } = useMeilisearch(
+    "community",
+    undefined,
+    {
+      filter: `id = "${hexToLittleEndian(communityId || "")}"`,
+      limit: 1,
+    }
+  );
 
   const community = communities?.hits[0];
 
@@ -73,7 +77,16 @@ export default function Threads({ className, communityId }: ThreadsProps) {
       <div className="space-y-3">
         {isLoading && <Spinner />}
         {!isLoading && (
-          <CreateThread communityName={community?.name} onSuccess={() => {}} />
+          <CreateThread
+            communityName={community?.name}
+            reloadCommunity={forceUpdate}
+            onSuccess={() => {}}
+          />
+        )}
+        {data?.hits?.length === 0 && (
+          <div className="p-2">
+            <h1 className="text-xl">No threads found</h1>
+          </div>
         )}
         {data?.hits?.map((hit: any) => (
           <Card

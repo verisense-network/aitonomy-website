@@ -6,26 +6,30 @@ import {
   ModalContent,
   ModalHeader,
 } from "@heroui/react";
-import { Suspense, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 interface Props {
   communityName?: string;
   replyTo?: string;
   onSuccess: (id: string) => void;
+  reloadCommunity?: () => void;
 }
 
 export default function CreateThread({
   communityName,
   replyTo,
   onSuccess,
+  reloadCommunity,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
-  console.log("communityName", communityName);
-
-  const openCreateModal = () => {
+  const openCreateModal = useCallback(async () => {
+    if (!communityName) {
+      await reloadCommunity?.();
+    }
+    console.log("communityName", communityName);
     setIsOpen(true);
-  };
+  }, [communityName, reloadCommunity]);
 
   return (
     <>
@@ -38,7 +42,12 @@ export default function CreateThread({
           <span className="text-lg text-gray-500">What&apos;s new?</span>
         </div>
       </Card>
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} size="2xl">
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        isDismissable={false}
+        size="2xl"
+      >
         <ModalContent>
           {(onClose) => (
             <>

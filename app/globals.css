@@ -5,3 +5,16 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.mdxeditor-popup-container {
+  z-index: 1101 !important;
+  border: none;
+}
+
+.mdxeditor-popup-container>[data-state="open"] {
+  display: none;
+}
+
+.mdxeditor-popup-container>[role="dialog"] {
+  display: block;
+}

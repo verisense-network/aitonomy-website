@@ -30,6 +30,11 @@ export default function PopularCommunity() {
             <Spinner />
           </div>
         )}
+        {data?.hits.length === 0 && (
+          <div className="p-2">
+            <h1 className="text-md">No Communities</h1>
+          </div>
+        )}
         {!isLoading &&
           data?.hits.map((it: any) => (
             <Card
