@@ -11,8 +11,14 @@ import {
   UndoRedo,
   BoldItalicUnderlineToggles,
   imagePlugin,
-  InsertImage,
   BlockTypeSelect,
+  ListsToggle,
+  CreateLink,
+  linkPlugin,
+  codeBlockPlugin,
+  InsertCodeBlock,
+  codeMirrorPlugin,
+  linkDialogPlugin,
 } from "@mdxeditor/editor";
 import { ForwardedRef } from "react";
 import "@mdxeditor/editor/style.css";
@@ -28,13 +34,15 @@ export default function ContentEditor({ editorRef, ...props }: EditorProps) {
     <MDXEditor
       plugins={[
         toolbarPlugin({
-          toolbarClassName: "my-classname",
           toolbarContents: () => (
             <>
               <UndoRedo />
               <BlockTypeSelect />
               <BoldItalicUnderlineToggles />
+              <ListsToggle />
               <AddImage />
+              <CreateLink />
+              <InsertCodeBlock />
             </>
           ),
         }),
@@ -44,11 +52,26 @@ export default function ContentEditor({ editorRef, ...props }: EditorProps) {
         thematicBreakPlugin(),
         markdownShortcutPlugin(),
         imagePlugin(),
+        linkPlugin(),
+        linkDialogPlugin(),
+        codeBlockPlugin({ defaultCodeBlockLanguage: "js" }),
+        codeMirrorPlugin({
+          codeBlockLanguages: {
+            rust: "Rust",
+            ts: "TypeScript",
+            js: "JavaScript",
+            c: "C",
+            cpp: "C++",
+            css: "CSS",
+            html: "HTML",
+            mdx: "MDX",
+          },
+        }),
       ]}
       {...props}
       ref={editorRef}
       contentEditableClassName={twMerge(
-        "prose z-20",
+        "prose w-full",
         props.contentEditableClassName
       )}
     />

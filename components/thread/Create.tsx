@@ -174,7 +174,7 @@ export default function ThreadCreate({
         render={({ field, fieldState }) => (
           <div className="w-full">
             <span className={fieldState.error ? "text-red-500" : ""}>
-              content
+              Content
             </span>
             <Suspense fallback={<Spinner />}>
               <ContentEditor

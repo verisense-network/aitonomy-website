@@ -68,7 +68,12 @@ export default function CreateMenu() {
           ))}
         </DropdownMenu>
       </Dropdown>
-      <Modal isOpen={!!isOpen} onClose={() => setIsOpen(null)} size="xl">
+      <Modal
+        isOpen={!!isOpen}
+        onClose={() => setIsOpen(null)}
+        isDismissable={false}
+        size="xl"
+      >
         <ModalContent>
           {(onClose) => (
             <>

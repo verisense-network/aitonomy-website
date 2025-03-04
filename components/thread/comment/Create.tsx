@@ -3,11 +3,11 @@ import { signPayload } from "@/utils/aitonomy/sign";
 import { PostCommentPayload } from "@/utils/aitonomy/type";
 import { decodeId } from "@/utils/thread";
 import { hexToLittleEndian } from "@/utils/tools";
-import { PhotoIcon } from "@heroicons/react/24/solid";
-import { Form, Button, Card, Textarea } from "@heroui/react";
-import { useCallback } from "react";
+import { Form, Button, Card, Spinner } from "@heroui/react";
+import { Suspense, useCallback } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import ContentEditor from "../ContentEditor";
 
 interface Props {
   threadId: string;
@@ -55,27 +55,27 @@ export default function CreateComment({ threadId, replyTo, onSuccess }: Props) {
     <Card className="relative">
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Controller
-          control={control}
           name="content"
+          control={control}
           rules={{
-            required: true,
+            required: "Please enter content",
           }}
           render={({ field, fieldState }) => (
-            <Textarea
-              {...field}
-              classNames={{
-                inputWrapper: "p-5 pb-10 bg-white",
-              }}
-              placeholder="Write a comment..."
-              errorMessage={fieldState.error?.message}
-            />
+            <Suspense fallback={<Spinner />}>
+              <ContentEditor
+                className="w-full border-1 rounded-xl"
+                {...field}
+                markdown={field.value}
+                contentEditableClassName="min-h-44"
+              />
+              {fieldState.error?.message && (
+                <p className="mt-2 text-sm text-red-500">
+                  {fieldState.error.message}
+                </p>
+              )}
+            </Suspense>
           )}
         />
-        <div className="absolute bottom-2 left-5 z-50">
-          <Button isIconOnly>
-            <PhotoIcon width={25} height={25} />
-          </Button>
-        </div>
         <Button type="submit" className="absolute bottom-2 right-2 z-50">
           Submit
         </Button>
