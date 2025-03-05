@@ -1,4 +1,5 @@
 import ThreadCreate from "@/components/thread/Create";
+import { useUserStore } from "@/store/user";
 import {
   Card,
   Modal,
@@ -7,6 +8,7 @@ import {
   ModalHeader,
 } from "@heroui/react";
 import { Suspense, useCallback, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 interface Props {
   communityName?: string;
@@ -22,14 +24,19 @@ export default function CreateThread({
   reloadCommunity,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+  const { isLogin } = useUserStore();
 
   const openCreateModal = useCallback(async () => {
+    if (!isLogin) {
+      toast.info("You need to login first");
+      return;
+    }
     if (!communityName) {
       await reloadCommunity?.();
     }
     console.log("communityName", communityName);
     setIsOpen(true);
-  }, [communityName, reloadCommunity]);
+  }, [communityName, isLogin, reloadCommunity]);
 
   return (
     <>

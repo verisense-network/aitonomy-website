@@ -15,8 +15,7 @@ import { useCallback } from "react";
 import { Community } from "@/utils/aitonomy/type";
 import CreateComment from "./comment/Create";
 import { UserAddressView } from "@/utils/format";
-import DOMPurify from "dompurify";
-import { parse } from "marked";
+import { parseMarkdown } from "@/utils/markdown";
 
 interface Props {
   threadId: string;
@@ -52,7 +51,7 @@ export default function ThreadComments({ threadId, community }: Props) {
   }, [forceUpdate]);
 
   return (
-    <div className="space-y-3">
+    <div className="mx-2 space-y-3">
       <h1 className="text-lg font-bold">Comments</h1>
       {isLoading && (
         <Card>
@@ -72,11 +71,7 @@ export default function ThreadComments({ threadId, community }: Props) {
               <div
                 className="prose max-w-none"
                 dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(
-                    parse(comment.content, {
-                      async: false,
-                    })
-                  ),
+                  __html: parseMarkdown(comment.content),
                 }}
               ></div>
             </CardBody>

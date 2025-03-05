@@ -16,9 +16,9 @@ import { decodeId } from "@/utils/thread";
 import { formatTimestamp, hexToLittleEndian } from "@/utils/tools";
 import { twMerge } from "tailwind-merge";
 import CreateThread from "../community/thread/Create";
-import DOMPurify from "dompurify";
-import { parse } from "marked";
 import { UserAddressView } from "@/utils/format";
+import { parseMarkdown } from "@/utils/markdown";
+import truncateHtml from "truncate-html";
 
 export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full px-1 py-2 rounded-small">{children}</div>
@@ -74,7 +74,7 @@ export default function Threads({ className, communityId }: ThreadsProps) {
   );
 
   return (
-    <div className={twMerge("w-full px-5 mx-auto", className)}>
+    <div className={twMerge("w-full px-2 mx-auto", className)}>
       <h1 className="py-4 text-lg font-bold">Threads</h1>
       <div className="space-y-3">
         {isLoading && <Spinner />}
@@ -104,11 +104,10 @@ export default function Threads({ className, communityId }: ThreadsProps) {
               <div
                 className="prose max-w-none"
                 dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(
-                    parse(hit.content.split("\n").slice(0, 3).join("\n"), {
-                      async: false,
-                    })
-                  ),
+                  __html: truncateHtml(
+                    parseMarkdown(hit.content),
+                    20
+                  ) as string,
                 }}
               ></div>
             </CardBody>

@@ -7,7 +7,7 @@ import { ToastContainer } from "react-toastify";
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <HeroUIProvider>
-      <ToastContainer autoClose={3500} />
+      <ToastContainer autoClose={3500} toastClassName="mt-1 max-w-[98vw]" />
       <SWRConfig
         value={{
           refreshInterval: 30000,

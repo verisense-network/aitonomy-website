@@ -13,10 +13,8 @@ import {
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
-import { isYouAddress } from "./utils";
-import DOMPurify from "dompurify";
-import { parse } from "marked";
 import { UserAddressView } from "@/utils/format";
+import { parseMarkdown } from "@/utils/markdown";
 
 export default function ThreadView({ threadId }: { threadId: string }) {
   const router = useRouter();
@@ -59,7 +57,7 @@ export default function ThreadView({ threadId }: { threadId: string }) {
 
   return (
     <div>
-      <Card className="p-2 min-h-20">
+      <Card className="m-2 p-2 min-h-20">
         {isLoading && <Spinner />}
         {!isLoading && threadData && (
           <>
@@ -70,11 +68,7 @@ export default function ThreadView({ threadId }: { threadId: string }) {
               <div
                 className="prose max-w-none"
                 dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(
-                    parse(threadData.content, {
-                      async: false,
-                    })
-                  ),
+                  __html: parseMarkdown(threadData.content),
                 }}
               ></div>
             </CardBody>

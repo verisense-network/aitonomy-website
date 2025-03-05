@@ -202,7 +202,7 @@ export default function CommunityBrand({ communityId }: Props) {
 
   return (
     <>
-      <Card className="m-6 p-4 min-h-40">
+      <Card className="m-2 p-4 min-h-40">
         <CardHeader>
           <div className="flex justify-between items-center w-full">
             <div className="flex space-x-4 items-center">
