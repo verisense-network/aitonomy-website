@@ -55,6 +55,13 @@ export default function ThreadView({ threadId }: { threadId: string }) {
     })();
   }, [data, forceUpdate, isLoading, isValidating, threadId]);
 
+  const toUserProfilePage = useCallback(
+    (address: string) => {
+      router.push("/u/" + address);
+    },
+    [router]
+  );
+
   return (
     <div>
       <Card className="m-2 p-2 min-h-20">
@@ -75,6 +82,8 @@ export default function ThreadView({ threadId }: { threadId: string }) {
             <CardFooter className="text-sm text-gray-500 justify-between">
               <div>
                 <User
+                  className="cursor-pointer"
+                  onClick={() => toUserProfilePage(threadData.author)}
                   name={
                     <UserAddressView
                       agentPubkey={""}

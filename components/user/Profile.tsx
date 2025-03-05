@@ -1,5 +1,4 @@
-import { getBalances } from "@/app/actions";
-import { useUserStore } from "@/store/user";
+import { getAccountInfo, getBalances } from "@/app/actions";
 import { GetBalancesResponse } from "@/utils/aitonomy";
 import { Community } from "@/utils/aitonomy/type";
 import { formatAddress } from "@/utils/tools";
@@ -38,22 +37,34 @@ const TABLE_COLUMNS = [
   },
 ];
 
+const NAME_NOT_SET = "Name not set";
+
 export default function UserProfile({ address }: Props) {
-  const { name, address: currentAddress } = useUserStore();
   const [balances, setBalances] = useState<GetBalancesResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isShowUpdateName, setIsShowUpdateName] = useState(false);
+  const [userName, setUserName] = useState("");
 
   const getUserProfile = useCallback(async () => {
     try {
       if (!address) return;
       setIsLoading(true);
-      const balances = await getBalances({
+
+      const account = await getAccountInfo({
         accountId: address,
-        gt: undefined,
-        limit: 10,
       });
-      setBalances(balances);
+      console.log("account", account);
+      const aliasName = account?.alias || NAME_NOT_SET;
+      setUserName(aliasName);
+
+      if (isYouAddress(address)) {
+        const balances = await getBalances({
+          accountId: address,
+          gt: undefined,
+          limit: 10,
+        });
+        setBalances(balances);
+      }
       setIsLoading(false);
     } catch (e) {
       console.error(e);
@@ -77,28 +88,36 @@ export default function UserProfile({ address }: Props) {
   }, [address, getUserProfile]);
 
   return (
-    <div className="flex flex-col space-y-2">
-      <Card>
+    <div className="flex flex-col space-y-2 w-1/2">
+      <Card className="min-w-1/2">
         <CardHeader>Profile</CardHeader>
         <CardBody>
-          <div className="space-y-2">
+          <div className="space-y-5">
             <div className="flex space-x-2 items-center">
               <label className="font-bold">Name:</label>
               {isLoading && <Spinner />}
               {isShowUpdateName ? (
                 <UpdateAliasName
-                  defaultName={name}
+                  defaultName={userName === NAME_NOT_SET ? "" : userName}
                   onSuccess={updateAliasNameOnSuccess}
                   onClose={() => setIsShowUpdateName(false)}
                 />
-              ) : isYouAddress(address) ? (
+              ) : (
                 <>
-                  <span>{name}</span>
-                  <Button onPress={updateAccountName} size="sm">
-                    Update Name
-                  </Button>
+                  <span
+                    className={`${
+                      userName === NAME_NOT_SET && "text-gray-500"
+                    }`}
+                  >
+                    {userName}
+                  </span>
+                  {isYouAddress(address) && (
+                    <Button onPress={updateAccountName} size="sm">
+                      Update Name
+                    </Button>
+                  )}
                 </>
-              ) : null}
+              )}
             </div>
             <div className="flex space-x-2">
               <label className="font-bold">Address:</label>
@@ -118,6 +137,7 @@ export default function UserProfile({ address }: Props) {
                     community: b[0],
                     balance: b[1],
                   }))}
+                  emptyContent="No balances"
                 >
                   {(item) => (
                     <TableRow key={item.community.name}>

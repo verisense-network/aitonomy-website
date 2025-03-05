@@ -16,6 +16,7 @@ import { Community } from "@/utils/aitonomy/type";
 import CreateComment from "./comment/Create";
 import { UserAddressView } from "@/utils/format";
 import { parseMarkdown } from "@/utils/markdown";
+import { useRouter } from "next/navigation";
 
 interface Props {
   threadId: string;
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export default function ThreadComments({ threadId, community }: Props) {
+  const router = useRouter();
   const { thread, community: communityId } = decodeId(threadId);
   const { data, isLoading, setParams, forceUpdate } = useMeilisearch(
     "comment",
@@ -49,6 +51,13 @@ export default function ThreadComments({ threadId, community }: Props) {
       forceUpdate();
     }, 2000);
   }, [forceUpdate]);
+
+  const toUserProfilePage = useCallback(
+    (address: string) => {
+      router.push("/u/" + address);
+    },
+    [router]
+  );
 
   return (
     <div className="mx-2 space-y-3">
@@ -78,6 +87,8 @@ export default function ThreadComments({ threadId, community }: Props) {
             <CardFooter className="text-sm text-gray-500 justify-between">
               <div>
                 <User
+                  className="cursor-pointer"
+                  onClick={() => toUserProfilePage(comment.author)}
                   name={
                     <UserAddressView
                       agentPubkey={community?.agent_pubkey}
