@@ -51,7 +51,7 @@ export default function CreateThread({
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader>Create</ModalHeader>
+              <ModalHeader>Post thread</ModalHeader>
               <ModalBody>
                 <Suspense>
                   {isOpen && (

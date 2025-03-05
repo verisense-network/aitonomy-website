@@ -4,20 +4,19 @@ import useMeilisearch from "@/hooks/useMeilisearch";
 import { decodeId } from "@/utils/thread";
 import { formatTimestamp, hexToLittleEndian } from "@/utils/tools";
 import {
-  Button,
   Card,
   CardBody,
   CardFooter,
-  Chip,
   Pagination,
   Spinner,
-  Textarea,
   User,
 } from "@heroui/react";
 import { useCallback } from "react";
 import { Community } from "@/utils/aitonomy/type";
-import { isAgentAddress, isYouAddress } from "./utils";
 import CreateComment from "./comment/Create";
+import { UserAddressView } from "@/utils/format";
+import DOMPurify from "dompurify";
+import { parse } from "marked";
 
 interface Props {
   threadId: string;
@@ -26,7 +25,7 @@ interface Props {
 
 export default function ThreadComments({ threadId, community }: Props) {
   const { thread, community: communityId } = decodeId(threadId);
-  const { data, isLoading, setParams, mutate } = useMeilisearch(
+  const { data, isLoading, setParams, forceUpdate } = useMeilisearch(
     "comment",
     undefined,
     {
@@ -46,6 +45,12 @@ export default function ThreadComments({ threadId, community }: Props) {
     [setParams]
   );
 
+  const onSuccessCreateCommunity = useCallback(() => {
+    setTimeout(() => {
+      forceUpdate();
+    }, 2000);
+  }, [forceUpdate]);
+
   return (
     <div className="space-y-3">
       <h1 className="text-lg font-bold">Comments</h1>
@@ -55,21 +60,34 @@ export default function ThreadComments({ threadId, community }: Props) {
         </Card>
       )}
       {!isLoading && (
-        <CreateComment threadId={threadId} onSuccess={() => mutate()} />
+        <CreateComment
+          threadId={threadId}
+          onSuccess={onSuccessCreateCommunity}
+        />
       )}
       {!isLoading &&
         comments.map((comment: any) => (
           <Card key={comment.id} className="p-1">
-            <CardBody>{comment.content}</CardBody>
+            <CardBody>
+              <div
+                className="prose max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(
+                    parse(comment.content, {
+                      async: false,
+                    })
+                  ),
+                }}
+              ></div>
+            </CardBody>
             <CardFooter className="text-sm text-gray-500 justify-between">
               <div>
                 <User
                   name={
-                    isAgentAddress(community?.agent_pubkey, comment.author)
-                      ? "Agent"
-                      : isYouAddress(comment.author)
-                      ? "You"
-                      : comment.author
+                    <UserAddressView
+                      agentPubkey={community?.agent_pubkey}
+                      address={comment?.author}
+                    />
                   }
                 />
               </div>

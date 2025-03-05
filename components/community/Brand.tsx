@@ -99,6 +99,7 @@ export default function CommunityBrand({ communityId }: Props) {
             }/10`,
           });
           await new Promise((resolve) => setTimeout(resolve, 2000));
+          forceUpdate();
         } else {
           console.log(
             "Maximum retry attempts reached. Community still not active."
@@ -111,18 +112,20 @@ export default function CommunityBrand({ communityId }: Props) {
             autoClose: 2000,
           });
         }
-      }
-      setTimeout(() => {
+      } else {
         forceUpdate();
-        setIsActivatingLoading(false);
-        console.log("Community is now active!");
-        toast.update(toastId, {
-          render: "Community is now active!",
-          type: "success",
-          isLoading: false,
-          autoClose: 2000,
-        });
-      }, 2000);
+        setTimeout(() => {
+          setIsActivatingLoading(false);
+          console.log("Community is now active!");
+          toast.update(toastId, {
+            render: "Community is now active!",
+            type: "success",
+            isLoading: false,
+            autoClose: 2000,
+          });
+        }, 2000);
+      }
+      forceUpdate();
     },
     [community, forceUpdate, wallet]
   );

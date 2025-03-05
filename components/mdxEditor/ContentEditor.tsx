@@ -23,7 +23,7 @@ import {
 import { ForwardedRef } from "react";
 import "@mdxeditor/editor/style.css";
 import { twMerge } from "tailwind-merge";
-import AddImage from "../mdxEditor/AddImage";
+import AddImage from "./AddImage";
 
 interface EditorProps extends MDXEditorProps {
   editorRef?: ForwardedRef<MDXEditorMethods> | null;
@@ -71,7 +71,7 @@ export default function ContentEditor({ editorRef, ...props }: EditorProps) {
       {...props}
       ref={editorRef}
       contentEditableClassName={twMerge(
-        "prose w-full",
+        "prose w-full max-w-full",
         props.contentEditableClassName
       )}
     />

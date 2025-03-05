@@ -77,7 +77,9 @@ export default function CreateMenu() {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader>Create</ModalHeader>
+              <ModalHeader>
+                {isOpen === "community" ? "Create community" : "Post thread"}
+              </ModalHeader>
               <ModalBody>
                 <Suspense>
                   {isOpen === "community" && (

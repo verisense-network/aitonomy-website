@@ -16,6 +16,7 @@ import { useCallback, useEffect } from "react";
 import { isYouAddress } from "./utils";
 import DOMPurify from "dompurify";
 import { parse } from "marked";
+import { UserAddressView } from "@/utils/format";
 
 export default function ThreadView({ threadId }: { threadId: string }) {
   const router = useRouter();
@@ -81,7 +82,10 @@ export default function ThreadView({ threadId }: { threadId: string }) {
               <div>
                 <User
                   name={
-                    isYouAddress(threadData.author) ? "You" : threadData.author
+                    <UserAddressView
+                      agentPubkey={""}
+                      address={threadData.author}
+                    />
                   }
                 />
               </div>

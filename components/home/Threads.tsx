@@ -3,20 +3,22 @@
 import useMeilisearch from "@/hooks/useMeilisearch";
 import {
   Card,
+  CardBody,
   CardFooter,
   CardHeader,
   Chip,
   Pagination,
   Spinner,
-  User,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { decodeId } from "@/utils/thread";
 import { formatTimestamp, hexToLittleEndian } from "@/utils/tools";
 import { twMerge } from "tailwind-merge";
-import { isYouAddress } from "../thread/utils";
 import CreateThread from "../community/thread/Create";
+import DOMPurify from "dompurify";
+import { parse } from "marked";
+import { UserAddressView } from "@/utils/format";
 
 export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full px-1 py-2 rounded-small">{children}</div>
@@ -98,9 +100,21 @@ export default function Threads({ className, communityId }: ThreadsProps) {
             <CardHeader>
               <h1 className="text-xl font-bold">{hit.title}</h1>
             </CardHeader>
+            <CardBody>
+              <div
+                className="prose max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(
+                    parse(hit.content.split("\n").slice(0, 3).join("\n"), {
+                      async: false,
+                    })
+                  ),
+                }}
+              ></div>
+            </CardBody>
             <CardFooter className="text-sm text-gray-500 justify-between">
               <div>
-                <User name={isYouAddress(hit.author) ? "You" : hit.author} />
+                <UserAddressView agentPubkey={""} address={hit.author} />
               </div>
               <div className="flex space-x-2 items-center">
                 <Chip>{hit.community_name}</Chip>

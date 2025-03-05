@@ -21,7 +21,9 @@ import { toast } from "react-toastify";
 
 import dynamic from "next/dynamic";
 
-const ContentEditor = dynamic(() => import("./ContentEditor"), { ssr: false });
+const ContentEditor = dynamic(() => import("../mdxEditor/ContentEditor"), {
+  ssr: false,
+});
 
 interface Props {
   defaultCommunity?: string;
@@ -92,7 +94,7 @@ export default function ThreadCreate({
       } catch (e: any) {
         console.error("e", e);
         toast.update(toastId, {
-          render: `post a thread error. ${e?.message || e?.toString()}`,
+          render: `failed: ${e?.message || e?.toString()}`,
           type: "error",
           isLoading: false,
           autoClose: 3000,

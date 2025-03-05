@@ -4,6 +4,7 @@ import uploadImageWithPostImages from "@/lib/uploadImage";
 import {
   ActivateCommunityArg,
   activateCommunityRpc,
+  CreateCommentArg,
   createCommentRpc,
   CreateCommunityArg,
   createCommunityRpc,
@@ -49,22 +50,11 @@ export async function createThread(
   return res;
 }
 
-export interface CreateCommentParams {
-  thread: string;
-  content: string;
-  image?: string;
-  mention: string[];
-  reply_to?: string;
-}
-
 export async function createComment(
-  form: CreateCommentParams,
+  form: CreateCommentArg,
   signature: Signature
 ) {
-  const commentArgs = {
-    ...form,
-    thread: hexToBytes(form.thread),
-  };
+  const commentArgs = form;
 
   const res = await createCommentRpc(NUCLEUS_ID, commentArgs, signature);
 
