@@ -11,14 +11,15 @@ import {
 import { Key, useCallback, useEffect, useState } from "react";
 import LoginModal from "./modal/LoginModal";
 import { useUserStore } from "@/store/user";
-import UserProfile from "../user/modal/Profile";
 import { getAccountInfo } from "@/app/actions";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function UserMenu() {
   const [isOpenOption, setIsOpenOption] = useState<string | null>(null);
   const { name, address, isLogin, setUserName, logout } = useUserStore();
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const getUserProfile = useCallback(async () => {
     try {
@@ -40,11 +41,14 @@ export default function UserMenu() {
   const openMenu = useCallback(
     (key: Key) => {
       setIsOpenOption(key as string);
+      if (key === "profile") {
+        router.push("/u/" + address);
+      }
       if (key === "logout") {
         logout();
       }
     },
-    [logout]
+    [address, logout, router]
   );
 
   useEffect(() => {
@@ -54,7 +58,13 @@ export default function UserMenu() {
 
   return (
     <>
-      <Dropdown>
+      <Dropdown
+        onOpenChange={() => {
+          if (!isLogin) {
+            openMenu("login");
+          }
+        }}
+      >
         <DropdownTrigger>
           <Button isIconOnly className="bg-transparent">
             {isLogin ? (
@@ -89,10 +99,6 @@ export default function UserMenu() {
       </Dropdown>
       <LoginModal
         isOpen={isOpenOption === "login"}
-        onClose={() => setIsOpenOption(null)}
-      />
-      <UserProfile
-        isOpen={isOpenOption === "profile"}
         onClose={() => setIsOpenOption(null)}
       />
     </>

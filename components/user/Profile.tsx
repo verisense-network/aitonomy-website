@@ -5,11 +5,10 @@ import { Community } from "@/utils/aitonomy/type";
 import { formatAddress } from "@/utils/tools";
 import {
   Button,
+  Card,
+  CardBody,
+  CardHeader,
   getKeyValue,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
   Spinner,
   Table,
   TableBody,
@@ -22,10 +21,10 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import UpdateAliasName from "./UpdateAliasName";
 import { toast } from "react-toastify";
+import { isYouAddress } from "../thread/utils";
 
 interface Props {
-  isOpen: boolean;
-  onClose: () => void;
+  address: string;
 }
 
 const TABLE_COLUMNS = [
@@ -39,8 +38,8 @@ const TABLE_COLUMNS = [
   },
 ];
 
-export default function UserProfile({ isOpen, onClose }: Props) {
-  const { name, address } = useUserStore();
+export default function UserProfile({ address }: Props) {
+  const { name, address: currentAddress } = useUserStore();
   const [balances, setBalances] = useState<GetBalancesResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isShowUpdateName, setIsShowUpdateName] = useState(false);
@@ -73,43 +72,41 @@ export default function UserProfile({ isOpen, onClose }: Props) {
   }, [getUserProfile]);
 
   useEffect(() => {
-    if (!address || !isOpen) return;
+    if (!address) return;
     getUserProfile();
-  }, [address, getUserProfile, isOpen]);
+  }, [address, getUserProfile]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalContent>
-        {(onClose) => (
-          <>
-            <ModalHeader>Profile</ModalHeader>
-            <ModalBody>
-              <div className="space-y-2">
-                <div className="flex space-x-2 items-center">
-                  <label className="font-bold">Name:</label>
-                  {isLoading && <Spinner />}
-                  {isShowUpdateName ? (
-                    <UpdateAliasName
-                      defaultName={name}
-                      onSuccess={updateAliasNameOnSuccess}
-                      onClose={() => setIsShowUpdateName(false)}
-                    />
-                  ) : (
-                    <>
-                      <span>{name}</span>
-                      <Button onPress={updateAccountName} size="sm">
-                        Update Name
-                      </Button>
-                    </>
-                  )}
-                </div>
-                <div className="flex space-x-2">
-                  <label className="font-bold">Address:</label>
-                  <Tooltip content={address}>
-                    <span>{formatAddress(address)}</span>
-                  </Tooltip>
-                </div>
-              </div>
+    <div className="flex flex-col space-y-2">
+      <Card>
+        <CardHeader>Profile</CardHeader>
+        <CardBody>
+          <div className="space-y-2">
+            <div className="flex space-x-2 items-center">
+              <label className="font-bold">Name:</label>
+              {isLoading && <Spinner />}
+              {isShowUpdateName ? (
+                <UpdateAliasName
+                  defaultName={name}
+                  onSuccess={updateAliasNameOnSuccess}
+                  onClose={() => setIsShowUpdateName(false)}
+                />
+              ) : isYouAddress(address) ? (
+                <>
+                  <span>{name}</span>
+                  <Button onPress={updateAccountName} size="sm">
+                    Update Name
+                  </Button>
+                </>
+              ) : null}
+            </div>
+            <div className="flex space-x-2">
+              <label className="font-bold">Address:</label>
+              <Tooltip content={address}>
+                <span>{formatAddress(address)}</span>
+              </Tooltip>
+            </div>
+            {isYouAddress(address) && (
               <Table aria-label="Balances" title="Balances">
                 <TableHeader columns={TABLE_COLUMNS}>
                   {(column) => (
@@ -142,10 +139,10 @@ export default function UserProfile({ isOpen, onClose }: Props) {
                   )}
                 </TableBody>
               </Table>
-            </ModalBody>
-          </>
-        )}
-      </ModalContent>
-    </Modal>
+            )}
+          </div>
+        </CardBody>
+      </Card>
+    </div>
   );
 }

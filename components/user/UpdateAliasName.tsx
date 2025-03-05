@@ -31,7 +31,6 @@ export default function UpdateAliasName({
         alias: data.alias,
       };
       const signature = await signPayload(payload, SetAliasPayload);
-      // console.log("signature", signature);
       const res = await setAlias(payload, signature);
       if (res === null) {
         onSuccess();
