@@ -35,7 +35,15 @@ export function formatTimestamp(
   timestamp: number,
   format: string = "YYYY-MM-DD HH:mm"
 ) {
-  return dayjs.unix(timestamp).format(format);
+  const date = dayjs.unix(timestamp);
+  const now = dayjs();
+  const diff = now.diff(date, "day");
+
+  if (diff < 7) {
+    return date.fromNow();
+  }
+
+  return date.format(format);
 }
 
 export function formatAddress(address: string) {
