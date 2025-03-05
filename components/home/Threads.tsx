@@ -9,6 +9,7 @@ import {
   Chip,
   Pagination,
   Spinner,
+  User,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
@@ -106,14 +107,18 @@ export default function Threads({ className, communityId }: ThreadsProps) {
                 dangerouslySetInnerHTML={{
                   __html: truncateHtml(
                     parseMarkdown(hit.content),
-                    20
+                    120
                   ) as string,
                 }}
               ></div>
             </CardBody>
-            <CardFooter className="text-sm text-gray-500 justify-between">
+            <CardFooter className="flex flex-col space-y-2 text-sm text-gray-500 items-start md:flex-row md:justify-between">
               <div>
-                <UserAddressView agentPubkey={""} address={hit.author} />
+                <User
+                  name={
+                    <UserAddressView agentPubkey={""} address={hit.author} />
+                  }
+                />
               </div>
               <div className="flex space-x-2 items-center">
                 <Chip>{hit.community_name}</Chip>
