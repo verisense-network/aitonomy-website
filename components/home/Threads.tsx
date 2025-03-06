@@ -51,15 +51,22 @@ export default function Threads({
 
   const community = communities?.hits[0];
 
+  const filterWithCommunity = communityId
+    ? `id CONTAINS ${hexToLittleEndian(communityId)}`
+    : "";
+  const filterWithUser = userAddress ? `creator = "${userAddress}"` : "";
+  const filter = `${filterWithCommunity}${
+    filterWithUser
+      ? `${filterWithCommunity ? " AND " : ""}${filterWithUser}`
+      : ""
+  }`;
+  console.log("filter", filter);
+
   const { isLoading, data, setParams } = useMeilisearch("thread", undefined, {
     sort: ["created_time:desc"],
     page: 1,
     hitsPerPage: 7,
-    filter: communityId
-      ? `id CONTAINS ${hexToLittleEndian(communityId)}${
-          userAddress ? ` AND author = "${userAddress}"` : ""
-        }`
-      : undefined,
+    filter,
   });
 
   const toThreadPage = useCallback(

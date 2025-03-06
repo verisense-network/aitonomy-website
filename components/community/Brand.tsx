@@ -11,7 +11,7 @@ import {
   Chip,
   Spinner,
 } from "@heroui/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import PaymentModal from "./modal/Payment";
 import { activateCommunity, getBalances } from "@/app/actions";
 import { useUserStore } from "@/store/user";
@@ -26,8 +26,19 @@ interface Props {
   communityId: string;
 }
 
+const MAX_RETRY = 15;
+
 export default function CommunityBrand({ communityId }: Props) {
   const [isOpenPaymentModal, setIsOpenPaymentModal] = useState(false);
+  const [isActivatingLoading, setIsActivatingLoading] = useState(false);
+  const [currentBalance, setCurrentBalance] = useState<number | null>(null);
+  const { isLogin, address, wallet } = useUserStore();
+  const {
+    setSignature: storePaymentSignature,
+    community: storedCommunity,
+    signature: storedSignature,
+  } = usePaymentCommunityStore();
+
   const { data, isLoading, forceUpdate, isValidating } = useMeilisearch(
     "community",
     undefined,
@@ -36,16 +47,6 @@ export default function CommunityBrand({ communityId }: Props) {
       limit: 1,
     }
   );
-
-  const [isActivatingLoading, setIsActivatingLoading] = useState(false);
-  const { isLogin, address, wallet } = useUserStore();
-  const {
-    setSignature: storePaymentSignature,
-    community: storedCommunity,
-    signature: storedSignature,
-  } = usePaymentCommunityStore();
-
-  const [currentBalance, setCurrentBalance] = useState<number | null>(null);
 
   const community = data?.hits[0];
 
@@ -65,16 +66,24 @@ export default function CommunityBrand({ communityId }: Props) {
     setIsOpenPaymentModal(true);
   }, []);
 
+  const communityRef = useRef(community);
+
+  useEffect(() => {
+    communityRef.current = community;
+  }, [community]);
+
   const checkCommunityActivateStatus = useCallback(
     async (txHash: string, toastId: Id, retryCount: number = 0) => {
-      if (!community) return;
-      if (!(CommunityStatus.Active in community.status)) {
+      const communityCurrent = communityRef.current;
+      console.log("community", communityCurrent, communityCurrent?.status);
+      if (!communityCurrent) return;
+      if (communityCurrent.status !== CommunityStatus.Active) {
         setIsActivatingLoading(true);
         const userWallet = getWalletConnect(wallet);
         const connection = userWallet.connection;
-        if (retryCount < 10) {
+        if (retryCount < MAX_RETRY) {
           if (!txHash) return;
-          const payload = { community: community?.name, tx: txHash };
+          const payload = { community: communityCurrent?.name, tx: txHash };
           console.log("payload", payload);
           const tx = await connection.getTransaction(txHash, {
             commitment: "finalized",
@@ -83,27 +92,31 @@ export default function CommunityBrand({ communityId }: Props) {
 
           console.log("tx", tx);
 
+          const renderCount = `${retryCount + 1}/${MAX_RETRY}`;
           if (!tx || tx?.meta?.err) {
-            await new Promise((resolve) => setTimeout(resolve, 3000));
+            await sleep(3000);
+            toast.update(toastId, {
+              render: `Checking transaction status...${renderCount}`,
+            });
             await checkCommunityActivateStatus(txHash, toastId, retryCount + 1);
             return;
           }
 
           await activateCommunity(payload);
           console.log(
-            `Checking community activation status: attempt ${retryCount + 1}/10`
+            `Checking community activation status: attempt ${renderCount}`
           );
           toast.update(toastId, {
-            render: `Checking community activation status...${
-              retryCount + 1
-            }/10`,
+            render: `Checking community activation status...${renderCount}`,
           });
-          await new Promise((resolve) => setTimeout(resolve, 2000));
           forceUpdate();
+          await sleep(2000);
+          await checkCommunityActivateStatus(txHash, toastId, retryCount + 1);
         } else {
           console.log(
             "Maximum retry attempts reached. Community still not active."
           );
+          setIsActivatingLoading(false);
           toast.update(toastId, {
             render:
               "Maximum retry attempts reached. Community still not active.",
@@ -127,7 +140,7 @@ export default function CommunityBrand({ communityId }: Props) {
       }
       forceUpdate();
     },
-    [community, forceUpdate, wallet]
+    [forceUpdate, wallet]
   );
 
   const onSuccess = useCallback(
@@ -136,6 +149,11 @@ export default function CommunityBrand({ communityId }: Props) {
       const payload = { community: community?.name, signature: txHash };
       storePaymentSignature({ community: community?.name, signature: txHash });
       console.log("storePaymentSignature", payload);
+      toast.update(toastId, {
+        render: "Checking community activation status...",
+        type: "info",
+        isLoading: true,
+      });
       await checkCommunityActivateStatus(txHash, toastId, 0);
       setIsOpenPaymentModal(false);
     },

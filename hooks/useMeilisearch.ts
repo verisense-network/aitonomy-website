@@ -20,9 +20,10 @@ export default function useMeilisearch(
   );
 
   const forceUpdate = useCallback(async () => {
-    return await swrResult.mutate(undefined, {
+    await swrResult.mutate(undefined, {
       revalidate: true,
     });
+    return swrResult.data;
   }, [swrResult]);
 
   return { ...swrResult, setParams, forceUpdate };

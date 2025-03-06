@@ -10,7 +10,7 @@ import {
   ModalHeader,
 } from "@heroui/react";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import bs58 from "bs58";
 import { Id, toast } from "react-toastify";
 
@@ -32,12 +32,14 @@ export default function PaymentModal({
   const { address, wallet } = useUserStore();
   const fromAddress = address;
   const amount = paymentLamports / LAMPORTS_PER_SOL;
+  const [isLoading, setIsLoading] = useState(false);
 
   const toPay = useCallback(async () => {
     const toastId = toast.loading(
       "Posting continue to complete in your wallet"
     );
     try {
+      setIsLoading(true);
       const walletConnect = getWalletConnect(wallet);
       const tx = await walletConnect.createTransaction(
         new PublicKey(toAddress),
@@ -49,8 +51,10 @@ export default function PaymentModal({
 
       const signatureHex = bs58.encode(signTx.signature);
       onSuccess(signatureHex, toastId);
+      setIsLoading(false);
     } catch (e: any) {
       console.error("Error paying", e);
+      setIsLoading(false);
       toast.update(toastId, {
         render: `Error paying: ${e.message}`,
         type: "error",
@@ -98,7 +102,13 @@ export default function PaymentModal({
                   </div>
                 </CardBody>
               </Card>
-              <Button onPress={toPay}>Payment</Button>
+              <Button
+                onPress={toPay}
+                disabled={isLoading}
+                isLoading={isLoading}
+              >
+                Payment
+              </Button>
             </ModalBody>
           </>
         )}

@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import ContentEditor from "../../mdxEditor/ContentEditor";
 import { CreateCommentArg } from "@/utils/aitonomy";
 import { useUserStore } from "@/store/user";
+import { extractMarkdownImages } from "@/utils/markdown";
 
 interface Props {
   threadId: string;
@@ -51,12 +52,11 @@ export default function CreateComment({ threadId, replyTo, onSuccess }: Props) {
       );
 
       try {
-        const image = data.content.match(/!\[(.*?)\]\((.*?)\)/);
-        console.log("image", image);
+        const images = extractMarkdownImages(data.content);
         const payload = {
           ...data,
           thread: hexToBytes(data.thread),
-          image: image ? image[2] : undefined,
+          image: images.length > 0 ? images[0] : undefined,
           reply_to: data.reply_to ? hexToBytes(data.reply_to) : undefined,
         } as CreateCommentArg;
 

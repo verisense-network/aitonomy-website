@@ -8,3 +8,15 @@ export function parseMarkdown(markdownText: string) {
     })
   );
 }
+export function extractMarkdownImages(markdownText: string): string[] {
+  const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+
+  const imageUrls: string[] = [];
+  let match;
+
+  while ((match = imageRegex.exec(markdownText)) !== null) {
+    imageUrls.push(match[2]);
+  }
+
+  return imageUrls;
+}

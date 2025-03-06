@@ -20,6 +20,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 import dynamic from "next/dynamic";
+import { extractMarkdownImages } from "@/utils/markdown";
 
 const ContentEditor = dynamic(() => import("../mdxEditor/ContentEditor"), {
   ssr: false,
@@ -67,9 +68,10 @@ export default function ThreadCreate({
       );
       console.log("toastId", toastId);
       try {
+        const images = extractMarkdownImages(data.content);
         const payload = {
           ...data,
-          image: data.image === "" ? undefined : data.image,
+          image: images.length > 0 ? images[0] : undefined,
           mention: new Array(0).fill(new Array(32).fill(0)),
         } as CreateThreadArg;
 
