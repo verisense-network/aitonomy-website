@@ -13,13 +13,13 @@ import LoginModal from "./modal/LoginModal";
 import { useUserStore } from "@/store/user";
 import { getAccountInfo } from "@/app/actions";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter } from "next-view-transitions";
 
 export default function UserMenu() {
   const [isOpenOption, setIsOpenOption] = useState<string | null>(null);
   const { name, address, isLogin, setUserName, logout } = useUserStore();
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const router = useTransitionRouter();
 
   const getUserProfile = useCallback(async () => {
     try {

@@ -16,7 +16,7 @@ import { Community } from "@/utils/aitonomy/type";
 import CreateComment from "./comment/Create";
 import { UserAddressView } from "@/utils/format";
 import { parseMarkdown } from "@/utils/markdown";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter } from "next-view-transitions";
 
 interface Props {
   threadId: string;
@@ -24,7 +24,7 @@ interface Props {
 }
 
 export default function ThreadComments({ threadId, community }: Props) {
-  const router = useRouter();
+  const router = useTransitionRouter();
   const { thread, community: communityId } = decodeId(threadId);
   const { data, isLoading, setParams, forceUpdate } = useMeilisearch(
     "comment",

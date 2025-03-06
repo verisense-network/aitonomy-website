@@ -11,13 +11,13 @@ import {
   Spinner,
   User,
 } from "@heroui/react";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
 import { UserAddressView } from "@/utils/format";
 import { parseMarkdown } from "@/utils/markdown";
+import { useTransitionRouter } from "next-view-transitions";
 
 export default function ThreadView({ threadId }: { threadId: string }) {
-  const router = useRouter();
+  const router = useTransitionRouter();
   const { data, isLoading, isValidating, forceUpdate } = useMeilisearch(
     "thread",
     undefined,

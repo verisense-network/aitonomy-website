@@ -21,11 +21,11 @@ import {
   Textarea,
   Tooltip,
 } from "@heroui/react";
-import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
+import { useTransitionRouter } from "next-view-transitions";
 
 interface Props {
   onClose: () => void;
@@ -50,7 +50,7 @@ const MOCKDATA = {
 };
 
 export default function CommunityCreate({ onClose }: Props) {
-  const router = useRouter();
+  const router = useTransitionRouter();
   const [isLoading, setIsLoading] = useState(false);
   const { watch, control, setValue, handleSubmit, reset } =
     useForm<CreateCommunityArg>({

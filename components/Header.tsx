@@ -3,12 +3,12 @@
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { HomeModernIcon } from "@heroicons/react/24/solid";
 import { useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter } from "next-view-transitions";
 import CreateMenu from "./header/CreateMenu";
 import UserMenu from "./header/UserMenu";
 
 export default function Header() {
-  const router = useRouter();
+  const router = useTransitionRouter();
 
   const toHomePage = useCallback(() => {
     router.push("/");

@@ -3,11 +3,11 @@
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { Avatar, Card, CardBody, Spinner } from "@heroui/react";
 import { useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { hexToLittleEndian } from "@/utils/tools";
+import { useTransitionRouter } from "next-view-transitions";
 
 export default function PopularCommunity() {
-  const router = useRouter();
+  const router = useTransitionRouter();
   const { data, isLoading } = useMeilisearch("community", undefined, {
     sort: ["created_time:desc"],
     hitsPerPage: 20,

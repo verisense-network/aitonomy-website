@@ -14,7 +14,7 @@ import {
   Input,
   Spinner,
 } from "@heroui/react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter } from "next-view-transitions";
 import { Suspense, useCallback, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
@@ -37,7 +37,7 @@ export default function ThreadCreate({
   replyTo,
   onClose,
 }: Props) {
-  const router = useRouter();
+  const router = useTransitionRouter();
   const { control, handleSubmit } = useForm<CreateThreadArg>({
     defaultValues: {
       community: defaultCommunity || "",
