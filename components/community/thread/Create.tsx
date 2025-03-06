@@ -41,7 +41,7 @@ export default function CreateThread({
   return (
     <>
       <Card
-        className="flex w-full text-right px-6 py-6 hover:bg-gray-200"
+        className="flex w-full text-right px-6 py-6 hover:bg-gray-200 dark:hover:bg-zinc-800"
         isPressable
         onPress={() => openCreateModal()}
       >

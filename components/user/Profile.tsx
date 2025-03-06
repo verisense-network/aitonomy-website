@@ -88,7 +88,7 @@ export default function UserProfile({ address }: Props) {
   }, [address, getUserProfile]);
 
   return (
-    <div className="flex flex-col space-y-2 w-1/2">
+    <div className="flex flex-col space-y-2 px-2 md:w-1/2">
       <h1 className="py-4 text-lg font-bold">Profile</h1>
       <Card className="min-w-1/2">
         <CardBody>
