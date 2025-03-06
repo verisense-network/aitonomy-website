@@ -54,7 +54,7 @@ export default function Threads({
   const filterWithCommunity = communityId
     ? `id CONTAINS ${hexToLittleEndian(communityId)}`
     : "";
-  const filterWithUser = userAddress ? `creator = "${userAddress}"` : "";
+  const filterWithUser = userAddress ? `author = "${userAddress}"` : "";
   const filter = `${filterWithCommunity}${
     filterWithUser
       ? `${filterWithCommunity ? " AND " : ""}${filterWithUser}`
