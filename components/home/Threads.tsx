@@ -44,9 +44,7 @@ export default function Threads({
     "community",
     undefined,
     {
-      filter: `id = "${hexToLittleEndian(communityId || "")}"${
-        userAddress ? ` AND author = "${userAddress}"` : ""
-      }`,
+      filter: `id = "${hexToLittleEndian(communityId || "")}"`,
       limit: 1,
     }
   );
@@ -58,7 +56,9 @@ export default function Threads({
     page: 1,
     hitsPerPage: 7,
     filter: communityId
-      ? `id CONTAINS ${hexToLittleEndian(communityId)}`
+      ? `id CONTAINS ${hexToLittleEndian(communityId)}${
+          userAddress ? ` AND author = "${userAddress}"` : ""
+        }`
       : undefined,
   });
 
