@@ -6,6 +6,7 @@ import { useCallback } from "react";
 import { useTransitionRouter } from "next-view-transitions";
 import CreateMenu from "./header/CreateMenu";
 import UserMenu from "./header/UserMenu";
+import { Input } from "@heroui/react";
 
 export default function Header() {
   const router = useTransitionRouter();
@@ -25,16 +26,13 @@ export default function Header() {
           />
         </div>
         <div className="max-w-xl w-full mx-4">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Input
+            startContent={
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Search"
-            />
-          </div>
+            }
+            type="text"
+            placeholder="Search"
+          />
         </div>
         <div className="flex-shrink-0 flex space-x-5">
           <CreateMenu />
