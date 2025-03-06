@@ -11,7 +11,7 @@ export default async function CommunityPage({
     <div className="bg-white dark:bg-gray-900 dark:text-white">
       <div className="max-w-7xl mx-auto py-4">
         <CommunityBrand communityId={community} />
-        <Threads communityId={community} />
+        <Threads communityId={community} isShowPostButton />
       </div>
     </div>
   );

@@ -60,7 +60,6 @@ export default function Threads({
       ? `${filterWithCommunity ? " AND " : ""}${filterWithUser}`
       : ""
   }`;
-  console.log("filter", filter);
 
   const { isLoading, data, setParams } = useMeilisearch("thread", undefined, {
     sort: ["created_time:desc"],
