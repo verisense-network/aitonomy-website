@@ -73,7 +73,7 @@ export default function ThreadView({ threadId }: { threadId: string }) {
             </CardHeader>
             <CardBody>
               <div
-                className="prose max-w-none"
+                className="prose max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{
                   __html: parseMarkdown(threadData.content),
                 }}

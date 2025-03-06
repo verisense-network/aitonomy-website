@@ -24,12 +24,14 @@ import { ForwardedRef } from "react";
 import "@mdxeditor/editor/style.css";
 import { twMerge } from "tailwind-merge";
 import AddImage from "./AddImage";
+import { useTheme } from "next-themes";
 
 interface EditorProps extends MDXEditorProps {
   editorRef?: ForwardedRef<MDXEditorMethods> | null;
 }
 
 export default function ContentEditor({ editorRef, ...props }: EditorProps) {
+  const { theme } = useTheme();
   return (
     <MDXEditor
       plugins={[
@@ -56,6 +58,7 @@ export default function ContentEditor({ editorRef, ...props }: EditorProps) {
         linkDialogPlugin(),
         codeBlockPlugin({ defaultCodeBlockLanguage: "js" }),
         codeMirrorPlugin({
+          autoLoadLanguageSupport: true,
           codeBlockLanguages: {
             rust: "Rust",
             ts: "TypeScript",
@@ -70,8 +73,14 @@ export default function ContentEditor({ editorRef, ...props }: EditorProps) {
       ]}
       {...props}
       ref={editorRef}
+      className={twMerge(
+        `w-full overflow-hidden prose max-w-none dark:prose-invert border-1 border-zinc-200 dark:border-zinc-800 ${
+          theme === "dark" ? "dark-theme dark-editor" : ""
+        }`,
+        props.className
+      )}
       contentEditableClassName={twMerge(
-        "prose w-full max-w-full",
+        `w-full max-w-full`,
         props.contentEditableClassName
       )}
     />

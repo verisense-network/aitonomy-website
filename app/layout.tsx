@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <ViewTransitions>
-      <html lang="en">
+      <html lang="en" className="dark">
         <body className={`${inter.variable} font-sans antialiased min-h-full`}>
           <main>
             <Providers>

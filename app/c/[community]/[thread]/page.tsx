@@ -28,7 +28,7 @@ export default function ThreadPage({ params }: Props): React.ReactNode {
   });
 
   return (
-    <div className="bg-white dark:bg-gray-900 dark:text-white">
+    <div>
       <div className="max-w-7xl mx-auto py-4 space-y-6">
         <ThreadView threadId={computedThreadId} />
         <ThreadComments

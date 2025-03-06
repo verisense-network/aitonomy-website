@@ -78,7 +78,7 @@ export default function ThreadComments({ threadId, community }: Props) {
           <Card key={comment.id} className="p-1">
             <CardBody>
               <div
-                className="prose max-w-none"
+                className="prose max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{
                   __html: parseMarkdown(comment.content),
                 }}

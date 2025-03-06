@@ -8,7 +8,7 @@ export default async function CommunityPage({
 }) {
   const { community } = await params;
   return (
-    <div className="bg-white dark:bg-gray-900 dark:text-white">
+    <div>
       <div className="max-w-7xl mx-auto py-4">
         <CommunityBrand communityId={community} />
         <Threads communityId={community} isShowPostButton />

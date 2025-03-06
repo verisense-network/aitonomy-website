@@ -182,7 +182,7 @@ export default function ThreadCreate({
             </span>
             <Suspense fallback={<Spinner />}>
               <ContentEditor
-                className="mt-2 w-full border-gray-200 border-1 rounded-xl"
+                className="mt-2 w-full rounded-xl"
                 {...field}
                 markdown={field.value}
                 contentEditableClassName="min-h-72"

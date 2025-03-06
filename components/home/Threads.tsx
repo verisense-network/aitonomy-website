@@ -20,6 +20,7 @@ import CreateThread from "../community/thread/Create";
 import { UserAddressView } from "@/utils/format";
 import { parseMarkdown } from "@/utils/markdown";
 import truncateHtml from "truncate-html";
+import { useTheme } from "next-themes";
 
 export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full px-1 py-2 rounded-small">{children}</div>
@@ -39,6 +40,7 @@ export default function Threads({
   isShowPostButton,
 }: ThreadsProps) {
   const router = useTransitionRouter();
+  const { theme } = useTheme();
 
   const { data: communities, forceUpdate } = useMeilisearch(
     "community",
@@ -118,7 +120,7 @@ export default function Threads({
             </CardHeader>
             <CardBody>
               <div
-                className="prose max-w-none"
+                className="prose max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{
                   __html: truncateHtml(
                     parseMarkdown(hit.content),
