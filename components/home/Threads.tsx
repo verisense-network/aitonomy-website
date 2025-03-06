@@ -28,16 +28,25 @@ export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
 interface ThreadsProps {
   className?: string;
   communityId?: string;
+  userAddress?: string;
+  isShowPostButton?: boolean;
 }
 
-export default function Threads({ className, communityId }: ThreadsProps) {
+export default function Threads({
+  className,
+  communityId,
+  userAddress,
+  isShowPostButton,
+}: ThreadsProps) {
   const router = useRouter();
 
   const { data: communities, forceUpdate } = useMeilisearch(
     "community",
     undefined,
     {
-      filter: `id = "${hexToLittleEndian(communityId || "")}"`,
+      filter: `id = "${hexToLittleEndian(communityId || "")}"${
+        userAddress ? ` AND author = "${userAddress}"` : ""
+      }`,
       limit: 1,
     }
   );
@@ -79,7 +88,7 @@ export default function Threads({ className, communityId }: ThreadsProps) {
       <h1 className="py-4 text-lg font-bold">Threads</h1>
       <div className="space-y-3">
         {isLoading && <Spinner />}
-        {!isLoading && (
+        {isShowPostButton && !isLoading && (
           <CreateThread
             communityName={community?.name}
             reloadCommunity={forceUpdate}

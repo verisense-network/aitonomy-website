@@ -89,8 +89,8 @@ export default function UserProfile({ address }: Props) {
 
   return (
     <div className="flex flex-col space-y-2 w-1/2">
+      <h1 className="py-4 text-lg font-bold">Profile</h1>
       <Card className="min-w-1/2">
-        <CardHeader>Profile</CardHeader>
         <CardBody>
           <div className="space-y-5">
             <div className="flex space-x-2 items-center">
@@ -126,7 +126,7 @@ export default function UserProfile({ address }: Props) {
               </Tooltip>
             </div>
             {isYouAddress(address) && (
-              <Table aria-label="Balances" title="Balances">
+              <Table aria-label="Balances">
                 <TableHeader columns={TABLE_COLUMNS}>
                   {(column) => (
                     <TableColumn key={column.key}>{column.label}</TableColumn>
