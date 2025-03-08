@@ -11,7 +11,7 @@ import {
   Spinner,
   User,
 } from "@heroui/react";
-import { useTransitionRouter } from "next-view-transitions";
+import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { decodeId } from "@/utils/thread";
 import { formatTimestamp, hexToLittleEndian } from "@/utils/tools";
@@ -39,7 +39,7 @@ export default function Threads({
   userAddress,
   isShowPostButton,
 }: ThreadsProps) {
-  const router = useTransitionRouter();
+  const router = useRouter();
   const { theme } = useTheme();
 
   const { data: communities, forceUpdate } = useMeilisearch(

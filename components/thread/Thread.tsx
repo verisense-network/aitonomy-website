@@ -14,10 +14,10 @@ import {
 import { useCallback, useEffect } from "react";
 import { UserAddressView } from "@/utils/format";
 import { parseMarkdown } from "@/utils/markdown";
-import { useTransitionRouter } from "next-view-transitions";
+import { useRouter } from "next/navigation";
 
 export default function ThreadView({ threadId }: { threadId: string }) {
-  const router = useTransitionRouter();
+  const router = useRouter();
   const { data, isLoading, isValidating, forceUpdate } = useMeilisearch(
     "thread",
     undefined,
