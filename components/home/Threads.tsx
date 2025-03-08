@@ -7,6 +7,7 @@ import {
   CardFooter,
   CardHeader,
   Chip,
+  Divider,
   Pagination,
   Spinner,
   User,
@@ -40,7 +41,6 @@ export default function Threads({
   isShowPostButton,
 }: ThreadsProps) {
   const router = useRouter();
-  const { theme } = useTheme();
 
   const { data: communities, forceUpdate } = useMeilisearch(
     "community",
@@ -57,11 +57,10 @@ export default function Threads({
     ? `id CONTAINS ${hexToLittleEndian(communityId)}`
     : "";
   const filterWithUser = userAddress ? `author = "${userAddress}"` : "";
-  const filter = `${filterWithCommunity}${
-    filterWithUser
-      ? `${filterWithCommunity ? " AND " : ""}${filterWithUser}`
-      : ""
-  }`;
+  const filter = `${filterWithCommunity}${filterWithUser
+    ? `${filterWithCommunity ? " AND " : ""}${filterWithUser}`
+    : ""
+    }`;
 
   const { isLoading, data, setParams } = useMeilisearch("thread", undefined, {
     sort: ["created_time:desc"],
@@ -100,7 +99,7 @@ export default function Threads({
           <CreateThread
             communityName={community?.name}
             reloadCommunity={forceUpdate}
-            onSuccess={() => {}}
+            onSuccess={() => { }}
           />
         )}
         {data?.hits?.length === 0 && (
@@ -108,42 +107,48 @@ export default function Threads({
             <h1 className="text-xl">No threads found</h1>
           </div>
         )}
-        {data?.hits?.map((hit: any) => (
-          <Card
-            className="w-full p-2"
-            key={hit.id}
-            onPress={() => toThreadPage(hit.id)}
-            isPressable
-          >
-            <CardHeader>
-              <h1 className="text-xl font-bold">{hit.title}</h1>
-            </CardHeader>
-            <CardBody>
-              <div
-                className="prose max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{
-                  __html: truncateHtml(
-                    parseMarkdown(hit.content),
-                    120
-                  ) as string,
+        <div>
+          {data?.hits?.map((hit: any, index: number) => (
+            <>
+              <Card
+                className="w-full p-2"
+                classNames={{
+                  base: "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900"
                 }}
-              ></div>
-            </CardBody>
-            <CardFooter className="flex flex-col space-y-2 text-sm text-gray-500 items-start md:flex-row md:justify-between">
-              <div>
-                <User
-                  name={
-                    <UserAddressView agentPubkey={""} address={hit.author} />
-                  }
-                />
-              </div>
-              <div className="flex space-x-2 items-center">
-                <Chip>{hit.community_name}</Chip>
-                <div>{formatTimestamp(hit.created_time)}</div>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
+                key={hit.id}
+                onPress={() => toThreadPage(hit.id)}
+                isPressable
+              >
+                <CardHeader className="pb-0">
+                  <div className="flex space-x-2 items-center text-sm">
+                    <User
+                      avatarProps={{
+                        size: "sm",
+                        name: hit.community_name
+                      }}
+                      name={hit.community_name}
+                    />
+                    <span className="text-gray-500">•</span>
+                    <div>{formatTimestamp(hit.created_time)}</div>
+                  </div>
+                </CardHeader>
+                <CardBody>
+                  <h1 className="text-xl font-bold mb-2">{hit.title}</h1>
+                  <div
+                    className="prose max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{
+                      __html: truncateHtml(
+                        parseMarkdown(hit.content),
+                        120
+                      ) as string,
+                    }}
+                  ></div>
+                </CardBody>
+              </Card>
+              {index !== data?.hits?.length - 1 && <Divider className="my-1" />}
+            </>
+          ))}
+        </div>
       </div>
       <Pagination
         className="mt-2"

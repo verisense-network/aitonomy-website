@@ -23,5 +23,12 @@ export default {
     },
   },
   darkMode: "class",
-  plugins: [heroui(), typography()],
+  plugins: [heroui({
+    themes: {
+      dark: {
+        colors: {
+        },
+      },
+    },
+  }), typography()],
 } satisfies Config;
