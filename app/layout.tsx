@@ -5,6 +5,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import SideMenu from "@/components/sideMenu";
 import RightMenu from "@/components/RightMenu";
+import WelcomeModal from "@/components/modal/Welcome";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -34,6 +35,7 @@ export default function RootLayout({
               </div>
               <RightMenu />
             </div>
+            <WelcomeModal />
           </Providers>
         </main>
       </body>

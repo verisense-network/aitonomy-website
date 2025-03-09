@@ -1,10 +1,10 @@
 "use client";
 
-import { useSideMenuStore } from "@/store/sideMenu";
+import { useAppearanceStore } from "@/store/appearance";
 import { twMerge } from "tailwind-merge";
 
 export default function RightMenu() {
-  const { isOpen } = useSideMenuStore();
+  const { sideBarIsOpen } = useAppearanceStore();
 
-  return <div className={twMerge(isOpen ? "w-[200px]" : "w-12")} />;
+  return <div className={twMerge(sideBarIsOpen ? "w-[200px]" : "w-12")} />;
 }

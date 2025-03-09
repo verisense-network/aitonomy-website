@@ -94,10 +94,10 @@ importers:
         version: 1.0.3
       zustand:
         specifier: ^5.0.3
-        version: 5.0.3(@types/react@19.0.9)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0))
+        version: 5.0.3(@types/react@19.0.9)(immer@10.1.1)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0))
       zustand-computed:
         specifier: ^2.0.2
-        version: 2.0.2(react@19.0.0)(zustand@5.0.3(@types/react@19.0.9)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0)))
+        version: 2.0.2(react@19.0.0)(zustand@5.0.3(@types/react@19.0.9)(immer@10.1.1)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0)))
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3
@@ -3376,6 +3376,9 @@ packages:
   ignore@5.3.2:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
     engines: {node: '>= 4'}
+
+  immer@10.1.1:
+    resolution: {integrity: sha512-s2MPrmjovJcoMaHtx6K11Ra7oD05NT97w1IC5zpMkT6Atjr7H8LjaDd81iIxUYpMKSRRNMJE703M1Fhr/TctHw==}
 
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
@@ -9662,6 +9665,9 @@ snapshots:
 
   ignore@5.3.2: {}
 
+  immer@10.1.1:
+    optional: true
+
   import-fresh@3.3.1:
     dependencies:
       parent-module: 1.0.1
@@ -11507,14 +11513,15 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zustand-computed@2.0.2(react@19.0.0)(zustand@5.0.3(@types/react@19.0.9)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0))):
+  zustand-computed@2.0.2(react@19.0.0)(zustand@5.0.3(@types/react@19.0.9)(immer@10.1.1)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0))):
     dependencies:
       react: 19.0.0
-      zustand: 5.0.3(@types/react@19.0.9)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0))
+      zustand: 5.0.3(@types/react@19.0.9)(immer@10.1.1)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0))
 
-  zustand@5.0.3(@types/react@19.0.9)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0)):
+  zustand@5.0.3(@types/react@19.0.9)(immer@10.1.1)(react@19.0.0)(use-sync-external-store@1.4.0(react@19.0.0)):
     optionalDependencies:
       '@types/react': 19.0.9
+      immer: 10.1.1
       react: 19.0.0
       use-sync-external-store: 1.4.0(react@19.0.0)
 

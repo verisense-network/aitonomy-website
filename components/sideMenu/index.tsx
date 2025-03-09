@@ -4,9 +4,14 @@ import useMeilisearch from "@/hooks/useMeilisearch";
 import {
   ArrowLeftCircleIcon,
   Bars3Icon,
+  CurrencyDollarIcon,
   HomeIcon,
   PlusIcon,
+  QuestionMarkCircleIcon,
+  ShieldCheckIcon,
   UserGroupIcon,
+  UserIcon,
+  UsersIcon,
 } from "@heroicons/react/24/outline";
 import {
   Accordion,
@@ -28,10 +33,11 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { hexToLittleEndian } from "@/utils/tools";
 import CommunityCreate from "../community/Create";
-import { useSideMenuStore } from "@/store/sideMenu";
+import { useAppearanceStore } from "@/store/appearance";
 
 export default function SideMenu() {
-  const { isOpen, setIsOpen } = useSideMenuStore();
+  const { sideBarIsOpen, setSideBarIsOpen, setWelcomeModalIsOpen } =
+    useAppearanceStore();
   const router = useRouter();
   const [createCommunityModal, setCreateCommunityModal] = useState(false);
 
@@ -39,8 +45,6 @@ export default function SideMenu() {
     sort: ["created_time:desc"],
     limit: 5,
   });
-
-  console.log(data);
 
   const toCommunityPage = useCallback(
     (id: Key) => {
@@ -61,26 +65,37 @@ export default function SideMenu() {
     [router]
   );
 
+  const onMenu2Actions = useCallback(
+    (key: Key) => {
+      if (key === "how-to-works") {
+        setWelcomeModalIsOpen(true);
+      } else {
+        router.push(`/legals/${key as string}`);
+      }
+    },
+    [router, setWelcomeModalIsOpen]
+  );
+
   return (
     <div
       className={twMerge(
-        isOpen ? "w-[240px]" : "w-12",
+        sideBarIsOpen ? "w-[240px]" : "w-12",
         "relative border-r-1 border-zinc-800"
       )}
     >
       <Button
-        onPress={() => setIsOpen(!isOpen)}
+        onPress={() => setSideBarIsOpen(!sideBarIsOpen)}
         isIconOnly
         variant="light"
         className="absolute top-12 -right-4 shadow-0 text-zinc-300"
       >
-        {isOpen ? (
+        {sideBarIsOpen ? (
           <ArrowLeftCircleIcon className="w-8 h-8 bg-black" />
         ) : (
           <Bars3Icon className="w-8 h-8 bg-black" />
         )}
       </Button>
-      <div className={twMerge(isOpen ? "" : "hidden", "", "p-2 pr-4")}>
+      <div className={twMerge(sideBarIsOpen ? "" : "hidden", "", "p-2 pr-4")}>
         <Listbox
           classNames={{
             list: "py-2",
@@ -117,7 +132,6 @@ export default function SideMenu() {
               <PlusIcon className="w-5 h-5" />
               Create Community
             </Button>
-
             <Listbox
               classNames={{
                 list: "py-2",
@@ -149,6 +163,40 @@ export default function SideMenu() {
           </AccordionItem>
         </Accordion>
         <Divider />
+        <Listbox
+          classNames={{
+            list: "py-2",
+          }}
+          itemClasses={{
+            base: "py-3",
+          }}
+          onAction={onMenu2Actions}
+        >
+          <ListboxItem
+            key="how-to-works"
+            startContent={<QuestionMarkCircleIcon className="w-5 h-5" />}
+          >
+            How it works
+          </ListboxItem>
+          <ListboxItem
+            key="privacy-policy"
+            startContent={<ShieldCheckIcon className="w-5 h-5" />}
+          >
+            Privacy Policy
+          </ListboxItem>
+          <ListboxItem
+            key="terms-of-service"
+            startContent={<UsersIcon className="w-5 h-5" />}
+          >
+            Terms of Service
+          </ListboxItem>
+          <ListboxItem
+            key="fees"
+            startContent={<CurrencyDollarIcon className="w-5 h-5" />}
+          >
+            Fees
+          </ListboxItem>
+        </Listbox>
       </div>
       <Modal
         isOpen={createCommunityModal}
