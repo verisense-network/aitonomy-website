@@ -13,7 +13,7 @@ type Store = {
 export const useAppearanceStore = create<Store>()(
   persist(
     (set) => ({
-      sideBarIsOpen: false,
+      sideBarIsOpen: true,
       welcomeModalIsOpen: false,
       welcomeModalIsReabled: false,
       setSideBarIsOpen: (isOpen: boolean) => set({ sideBarIsOpen: isOpen }),

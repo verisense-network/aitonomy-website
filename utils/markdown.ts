@@ -2,12 +2,18 @@ import DOMPurify from "dompurify";
 import { parse } from "marked";
 
 export function parseMarkdown(markdownText: string) {
-  return DOMPurify.sanitize(
-    parse(markdownText, {
-      async: false,
-    })
-  );
+  if (typeof window !== 'undefined') {
+    return DOMPurify.sanitize(
+      parse(markdownText, {
+        async: false,
+      })
+    );
+  }
+  return parse(markdownText, {
+    async: false,
+  });
 }
+
 export function extractMarkdownImages(markdownText: string): string[] {
   const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
 
