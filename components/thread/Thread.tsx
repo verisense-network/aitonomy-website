@@ -3,6 +3,8 @@
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { formatTimestamp, sleep } from "@/utils/tools";
 import {
+  BreadcrumbItem,
+  Breadcrumbs,
   Card,
   CardBody,
   CardFooter,
@@ -63,8 +65,17 @@ export default function ThreadView({ threadId }: { threadId: string }) {
   );
 
   return (
-    <div>
-      <Card className="m-2 p-2 min-h-20">
+    <div className="w-full">
+      <Breadcrumbs className="m-2">
+        <BreadcrumbItem onClick={() => router.push("/")}>Home</BreadcrumbItem>
+        <BreadcrumbItem
+          onClick={() => toComunityPage(threadData?.formattedId?.community)}
+        >
+          {threadData?.community_name}
+        </BreadcrumbItem>
+        <BreadcrumbItem>{threadData?.title}</BreadcrumbItem>
+      </Breadcrumbs>
+      <Card className="m-2 mt-5 p-2 min-h-20">
         {isLoading && <Spinner />}
         {!isLoading && threadData && (
           <>
@@ -84,6 +95,9 @@ export default function ThreadView({ threadId }: { threadId: string }) {
                 <User
                   className="cursor-pointer"
                   onClick={() => toUserProfilePage(threadData.author)}
+                  avatarProps={{
+                    name: threadData.author,
+                  }}
                   name={
                     <UserAddressView
                       agentPubkey={""}
@@ -93,14 +107,6 @@ export default function ThreadView({ threadId }: { threadId: string }) {
                 />
               </div>
               <div className="flex space-x-2 items-center">
-                <Chip
-                  onClick={() =>
-                    toComunityPage(threadData.formattedId?.community)
-                  }
-                  className="cursor-pointer"
-                >
-                  {threadData.community_name}
-                </Chip>
                 <div>{formatTimestamp(threadData.created_time)}</div>
               </div>
             </CardFooter>

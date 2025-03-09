@@ -89,6 +89,9 @@ export default function ThreadComments({ threadId, community }: Props) {
                 <User
                   className="cursor-pointer"
                   onClick={() => toUserProfilePage(comment.author)}
+                  avatarProps={{
+                    name: comment.author,
+                  }}
                   name={
                     <UserAddressView
                       agentPubkey={community?.agent_pubkey}
