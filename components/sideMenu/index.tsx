@@ -34,17 +34,29 @@ import { useCallback } from "react";
 import { hexToLittleEndian } from "@/utils/tools";
 import CommunityCreate from "../community/Create";
 import { useAppearanceStore } from "@/store/appearance";
+import { useUserStore } from "@/store/user";
+import { toast } from "react-toastify";
 
 export default function SideMenu() {
   const { sideBarIsOpen, setSideBarIsOpen, setWelcomeModalIsOpen } =
     useAppearanceStore();
+  const { isLogin } = useUserStore();
   const router = useRouter();
   const [createCommunityModal, setCreateCommunityModal] = useState(false);
 
   const { data, isLoading } = useMeilisearch("community", undefined, {
+    // filter: "status = 'Active'", TODO: enable filterable status
     sort: ["created_time:desc"],
     limit: 5,
   });
+
+  const showCreateCommunityModal = useCallback(() => {
+    if (!isLogin) {
+      toast.info("Please login first");
+      return;
+    }
+    setCreateCommunityModal(true);
+  }, [isLogin, setCreateCommunityModal]);
 
   const toCommunityPage = useCallback(
     (id: Key) => {
@@ -125,7 +137,7 @@ export default function SideMenu() {
             title="Communities"
           >
             <Button
-              onPress={() => setCreateCommunityModal(true)}
+              onPress={showCreateCommunityModal}
               variant="light"
               className="py-2 w-full"
             >

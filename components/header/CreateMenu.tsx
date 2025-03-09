@@ -34,7 +34,7 @@ export default function CreateMenu() {
   const openMenu = useCallback(
     (key: Key) => {
       if (!isLogin) {
-        toast.info("You need to login first");
+        toast.info("Please login first");
         return;
       }
 

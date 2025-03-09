@@ -41,7 +41,7 @@ export default function CreateComment({ threadId, replyTo, onSuccess }: Props) {
   const onSubmit = useCallback(
     async (data: CreateCommentParams) => {
       if (!isLogin) {
-        toast.info("You need to login first");
+        toast.info("Please login first");
         return;
       }
 

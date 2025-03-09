@@ -28,7 +28,7 @@ export default function CreateThread({
 
   const openCreateModal = useCallback(async () => {
     if (!isLogin) {
-      toast.info("You need to login first");
+      toast.info("Please login first");
       return;
     }
     if (!communityName) {
