@@ -8,11 +8,9 @@ export default async function CommunityPage({
 }) {
   const { community } = await params;
   return (
-    <div>
-      <div className="max-w-7xl mx-auto py-4">
-        <CommunityBrand communityId={community} />
-        <Threads communityId={community} isShowPostButton />
-      </div>
+    <div className="w-full mx-auto py-4">
+      <CommunityBrand communityId={community} />
+      <Threads communityId={community} isShowPostButton />
     </div>
   );
 }

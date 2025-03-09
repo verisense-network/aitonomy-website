@@ -12,11 +12,9 @@ export default function UserAddress({
   const { address } = use(params);
 
   return (
-    <div>
-      <div className="max-w-7xl mx-auto py-4 md:flex md:space-x-4">
-        <UserProfile address={address} />
-        <Threads userAddress={address} isShowPostButton={false} />
-      </div>
+    <div className="w-full mx-auto py-4 md:flex md:space-x-4">
+      <UserProfile address={address} />
+      <Threads userAddress={address} isShowPostButton={false} />
     </div>
   );
 }

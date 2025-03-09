@@ -28,9 +28,10 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { hexToLittleEndian } from "@/utils/tools";
 import CommunityCreate from "../community/Create";
+import { useSideMenuStore } from "@/store/sideMenu";
 
 export default function SideMenu() {
-  const [isOpen, setIsOpen] = useState(true);
+  const { isOpen, setIsOpen } = useSideMenuStore();
   const router = useRouter();
   const [createCommunityModal, setCreateCommunityModal] = useState(false);
 
