@@ -1,11 +1,10 @@
 "use client";
 
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { HomeModernIcon } from "@heroicons/react/24/solid";
 import { useCallback } from "react";
 import CreateMenu from "./header/CreateMenu";
 import UserMenu from "./header/UserMenu";
-import { Input } from "@heroui/react";
+import { Image, Input } from "@heroui/react";
 import { useRouter } from "next/navigation";
 
 export default function Header() {
@@ -16,12 +15,14 @@ export default function Header() {
   }, [router]);
 
   return (
-    <header className="h-16 border-b dark:border-zinc-800 z-50">
+    <header className="fixed top-0 left-0 w-full h-16 border-b dark:bg-black dark:border-zinc-800 z-50">
       <div className="max-w-7xl mx-auto h-full px-4 flex items-center justify-between md:px-0">
         <div className="flex-shrink-0 cursor-pointer" onClick={toHomePage}>
-          <HomeModernIcon
-            width={60}
-            height={40}
+          <Image
+            src="/logo.svg"
+            width={40}
+            height={60}
+            alt="AItonomy.world Logo"
             className="object-contain text-gray-400"
           />
         </div>

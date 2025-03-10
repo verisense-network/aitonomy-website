@@ -28,7 +28,7 @@ export default function RootLayout({
         <main>
           <Providers>
             <Header />
-            <div className="flex">
+            <div className="relative flex mt-16">
               <SideMenu />
               <div className="w-[70vw] md:w-[1280px] mx-auto py-4 md:inline-flex md:space-x-4">
                 {children}

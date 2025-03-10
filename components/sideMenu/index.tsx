@@ -89,146 +89,150 @@ export default function SideMenu() {
   );
 
   return (
-    <div
-      className={twMerge(
-        sideBarIsOpen ? "w-[240px]" : "w-12",
-        "relative border-r-1 border-zinc-800"
-      )}
-    >
-      <Button
-        onPress={() => setSideBarIsOpen(!sideBarIsOpen)}
-        isIconOnly
-        variant="light"
-        className="absolute top-12 -right-4 shadow-0 text-zinc-300"
-      >
-        {sideBarIsOpen ? (
-          <ArrowLeftCircleIcon className="w-8 h-8 bg-black" />
-        ) : (
-          <Bars3Icon className="w-8 h-8 bg-black" />
+    <>
+      <div
+        className={twMerge(
+          sideBarIsOpen ? "w-[240px]" : "w-12",
+          "fixed top-16 left-0 h-[calc(100vh-4rem)] border-r-1 border-zinc-800"
         )}
-      </Button>
-      <div className={twMerge(sideBarIsOpen ? "" : "hidden", "", "p-2 pr-4")}>
-        <Listbox
-          classNames={{
-            list: "py-2",
-          }}
-          itemClasses={{
-            base: "py-3",
-          }}
-          onAction={onMenu1Actions}
-        >
-          <ListboxItem
-            key="home"
-            startContent={<HomeIcon className="w-5 h-5" />}
-          >
-            Home
-          </ListboxItem>
-          <ListboxItem
-            key="explore"
-            startContent={<UserGroupIcon className="w-5 h-5" />}
-          >
-            Explore
-          </ListboxItem>
-        </Listbox>
-        <Accordion defaultSelectedKeys={["communities"]}>
-          <AccordionItem
-            key="communities"
-            aria-label="Communities"
-            title="Communities"
-          >
-            <Button
-              onPress={showCreateCommunityModal}
-              variant="light"
-              className="py-2 w-full"
-            >
-              <PlusIcon className="w-5 h-5" />
-              Create Community
-            </Button>
-            <Listbox
-              classNames={{
-                list: "py-2",
-              }}
-              emptyContent={
-                <div className="py-2">
-                  {isLoading ? <Spinner /> : "No communities"}
-                </div>
-              }
-              onAction={toCommunityPage}
-            >
-              {data?.hits?.map((community) => (
-                <ListboxItem
-                  key={community.id}
-                  startContent={
-                    <User
-                      avatarProps={{
-                        src: community.logo,
-                        name: community.name,
-                      }}
-                      name={community.name}
-                    />
-                  }
-                >
-                  {community.name}
-                </ListboxItem>
-              )) || []}
-            </Listbox>
-          </AccordionItem>
-        </Accordion>
-        <Divider />
-        <Listbox
-          classNames={{
-            list: "py-2",
-          }}
-          itemClasses={{
-            base: "py-3",
-          }}
-          onAction={onMenu2Actions}
-        >
-          <ListboxItem
-            key="how-to-works"
-            startContent={<QuestionMarkCircleIcon className="w-5 h-5" />}
-          >
-            How it works
-          </ListboxItem>
-          <ListboxItem
-            key="privacy-policy"
-            startContent={<ShieldCheckIcon className="w-5 h-5" />}
-          >
-            Privacy Policy
-          </ListboxItem>
-          <ListboxItem
-            key="terms-of-service"
-            startContent={<UsersIcon className="w-5 h-5" />}
-          >
-            Terms of Service
-          </ListboxItem>
-          <ListboxItem
-            key="fees"
-            startContent={<CurrencyDollarIcon className="w-5 h-5" />}
-          >
-            Fees
-          </ListboxItem>
-        </Listbox>
-      </div>
-      <Modal
-        isOpen={createCommunityModal}
-        onClose={() => setCreateCommunityModal(false)}
-        isDismissable={false}
-        size="xl"
       >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader>Create community</ModalHeader>
-              <ModalBody>
-                <Suspense>
-                  <CommunityCreate onClose={onClose} />
-                </Suspense>
-              </ModalBody>
-            </>
+        <Button
+          onPress={() => setSideBarIsOpen(!sideBarIsOpen)}
+          isIconOnly
+          variant="light"
+          className="absolute top-12 -right-4 shadow-0 text-zinc-300"
+        >
+          {sideBarIsOpen ? (
+            <ArrowLeftCircleIcon className="w-8 h-8 bg-black" />
+          ) : (
+            <Bars3Icon className="w-8 h-8 bg-black" />
           )}
-        </ModalContent>
-      </Modal>
-    </div>
+        </Button>
+        <div className={twMerge(sideBarIsOpen ? "" : "hidden", "", "p-2 pr-4")}>
+          <Listbox
+            classNames={{
+              list: "py-2",
+            }}
+            itemClasses={{
+              base: "py-3",
+            }}
+            onAction={onMenu1Actions}
+          >
+            <ListboxItem
+              key="home"
+              startContent={<HomeIcon className="w-5 h-5" />}
+            >
+              Home
+            </ListboxItem>
+            <ListboxItem
+              key="explore"
+              startContent={<UserGroupIcon className="w-5 h-5" />}
+            >
+              Explore
+            </ListboxItem>
+          </Listbox>
+          <Accordion defaultSelectedKeys={["communities"]}>
+            <AccordionItem
+              key="communities"
+              aria-label="Communities"
+              title="Communities"
+            >
+              <Button
+                onPress={showCreateCommunityModal}
+                variant="light"
+                className="py-2 w-full"
+              >
+                <PlusIcon className="w-5 h-5" />
+                Create Community
+              </Button>
+              <Listbox
+                classNames={{
+                  list: "py-2",
+                }}
+                emptyContent={
+                  <div className="py-2">
+                    {isLoading ? <Spinner /> : "No communities"}
+                  </div>
+                }
+                onAction={toCommunityPage}
+              >
+                {data?.hits?.map((community) => (
+                  <ListboxItem
+                    key={community.id}
+                    startContent={
+                      <User
+                        avatarProps={{
+                          src: community.logo,
+                          name: community.name,
+                        }}
+                        name={community.name}
+                      />
+                    }
+                  >
+                    {community.name}
+                  </ListboxItem>
+                )) || []}
+              </Listbox>
+            </AccordionItem>
+          </Accordion>
+          <Divider />
+          <Listbox
+            classNames={{
+              list: "py-2",
+            }}
+            itemClasses={{
+              base: "py-3",
+            }}
+            onAction={onMenu2Actions}
+          >
+            <ListboxItem
+              key="how-to-works"
+              startContent={<QuestionMarkCircleIcon className="w-5 h-5" />}
+            >
+              How it works
+            </ListboxItem>
+            <ListboxItem
+              key="privacy-policy"
+              startContent={<ShieldCheckIcon className="w-5 h-5" />}
+            >
+              Privacy Policy
+            </ListboxItem>
+            <ListboxItem
+              key="terms-of-service"
+              startContent={<UsersIcon className="w-5 h-5" />}
+            >
+              Terms of Service
+            </ListboxItem>
+            <ListboxItem
+              key="fees"
+              startContent={<CurrencyDollarIcon className="w-5 h-5" />}
+            >
+              Fees
+            </ListboxItem>
+          </Listbox>
+        </div>
+        <Modal
+          isOpen={createCommunityModal}
+          onClose={() => setCreateCommunityModal(false)}
+          isDismissable={false}
+          size="xl"
+        >
+          <ModalContent>
+            {(onClose) => (
+              <>
+                <ModalHeader>Create community</ModalHeader>
+                <ModalBody>
+                  <Suspense>
+                    <CommunityCreate onClose={onClose} />
+                  </Suspense>
+                </ModalBody>
+              </>
+            )}
+          </ModalContent>
+        </Modal>
+      </div>
+      {/* Fixed Sidebar Placeholder */}
+      <div className={twMerge(sideBarIsOpen ? "w-[240px]" : "w-12")}></div>
+    </>
   );
 }
