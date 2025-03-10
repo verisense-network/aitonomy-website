@@ -13,7 +13,6 @@ import {
   LLmName,
   PostThreadArg,
   registry,
-  Signature,
   PostCommentArg,
   SetAliasArg,
 } from "./type";
@@ -36,6 +35,7 @@ interface Signature {
 
 export interface CreateCommunityArg {
   name: string;
+  private: boolean;
   logo: string;
   slug: string;
   description: string;

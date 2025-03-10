@@ -12,16 +12,31 @@ import {
 } from "@heroui/react";
 import { connectToWallet, WalletId } from "@/utils/wallet/connect";
 import { useUserStore } from "@/store/user";
+import { chain } from "@/utils/chain";
 
-const WALLETS = [
-  {
-    id: WalletId.OKX,
-    title: "OKX",
-    icon: null,
-  },
+const isSolChain = chain === "sol";
+
+const SOL_WALLETS = [
   {
     id: WalletId.PHANTOM,
     title: "Phantom",
+    icon: null,
+  },
+];
+
+const BSC_WALLETS = [
+  {
+    id: WalletId.METAMASK,
+    title: "MetaMask",
+    icon: null,
+  },
+];
+
+const WALLETS = [
+  ...(isSolChain ? SOL_WALLETS : BSC_WALLETS),
+  {
+    id: WalletId.OKX,
+    title: "OKX",
     icon: null,
   },
 ];

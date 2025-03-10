@@ -17,8 +17,10 @@ import {
 } from "@/utils/aitonomy";
 import { Signature } from "@/utils/aitonomy/sign";
 import { NUCLEUS_ID } from "@/utils/aitonomy/tools";
+import { chain } from "@/utils/chain";
 import { hexToBytes } from "@/utils/tools";
 import bs58 from "bs58";
+import { ethers } from "ethers";
 
 if (!NUCLEUS_ID) {
   throw new Error("Nucleus ID is not defined");
@@ -74,8 +76,14 @@ interface GetAccountInfoParams {
 }
 
 export async function getAccountInfo(data: GetAccountInfoParams) {
+  let accountId: Uint8Array = new Uint8Array();
+  if (chain === "bsc") {
+    accountId = ethers.toBeArray(data.accountId);
+  } else if (chain === "sol") {
+    accountId = bs58.decode(data.accountId);
+  }
   const threadArgs = {
-    account_id: bs58.decode(data.accountId),
+    account_id: accountId,
   };
 
   const res = await getAccountInfoRpc(NUCLEUS_ID, threadArgs);
@@ -91,8 +99,14 @@ interface GetBalancesParams {
 
 export async function getBalances(data: GetBalancesParams) {
   console.log("data", data);
+  let accountId: Uint8Array = new Uint8Array();
+  if (chain === "bsc") {
+    accountId = ethers.toBeArray(data.accountId);
+  } else if (chain === "sol") {
+    accountId = bs58.decode(data.accountId);
+  }
   const threadArgs = {
-    account_id: bs58.decode(data.accountId),
+    account_id: accountId,
     gt: data.gt ? hexToBytes(data.gt) : undefined,
     limit: data.limit,
   };
