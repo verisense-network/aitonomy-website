@@ -1,6 +1,9 @@
 import { Tooltip } from "@heroui/react";
 import { formatAddress } from "./tools";
 import { isAgentAddress, isYouAddress } from "@/components/thread/utils";
+import { ethers } from "ethers";
+import { chain } from "./chain";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 interface AddressViewFormatProps {
   address: string;
@@ -50,4 +53,14 @@ export function UserAddressView({
   ) : (
     <AddressViewFormat address={address} bracket={false} />
   );
+}
+
+export const VIEW_UNIT = chain === "sol" ? "SOL" : chain === "bsc" ? "BNB" : "";
+
+export function formatReadableAmount(amount: string): string {
+  if (chain === "sol") {
+    return (Number(amount) / LAMPORTS_PER_SOL).toString();
+  } else {
+    return ethers.formatEther(amount);
+  }
 }

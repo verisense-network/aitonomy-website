@@ -18,6 +18,8 @@ export async function signPayload(
   const user = useUserStore.getState();
 
   const wallet = getWalletConnect(user.wallet!);
+  console.log("user", user);
+  console.log("wallet", wallet);
 
   const accountInfo = await getAccountInfo({
     accountId: user.address,

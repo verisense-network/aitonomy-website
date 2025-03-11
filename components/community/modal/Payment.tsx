@@ -9,16 +9,17 @@ import {
   ModalContent,
   ModalHeader,
 } from "@heroui/react";
-import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { useCallback, useMemo, useState } from "react";
 import bs58 from "bs58";
 import { Id, toast } from "react-toastify";
+import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
+import { chain } from "@/utils/chain";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   toAddress: string;
-  paymentLamports: number;
+  amount: string;
   onSuccess: (tx: string, toastId: Id) => void;
 }
 
@@ -26,12 +27,11 @@ export default function PaymentModal({
   isOpen,
   onClose,
   toAddress,
-  paymentLamports,
+  amount,
   onSuccess,
 }: Props) {
   const { address, wallet } = useUserStore();
   const fromAddress = address;
-  const amount = paymentLamports / LAMPORTS_PER_SOL;
   const [isLoading, setIsLoading] = useState(false);
 
   const toPay = useCallback(async () => {
@@ -41,15 +41,22 @@ export default function PaymentModal({
     try {
       setIsLoading(true);
       const walletConnect = getWalletConnect(wallet);
+      const readableAmount = formatReadableAmount(amount);
+      console.log("toAddress", toAddress);
+      console.log("readableAmount", readableAmount);
       const tx = await walletConnect.createTransaction(
-        new PublicKey(toAddress),
-        paymentLamports
+        toAddress,
+        readableAmount
       );
-      const signTx = await walletConnect.signTransaction(tx);
+      console.log("tx", tx);
+      const signTx = await walletConnect.signTransaction(tx as any);
 
-      await walletConnect.boardcastTransaction(signTx);
+      console.log("signTx", signTx);
 
-      const signatureHex = bs58.encode(signTx.signature);
+      await walletConnect.broadcastTransaction(signTx);
+
+      const signatureHex =
+        chain === "sol" ? bs58.encode(signTx.signature) : signTx;
       onSuccess(signatureHex, toastId);
       setIsLoading(false);
     } catch (e: any) {
@@ -62,7 +69,7 @@ export default function PaymentModal({
         autoClose: 3000,
       });
     }
-  }, [wallet, toAddress, paymentLamports, onSuccess]);
+  }, [wallet, toAddress, amount, onSuccess]);
 
   const listData = useMemo(() => {
     return [
@@ -76,7 +83,7 @@ export default function PaymentModal({
       },
       {
         label: "Amount",
-        value: `${amount} SOL`,
+        value: `${amount ? formatReadableAmount(amount) : ""} ${VIEW_UNIT}`,
       },
     ];
   }, [fromAddress, toAddress, amount]);

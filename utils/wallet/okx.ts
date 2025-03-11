@@ -1,5 +1,6 @@
 import {
   Connection,
+  LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
   Transaction,
@@ -8,13 +9,16 @@ import { WalletId } from "./connect";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 import { useUserStore } from "@/store/user";
+import { chain } from "../chain";
+import { BrowserProvider, ethers } from "ethers";
 
 export class OkxConnect {
   id = WalletId.OKX;
   wallet: any;
   address: string = "";
   publicKey: Uint8Array = new Uint8Array(32);
-  connection: Connection = new Connection(
+  ethersProvider: BrowserProvider | null = null;
+  solConnection: Connection = new Connection(
     "https://mainnet.helius-rpc.com/?api-key=64dbe6d2-9641-43c6-bb86-0e3d748f31b1",
     "confirmed"
   );
@@ -84,35 +88,78 @@ export class OkxConnect {
     return isValid;
   }
 
-  async createTransaction(toAddress: PublicKey, lamports: number) {
-    const transaction = new Transaction();
-
-    const receiverAddress = new PublicKey(toAddress);
-
-    transaction.add(
-      SystemProgram.transfer({
-        fromPubkey: new PublicKey(this.publicKey),
-        toPubkey: receiverAddress,
-        lamports,
-      })
-    );
-
-    const { blockhash } = await this.connection.getLatestBlockhash();
-    transaction.recentBlockhash = blockhash;
-    transaction.feePayer = new PublicKey(this.publicKey);
-
-    return transaction;
-  }
-
-  async signTransaction(transaction: Transaction): Promise<any> {
+  async createTransaction(
+    toAddress: string,
+    amount: string
+  ): Promise<Transaction | ethers.Transaction> {
     await this.checkConnected();
-    const signedTx = await this.wallet.solana.signTransaction(transaction);
-    return signedTx;
+    if (chain === "sol") {
+      const transaction = new Transaction();
+
+      const receiverAddress = new PublicKey(toAddress);
+
+      transaction.add(
+        SystemProgram.transfer({
+          fromPubkey: new PublicKey(this.publicKey),
+          toPubkey: receiverAddress,
+          lamports: Number(amount) / LAMPORTS_PER_SOL,
+        })
+      );
+
+      const { blockhash } = await this.solConnection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = new PublicKey(this.publicKey);
+
+      return transaction;
+    } else {
+      if (!this.ethersProvider) {
+        throw new Error("Provider not found");
+      }
+      const tx = new ethers.Transaction();
+      tx.to = toAddress;
+      tx.value = ethers.parseEther(amount);
+      tx.chainId = 56;
+
+      const feeData = await this.ethersProvider.getFeeData();
+
+      if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+        tx.type = 2;
+        tx.maxFeePerGas = feeData.maxFeePerGas;
+        tx.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
+      } else {
+        tx.type = 0;
+        if (feeData.gasPrice) {
+          tx.gasPrice = feeData.gasPrice;
+        } else {
+          tx.gasPrice = ethers.parseUnits("5", "gwei");
+        }
+      }
+
+      tx.gasLimit = await this.ethersProvider.estimateGas({
+        to: tx.to,
+        from: this.address,
+        value: tx.value,
+      });
+      return tx;
+    }
   }
 
-  async boardcastTransaction(signedTx: any) {
+  async signTransaction(
+    transaction: Transaction | ethers.Transaction
+  ): Promise<any> {
+    await this.checkConnected();
+    if (chain === "sol") {
+      const signedTx = await this.wallet.solana.signTransaction(transaction);
+      return signedTx;
+    } else if (chain === "bsc") {
+      const signedTx = await this.wallet.ethers.signTransaction(transaction);
+      return signedTx;
+    }
+  }
+
+  async broadcastTransaction(signedTx: any) {
     const serializedTransaction = signedTx.serialize();
-    const res = await this.connection.sendRawTransaction(
+    const res = await this.solConnection.sendRawTransaction(
       serializedTransaction,
       {
         skipPreflight: false,
@@ -120,5 +167,22 @@ export class OkxConnect {
       }
     );
     return res;
+  }
+
+  async getFinalizedTransaction(txHash: string) {
+    await this.checkConnected();
+    if (chain === "sol") {
+      const res = await this.solConnection.getTransaction(txHash, {
+        commitment: "finalized",
+        maxSupportedTransactionVersion: 0,
+      });
+      return res;
+    } else if (chain === "bsc") {
+      if (!this.ethersProvider) {
+        throw new Error("Provider not found");
+      }
+      const res = await this.ethersProvider.waitForTransaction(txHash);
+      return res;
+    }
   }
 }

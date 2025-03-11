@@ -1,12 +1,10 @@
 import {
-  Connection,
-  PublicKey,
-  SystemProgram,
-  Transaction,
-} from "@solana/web3.js";
-import { ethers } from "ethers";
+  BrowserProvider,
+  ethers,
+  JsonRpcProvider,
+  TransactionRequest,
+} from "ethers";
 import { WalletId } from "./connect";
-import nacl from "tweetnacl";
 import { useUserStore } from "@/store/user";
 
 export class MetamaskConnect {
@@ -14,30 +12,37 @@ export class MetamaskConnect {
   wallet: any;
   address: string = "";
   publicKey: Uint8Array = new Uint8Array(32);
-  connection: Connection = new Connection(
-    "https://mainnet.helius-rpc.com/?api-key=64dbe6d2-9641-43c6-bb86-0e3d748f31b1",
-    "confirmed"
+  provider: BrowserProvider | null = null;
+  jsonRpcProvider: JsonRpcProvider = new ethers.JsonRpcProvider(
+    "https://bsc-dataseed.binance.org/"
   );
 
   constructor() {
+    console.log("MetaMaskConnect constructor", window.ethereum);
     if (
       typeof window !== "undefined" &&
       window.ethereum &&
-      window.ethereum.isMetaMask
+      window.ethereum.isMetaMask &&
+      !window.ethereum.isPhantom
     ) {
       this.wallet = window.ethereum;
 
       this.checkStoredPublicKey();
+    } else if (window.ethereum && window.ethereum.isPhantom) {
+      throw new Error(
+        "Phantom Wallet extension already exists. Please disable Phantom extension first."
+      );
     } else {
       throw new Error("MetaMask extension not found. Please install it first.");
     }
   }
 
-  checkStoredPublicKey() {
+  async checkStoredPublicKey() {
     const userStore = useUserStore.getState();
     if (userStore.publicKey.length === 0) return;
     this.publicKey = new Uint8Array(Object.values(userStore.publicKey));
     this.address = userStore.address;
+    await this.checkConnected();
   }
 
   async connect() {
@@ -51,9 +56,50 @@ export class MetamaskConnect {
     if (!publicKey) {
       throw new Error("Failed to connect");
     }
+    if (!this.provider) {
+      this.provider = new ethers.BrowserProvider(window.ethereum);
+    }
 
-    this.address = publicKey;
-    this.publicKey = ethers.toBeArray(publicKey);
+    const network = await this.provider.getNetwork();
+    const chainId = Number(network.chainId);
+    console.log("network", network);
+    console.log("chainId", chainId);
+
+    if (chainId !== 56) {
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: "0x38" }],
+        });
+      } catch (switchError: any) {
+        if (switchError.code === 4902) {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: "0x38",
+                chainName: "Binance Smart Chain",
+                nativeCurrency: {
+                  name: "BNB",
+                  symbol: "BNB",
+                  decimals: 18,
+                },
+                rpcUrls: ["https://bsc-dataseed.binance.org/"],
+                blockExplorerUrls: ["https://bscscan.com/"],
+              },
+            ],
+          });
+        } else {
+          throw switchError;
+        }
+      }
+    }
+
+    this.provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await this.provider.getSigner();
+
+    this.address = await signer.getAddress();
+    this.publicKey = ethers.toBeArray(this.address);
 
     return this.publicKey;
   }
@@ -63,12 +109,17 @@ export class MetamaskConnect {
     if (!this.wallet.isConnected()) {
       await this.wallet.handleConnect();
     }
+    if (!this.provider) {
+      this.provider = new ethers.BrowserProvider(window.ethereum);
+    }
   }
 
   async signMessage(message: string): Promise<Uint8Array> {
     await this.checkConnected();
     const encoded = new TextEncoder().encode(message);
     const hexMsg = ethers.hexlify(encoded);
+    console.log("hexMsg", hexMsg);
+    console.log("address", this.address);
     const signature: string = await this.wallet.request({
       method: "personal_sign",
       params: [hexMsg, this.address],
@@ -89,41 +140,49 @@ export class MetamaskConnect {
     return isValid;
   }
 
-  async createTransaction(toAddress: PublicKey, lamports: number) {
-    const transaction = new Transaction();
-
-    const receiverAddress = new PublicKey(toAddress);
-
-    transaction.add(
-      SystemProgram.transfer({
-        fromPubkey: new PublicKey(this.publicKey),
-        toPubkey: receiverAddress,
-        lamports,
-      })
-    );
-
-    const { blockhash } = await this.connection.getLatestBlockhash();
-    transaction.recentBlockhash = blockhash;
-    transaction.feePayer = new PublicKey(this.publicKey);
-
-    return transaction;
-  }
-
-  async signTransaction(transaction: Transaction): Promise<any> {
+  async createTransaction(
+    toAddress: string,
+    amount: string
+  ): Promise<TransactionRequest> {
     await this.checkConnected();
-    const signedTx = await this.wallet.solana.signTransaction(transaction);
-    return signedTx;
+    if (!this.provider) {
+      throw new Error("Provider not found");
+    }
+    const tx: TransactionRequest = {
+      to: ethers.getAddress(toAddress),
+      value: ethers.parseEther(amount),
+      chainId: 56,
+    };
+    return tx;
   }
 
-  async boardcastTransaction(signedTx: any) {
-    const serializedTransaction = signedTx.serialize();
-    const res = await this.connection.sendRawTransaction(
-      serializedTransaction,
-      {
-        skipPreflight: false,
-        preflightCommitment: "confirmed",
-      }
-    );
-    return res;
+  async signTransaction(tx: TransactionRequest): Promise<string> {
+    await this.checkConnected();
+    if (!this.provider) {
+      throw new Error("Provider not found");
+    }
+    const signer = await this.provider.getSigner();
+    console.log("tx", tx);
+    console.log("signer", signer);
+    const sig = await signer.sendTransaction(tx);
+    return sig.hash;
+    // return "0xbbf9d78389efdcec6d5ea9a80a09a1c2a88da43b9b6fcd440f7ca0f9b9916068";
+  }
+
+  async broadcastTransaction(sigHash: string) {
+    /**
+     * BSC signTransaction auto sendTransaction
+     */
+    return sigHash;
+    // await this.checkConnected();
+    // const tx = await this.jsonRpcProvider.broadcastTransaction(sig);
+    // await tx.wait();
+    // return tx.hash;
+  }
+
+  async getFinalizedTransaction(txHash: string) {
+    await this.checkConnected();
+    const receipt = await this.jsonRpcProvider.waitForTransaction(txHash);
+    return receipt;
   }
 }
