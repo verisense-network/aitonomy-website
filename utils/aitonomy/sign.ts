@@ -1,7 +1,7 @@
 import { useUserStore } from "@/store/user";
 import { getWalletConnect } from "../wallet";
 import { registry } from "./type";
-import { Struct, u64 } from "@polkadot/types-codec";
+import { Struct, u64, u8, Vec } from "@polkadot/types-codec";
 import { CodecClass } from "@polkadot/types-codec/types";
 import { getAccountInfo } from "@/app/actions";
 
@@ -18,8 +18,6 @@ export async function signPayload(
   const user = useUserStore.getState();
 
   const wallet = getWalletConnect(user.wallet!);
-  console.log("user", user);
-  console.log("wallet", wallet);
 
   const accountInfo = await getAccountInfo({
     accountId: user.address,
@@ -31,6 +29,8 @@ export async function signPayload(
   console.log("nonce", nonce);
 
   const nonceEncoded = new u64(registry, nonce).toU8a();
+  console.log("nonceEncoded", nonceEncoded);
+  console.log("payload", payload);
   const payloadEncoded = new Struct(registry, payload).toU8a();
 
   const messageBuf = new Uint8Array(

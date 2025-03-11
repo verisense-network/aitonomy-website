@@ -41,6 +41,14 @@ export async function createCommunity(
   return res;
 }
 
+export interface CreateThreadForm {
+  community: string;
+  title: string;
+  content: string;
+  images: string[];
+  mention: string[];
+}
+
 export async function createThread(
   form: CreateThreadArg,
   signature: Signature
@@ -98,8 +106,10 @@ interface GetBalancesParams {
 }
 
 export async function getBalances(data: GetBalancesParams) {
-  console.log("data", data);
   let accountId: Uint8Array = new Uint8Array();
+  if (!data.accountId) {
+    return [];
+  }
   if (chain === "bsc") {
     accountId = ethers.toBeArray(data.accountId);
   } else if (chain === "sol") {

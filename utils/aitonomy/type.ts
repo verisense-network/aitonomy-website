@@ -274,16 +274,16 @@ export const CreateCommunityArg = createWithArgs(CreateCommunityPayload);
     pub struct PostThreadArg {
         pub community: String,
         pub title: String,
-        pub content: String,
-        pub image: Option<String>,
+        pub content: Vec<u8>,
+        pub images: Vec<String>,
         pub mention: Vec<AccountId>,
     }
  */
 export const PostThreadPayload = Struct.with({
   community: Text,
   title: Text,
-  content: Text,
-  image: Option.with(Text),
+  content: Vec.with(u8),
+  images: Vec.with(Text),
   mention: Vec.with(AccountId),
 });
 
@@ -292,16 +292,16 @@ export const PostThreadArg = createWithArgs(PostThreadPayload);
 /**
     pub struct PostCommentArg {
         pub thread: ContentId,
-        pub content: String,
-        pub image: Option<String>,
+        pub content: Vec<u8>,
+        pub images: Vec<String>,
         pub mention: Vec<AccountId>,
         pub reply_to: Option<ContentId>,
     }
  */
 export const PostCommentPayload = Struct.with({
   thread: ContentId,
-  content: Text,
-  image: Option.with(Text),
+  content: Vec.with(u8),
+  images: Vec.with(Text),
   mention: Vec.with(AccountId),
   reply_to: Option.with(ContentId),
 });

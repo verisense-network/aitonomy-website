@@ -1,9 +1,9 @@
-import { createThread } from "@/app/actions";
+import { createThread, CreateThreadForm } from "@/app/actions";
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { CreateThreadArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
-import { PostThreadPayload } from "@/utils/aitonomy/type";
+import { PostThreadPayload, registry } from "@/utils/aitonomy/type";
 import { decodeId } from "@/utils/thread";
 import { debounce, hexToLittleEndian } from "@/utils/tools";
 import {
@@ -21,6 +21,7 @@ import { toast } from "react-toastify";
 
 import dynamic from "next/dynamic";
 import { extractMarkdownImages } from "@/utils/markdown";
+import { compressString } from "@/utils/compressString";
 
 const ContentEditor = dynamic(() => import("../mdxEditor/ContentEditor"), {
   ssr: false,
@@ -38,11 +39,12 @@ export default function ThreadCreate({
   onClose,
 }: Props) {
   const router = useRouter();
-  const { control, handleSubmit } = useForm<CreateThreadArg>({
+  const { control, handleSubmit } = useForm<CreateThreadForm>({
     defaultValues: {
       community: defaultCommunity || "",
       title: "",
       content: "",
+      images: [],
       mention: [],
     },
   });
@@ -61,7 +63,7 @@ export default function ThreadCreate({
   const communities = communitiesData?.hits ?? [];
 
   const onSubmit = useCallback(
-    async (data: CreateThreadArg) => {
+    async (data: CreateThreadForm) => {
       console.log(data);
       const toastId = toast.loading(
         "Posting continue to complete in your wallet"
@@ -69,14 +71,15 @@ export default function ThreadCreate({
       console.log("toastId", toastId);
       try {
         const images = extractMarkdownImages(data.content);
+        const content = compressString(data.content);
         const payload = {
           ...data,
-          image: images.length > 0 ? images[0] : undefined,
-          mention: new Array(0).fill(new Array(32).fill(0)),
+          content: Array.from(content),
+          images,
+          mention: [],
         } as CreateThreadArg;
 
         const signature = await signPayload(payload, PostThreadPayload);
-
         const contentId = await createThread(payload, signature);
         console.log("contentId", contentId);
         if (!contentId) return;

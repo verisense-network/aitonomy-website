@@ -101,9 +101,9 @@ export async function createCommunityRpc(
 export interface CreateThreadArg {
   community: string;
   title: string;
-  content: string;
-  image?: string;
-  mention: string[];
+  content: Array<number>;
+  images: string[];
+  mention: Uint8Array[];
 }
 
 export async function createThreadRpc(
@@ -221,13 +221,20 @@ export async function activateCommunityRpc(
   nucleusId: string,
   args: ActivateCommunityArg
 ) {
-  const rpcArgs = args;
+  const rpcArgs = {
+    ...args,
+    tx: `\u200B${args.tx}`,
+  };
 
   console.log("rpcArgs", rpcArgs);
 
   const payload = new ActivateCommunityArg(registry, rpcArgs).toHex();
 
   console.log("payload", payload);
+
+  const decoded = new ActivateCommunityArg(registry, payload).toHuman();
+  console.log("decoded", decoded);
+
   try {
     const provider = await getRpcClient();
     const response = await provider.send<any>("nucleus_post", [

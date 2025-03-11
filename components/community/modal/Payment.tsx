@@ -14,6 +14,7 @@ import bs58 from "bs58";
 import { Id, toast } from "react-toastify";
 import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
 import { chain } from "@/utils/chain";
+import { isDev } from "@/utils/tools";
 
 interface Props {
   isOpen: boolean;
@@ -71,6 +72,11 @@ export default function PaymentModal({
     }
   }, [wallet, toAddress, amount, onSuccess]);
 
+  const mockPayment = useCallback(() => {
+    const signatureHex = `0xc712feacbd7672e3d8f4b2ff4d8c4484747e9fa2730614ddc97dc2ce9870538a`;
+    onSuccess(signatureHex, 1);
+  }, [onSuccess]);
+
   const listData = useMemo(() => {
     return [
       {
@@ -116,6 +122,7 @@ export default function PaymentModal({
               >
                 Payment
               </Button>
+              {isDev && <Button onPress={mockPayment}>Mock</Button>}
             </ModalBody>
           </>
         )}

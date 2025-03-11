@@ -18,7 +18,6 @@ export class MetamaskConnect {
   );
 
   constructor() {
-    console.log("MetaMaskConnect constructor", window.ethereum);
     if (
       typeof window !== "undefined" &&
       window.ethereum &&
