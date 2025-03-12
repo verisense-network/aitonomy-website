@@ -22,9 +22,14 @@ import { decompressString } from "@/utils/compressString";
 interface Props {
   threadId: string;
   community: Community;
+  communityAgentPubkey: string;
 }
 
-export default function ThreadComments({ threadId, community }: Props) {
+export default function ThreadComments({
+  threadId,
+  community,
+  communityAgentPubkey,
+}: Props) {
   const router = useRouter();
   const { thread, community: communityId } = decodeId(threadId);
   const { data, isLoading, setParams, forceUpdate } = useMeilisearch(
@@ -71,6 +76,7 @@ export default function ThreadComments({ threadId, community }: Props) {
       {!isLoading && (
         <CreateComment
           threadId={threadId}
+          communityAgentPubkey={communityAgentPubkey}
           onSuccess={onSuccessCreateCommunity}
         />
       )}

@@ -159,7 +159,7 @@ export interface CreateCommentArg {
   thread: Uint8Array;
   content: Array<number>;
   image?: string;
-  mention: string[];
+  mention: Uint8Array[];
   reply_to?: string;
 }
 

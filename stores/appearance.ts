@@ -11,7 +11,9 @@ type Store = {
   setWelcomeModalIsReabled: (isReabled: boolean) => void;
 };
 
-export const isMobile = window.matchMedia("(max-width: 768px)").matches;
+export const isMobile =
+  typeof window !== "undefined" &&
+  window.matchMedia("(max-width: 768px)").matches;
 
 export const useAppearanceStore = create<Store>()(
   persist(

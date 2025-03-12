@@ -25,6 +25,7 @@ import "@mdxeditor/editor/style.css";
 import { twMerge } from "tailwind-merge";
 import AddImage from "./AddImage";
 import { useTheme } from "next-themes";
+import AddMention from "./AddMention";
 
 interface EditorProps extends MDXEditorProps {
   editorRef?: ForwardedRef<MDXEditorMethods> | null;
@@ -45,6 +46,7 @@ export default function ContentEditor({ editorRef, ...props }: EditorProps) {
               <AddImage />
               <CreateLink />
               <InsertCodeBlock />
+              <AddMention />
             </>
           ),
         }),

@@ -20,7 +20,11 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 import dynamic from "next/dynamic";
-import { extractMarkdownImages } from "@/utils/markdown";
+import {
+  extractMarkdownImages,
+  extractMentions,
+  mentionsToAccountId,
+} from "@/utils/markdown";
 import { compressString } from "@/utils/compressString";
 import { Lock } from "../Lock";
 import { useUserStore } from "@/stores/user";
@@ -76,11 +80,12 @@ export default function ThreadCreate({
       try {
         const images = extractMarkdownImages(data.content);
         const content = compressString(data.content);
+        const mention = extractMentions(data.content);
         const payload = {
           ...data,
           content: Array.from(content),
           images,
-          mention: [],
+          mention: mentionsToAccountId(mention),
         } as CreateThreadArg;
 
         const signature = await signPayload(payload, PostThreadPayload);

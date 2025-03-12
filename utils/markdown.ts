@@ -1,5 +1,8 @@
 import DOMPurify from "dompurify";
 import { parse } from "marked";
+import { ethers } from "ethers";
+import bs58 from "bs58";
+import { chain } from "./chain";
 
 export function parseMarkdown(markdownText: string) {
   if (typeof window !== "undefined") {
@@ -25,4 +28,27 @@ export function extractMarkdownImages(markdownText: string): string[] {
   }
 
   return imageUrls;
+}
+
+export function extractMentions(markdownText: string): string[] {
+  const mentionRegex = /@([a-zA-Z0-9_]+)/g;
+
+  const mentions: string[] = [];
+  let match;
+
+  while ((match = mentionRegex.exec(markdownText)) !== null) {
+    mentions.push(match[1]);
+  }
+
+  return mentions;
+}
+
+export function mentionsToAccountId(mentions: string[]): Uint8Array[] {
+  return mentions.map((mention) => {
+    if (chain === "sol") {
+      return bs58.decode(mention);
+    } else {
+      return ethers.toBeArray(mention);
+    }
+  });
 }
