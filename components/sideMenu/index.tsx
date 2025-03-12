@@ -100,7 +100,7 @@ export default function SideMenu() {
           onPress={() => setSideBarIsOpen(!sideBarIsOpen)}
           isIconOnly
           variant="light"
-          className="absolute top-12 -right-4 shadow-0 text-zinc-300"
+          className="absolute top-12 -right-5 shadow-0 text-zinc-300"
         >
           {sideBarIsOpen ? (
             <ArrowLeftCircleIcon className="w-8 h-8 bg-black" />
