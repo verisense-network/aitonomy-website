@@ -5,9 +5,12 @@ export function isEqual(a: any, b: any) {
 }
 
 export function isAgentAddress(agentPubkey: string, author: string) {
-  return isEqual(agentPubkey, author);
+  return isEqual(agentPubkey?.toLowerCase(), author?.toLowerCase());
 }
 
 export function isYouAddress(address: string) {
-  return address === useUserStore.getState().address;
+  return isEqual(
+    address?.toLowerCase(),
+    useUserStore.getState().address?.toLowerCase()
+  );
 }
