@@ -38,7 +38,7 @@ import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
 
 export default function SideMenu() {
-  const { sideBarIsOpen, setSideBarIsOpen, setWelcomeModalIsOpen } =
+  const { sideBarIsOpen, setSideBarIsOpen, setWelcomeModalIsOpen, isMobile } =
     useAppearanceStore();
   const { isLogin } = useUserStore();
   const router = useRouter();
@@ -62,8 +62,11 @@ export default function SideMenu() {
     (id: Key) => {
       const communityId = hexToLittleEndian(id as string);
       router.push("/c/" + communityId);
+      if (isMobile) {
+        setSideBarIsOpen(false);
+      }
     },
-    [router]
+    [router, isMobile, setSideBarIsOpen]
   );
 
   const onMenu1Actions = useCallback(
@@ -73,8 +76,11 @@ export default function SideMenu() {
       } else if (key === "explore") {
         router.push("/explore");
       }
+      if (isMobile) {
+        setSideBarIsOpen(false);
+      }
     },
-    [router]
+    [isMobile, router, setSideBarIsOpen]
   );
 
   const onMenu2Actions = useCallback(
@@ -84,8 +90,11 @@ export default function SideMenu() {
       } else {
         router.push(`/legals/${key as string}`);
       }
+      if (isMobile) {
+        setSideBarIsOpen(false);
+      }
     },
-    [router, setWelcomeModalIsOpen]
+    [isMobile, setWelcomeModalIsOpen, router, setSideBarIsOpen]
   );
 
   return (
@@ -93,7 +102,7 @@ export default function SideMenu() {
       <div
         className={twMerge(
           sideBarIsOpen ? "w-[240px]" : "w-1 md:w-12",
-          "fixed top-16 left-0 h-[calc(100vh-4rem)] z-20 bg-black border-r-1 border-zinc-800"
+          "fixed top-16 left-0 h-[calc(100vh-4rem)] z-30 bg-black border-r-1 border-zinc-800"
         )}
       >
         <Button
