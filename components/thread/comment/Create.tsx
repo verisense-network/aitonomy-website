@@ -100,6 +100,7 @@ export default function CreateComment({
         });
         onSuccess(comment!);
         reset();
+        updateAccountInfo();
       } catch (e: any) {
         console.error("e", e);
         toast.update(toastId, {

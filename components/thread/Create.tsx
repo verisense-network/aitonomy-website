@@ -105,6 +105,7 @@ export default function ThreadCreate({
           router.push(`/c/${community}/${thread}`);
         }, 1500);
         onClose();
+        updateAccountInfo();
       } catch (e: any) {
         console.error("e", e);
         toast.update(toastId, {
