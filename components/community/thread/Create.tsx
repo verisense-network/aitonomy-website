@@ -7,10 +7,10 @@ import {
   ModalContent,
   ModalHeader,
 } from "@heroui/react";
-import { Suspense, useCallback, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import dayjs from "@/lib/dayjs";
 import { Lock } from "@/components/Lock";
+import { updateAccountInfo } from "@/utils/user";
 
 interface Props {
   communityName?: string;
@@ -39,16 +39,14 @@ export default function CreateThread({
     setIsOpen(true);
   }, [communityName, isLogin, reloadCommunity]);
 
-  console.log("lastPostAt", lastPostAt);
-  const countdownTime = lastPostAt
-    ? dayjs(lastPostAt).add(1, "m").valueOf()
-    : 0;
-  console.log("countdownTime", countdownTime);
+  useEffect(() => {
+    updateAccountInfo();
+  }, []);
 
   return (
     <>
       <div className="relative">
-        {countdownTime > 0 && <Lock countdownTime={countdownTime} />}
+        <Lock countdownTime={lastPostAt || 0} />
         <Card
           className="flex w-full text-right px-6 py-6 hover:bg-gray-200 dark:hover:bg-zinc-800"
           isPressable

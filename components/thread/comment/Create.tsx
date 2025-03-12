@@ -16,14 +16,10 @@ import {
   mentionsToAccountId,
 } from "@/utils/markdown";
 import { compressString } from "@/utils/compressString";
-import dynamic from "next/dynamic";
-import { LockClosedIcon } from "@heroicons/react/24/outline";
-import dayjs from "@/lib/dayjs";
 import { Lock } from "@/components/Lock";
 import { MentionProvider } from "@/components/mdxEditor/mentionCtx";
 import { Mention } from "@/components/mdxEditor/AddMention";
-
-const Countdown = dynamic(() => import("react-countdown"), { ssr: false });
+import { updateAccountInfo } from "@/utils/user";
 
 interface Props {
   threadId: string;
@@ -114,10 +110,11 @@ export default function CreateComment({
         });
       }
     },
-    [isLogin, onSuccess]
+    [isLogin, onSuccess, reset]
   );
 
   useEffect(() => {
+    updateAccountInfo();
     setAccounts([
       {
         name: "Agent",
@@ -125,12 +122,6 @@ export default function CreateComment({
       },
     ]);
   }, [communityAgentPubkey]);
-
-  console.log("lastPostAt", lastPostAt);
-  const countdownTime = lastPostAt
-    ? dayjs(lastPostAt).add(1, "m").valueOf()
-    : 0;
-  console.log("countdownTime", countdownTime);
 
   return (
     <Card className="relative">
@@ -141,7 +132,7 @@ export default function CreateComment({
         }}
       >
         <Form onSubmit={handleSubmit(onSubmit)}>
-          {countdownTime > 0 && <Lock countdownTime={countdownTime} />}
+          <Lock countdownTime={lastPostAt || 0} />
           <Controller
             name="content"
             control={control}

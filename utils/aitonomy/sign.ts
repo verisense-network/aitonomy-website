@@ -23,7 +23,7 @@ export async function signPayload(
     accountId: user.address,
   });
   console.log("accountInfo", accountInfo);
-  if (!accountInfo.nonce) {
+  if (accountInfo.nonce === undefined || accountInfo.nonce === null) {
     throw new Error("nonce not found");
   }
   const nonce = accountInfo.nonce;

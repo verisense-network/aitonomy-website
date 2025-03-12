@@ -3,7 +3,7 @@ import useMeilisearch from "@/hooks/useMeilisearch";
 import { CreateThreadArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
-import { PostThreadPayload, registry } from "@/utils/aitonomy/type";
+import { PostThreadPayload } from "@/utils/aitonomy/type";
 import { decodeId } from "@/utils/thread";
 import { debounce, hexToLittleEndian } from "@/utils/tools";
 import {
@@ -15,7 +15,7 @@ import {
   Spinner,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { Suspense, useCallback, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
@@ -28,7 +28,7 @@ import {
 import { compressString } from "@/utils/compressString";
 import { Lock } from "../Lock";
 import { useUserStore } from "@/stores/user";
-import dayjs from "@/lib/dayjs";
+import { updateAccountInfo } from "@/utils/user";
 
 const ContentEditor = dynamic(() => import("../mdxEditor/ContentEditor"), {
   ssr: false,
@@ -118,9 +118,9 @@ export default function ThreadCreate({
     [onClose, router]
   );
 
-  const countdownTime = lastPostAt
-    ? dayjs(lastPostAt).add(1, "m").valueOf()
-    : 0;
+  useEffect(() => {
+    updateAccountInfo();
+  }, []);
 
   return (
     <Form
@@ -197,7 +197,7 @@ export default function ThreadCreate({
               Content
             </span>
             <Suspense fallback={<Spinner />}>
-              {countdownTime > 0 && <Lock countdownTime={countdownTime} />}
+              <Lock countdownTime={lastPostAt || 0} />
               <ContentEditor
                 className="mt-2 w-full rounded-xl"
                 {...field}
