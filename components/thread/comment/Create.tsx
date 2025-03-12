@@ -11,6 +11,7 @@ import ContentEditor from "../../mdxEditor/ContentEditor";
 import { CreateCommentArg } from "@/utils/aitonomy";
 import { useUserStore } from "@/store/user";
 import { extractMarkdownImages } from "@/utils/markdown";
+import { compressString } from "@/utils/compressString";
 
 interface Props {
   threadId: string;
@@ -53,10 +54,12 @@ export default function CreateComment({ threadId, replyTo, onSuccess }: Props) {
 
       try {
         const images = extractMarkdownImages(data.content);
+        const content = compressString(data.content);
         const payload = {
           ...data,
+          content: Array.from(content),
           thread: hexToBytes(data.thread),
-          image: images.length > 0 ? images[0] : undefined,
+          images,
           reply_to: data.reply_to ? hexToBytes(data.reply_to) : undefined,
         } as CreateCommentArg;
 

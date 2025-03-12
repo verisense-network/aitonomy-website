@@ -157,7 +157,7 @@ export async function createThreadRpc(
 
 export interface CreateCommentArg {
   thread: Uint8Array;
-  content: string;
+  content: Array<number>;
   image?: string;
   mention: string[];
   reply_to?: string;
@@ -223,7 +223,7 @@ export async function activateCommunityRpc(
 ) {
   const rpcArgs = {
     ...args,
-    tx: `\u200B${args.tx}`,
+    tx: ` ${args.tx}`,
   };
 
   console.log("rpcArgs", rpcArgs);
