@@ -165,13 +165,9 @@ export class MetamaskConnect {
 
   async broadcastTransaction(sigHash: string) {
     /**
-     * BSC signTransaction auto sendTransaction
+     * BSC use sendTransaction broadcastTransaction
      */
     return sigHash;
-    // await this.checkConnected();
-    // const tx = await this.jsonRpcProvider.broadcastTransaction(sig);
-    // await tx.wait();
-    // return tx.hash;
   }
 
   async getFinalizedTransaction(txHash: string) {

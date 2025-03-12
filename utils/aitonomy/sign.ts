@@ -25,7 +25,7 @@ export async function signPayload(
   if (!accountInfo.nonce) {
     throw new Error("nonce not found");
   }
-  const nonce = Number(accountInfo.nonce);
+  const nonce = accountInfo.nonce;
   console.log("nonce", nonce);
 
   const nonceEncoded = new u64(registry, nonce).toU8a();

@@ -225,15 +225,22 @@ export class OkxConnect {
   }
 
   async broadcastTransaction(signedTx: any) {
-    const serializedTransaction = signedTx.serialize();
-    const res = await this.solConnection.sendRawTransaction(
-      serializedTransaction,
-      {
-        skipPreflight: false,
-        preflightCommitment: "confirmed",
-      }
-    );
-    return res;
+    if (chain === "sol") {
+      const serializedTransaction = signedTx.serialize();
+      const res = await this.solConnection.sendRawTransaction(
+        serializedTransaction,
+        {
+          skipPreflight: false,
+          preflightCommitment: "confirmed",
+        }
+      );
+      return res;
+    } else {
+      /**
+       * BSC use sendTransaction broadcastTransaction
+       */
+      return signedTx;
+    }
   }
 
   async getFinalizedTransaction(txHash: string) {

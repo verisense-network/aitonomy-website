@@ -321,16 +321,18 @@ export const ActivateCommunityArg = Struct.with({
 });
 
 /**
-  pub struct Account {
+pub struct Account {
     pub nonce: u64,
-    pub pubkey: Pubkey,
+    pub address: H160,
     pub alias: Option<String>,
-  }
+    pub last_post_at: i64,
+}
  */
 export const Account = Struct.with({
-  nonce: U64,
-  pubkey: Pubkey,
+  nonce: u64,
+  address: H160,
   alias: Option.with(Text),
+  last_post_at: i64,
 });
 
 /**
@@ -360,6 +362,7 @@ registry.register({
   EcdsaSignature,
   Account,
   AccountId,
+  H160,
   Pubkey,
   CommunityId,
   EventId,

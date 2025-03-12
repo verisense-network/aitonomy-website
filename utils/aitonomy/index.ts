@@ -334,7 +334,7 @@ export async function getAccountInfoRpc(
   nucleusId: string,
   args: GetAccountInfoArg
 ): Promise<{
-  nonce: string;
+  nonce: number;
   pubkey: string;
   alias?: string;
 }> {
@@ -365,7 +365,7 @@ export async function getAccountInfoRpc(
     if (decoded.isErr) {
       throw new Error(decoded.toString());
     }
-    const result = decoded.asOk.toHuman() as any;
+    const result = decoded.asOk.toJSON() as any;
 
     return result;
   } catch (err: any) {
