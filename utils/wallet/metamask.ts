@@ -61,8 +61,6 @@ export class MetamaskConnect {
 
     const network = await this.provider.getNetwork();
     const chainId = Number(network.chainId);
-    console.log("network", network);
-    console.log("chainId", chainId);
 
     if (chainId !== 56) {
       try {
@@ -117,8 +115,6 @@ export class MetamaskConnect {
     await this.checkConnected();
     const encoded = new TextEncoder().encode(message);
     const hexMsg = ethers.hexlify(encoded);
-    console.log("hexMsg", hexMsg);
-    console.log("address", this.address);
     const signature: string = await this.wallet.request({
       method: "personal_sign",
       params: [hexMsg, this.address],
