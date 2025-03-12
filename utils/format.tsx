@@ -2,7 +2,7 @@ import { Tooltip } from "@heroui/react";
 import { formatAddress } from "./tools";
 import { isAgentAddress, isYouAddress } from "@/components/thread/utils";
 import { ethers } from "ethers";
-import { chain } from "./chain";
+import { CHAIN } from "./chain";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 interface AddressViewFormatProps {
@@ -55,10 +55,10 @@ export function UserAddressView({
   );
 }
 
-export const VIEW_UNIT = chain === "sol" ? "SOL" : chain === "bsc" ? "BNB" : "";
+export const VIEW_UNIT = CHAIN === "SOL" ? "SOL" : CHAIN === "BSC" ? "BNB" : "";
 
 export function formatReadableAmount(amount: string): string {
-  if (chain === "sol") {
+  if (CHAIN === "SOL") {
     return (Number(amount) / LAMPORTS_PER_SOL).toString();
   } else {
     return ethers.formatEther(amount);

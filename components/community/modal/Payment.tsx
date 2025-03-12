@@ -13,7 +13,7 @@ import { useCallback, useMemo, useState } from "react";
 import bs58 from "bs58";
 import { Id, toast } from "react-toastify";
 import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
-import { chain } from "@/utils/chain";
+import { CHAIN } from "@/utils/chain";
 import { isDev } from "@/utils/tools";
 
 interface Props {
@@ -57,7 +57,7 @@ export default function PaymentModal({
       await walletConnect.broadcastTransaction(signTx);
 
       const signatureHex =
-        chain === "sol" ? bs58.encode(signTx.signature) : signTx;
+        CHAIN === "SOL" ? bs58.encode(signTx.signature) : signTx;
       onSuccess(signatureHex, toastId);
       setIsLoading(false);
     } catch (e: any) {

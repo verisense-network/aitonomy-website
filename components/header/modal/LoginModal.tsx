@@ -12,9 +12,9 @@ import {
 } from "@heroui/react";
 import { connectToWallet, WalletId } from "@/utils/wallet/connect";
 import { useUserStore } from "@/stores/user";
-import { chain } from "@/utils/chain";
+import { CHAIN } from "@/utils/chain";
 
-const isSolChain = chain === "sol";
+const isSolChain = CHAIN === "SOL";
 
 const SOL_WALLETS = [
   {

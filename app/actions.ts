@@ -17,7 +17,7 @@ import {
 } from "@/utils/aitonomy";
 import { Signature } from "@/utils/aitonomy/sign";
 import { NUCLEUS_ID } from "@/utils/aitonomy/tools";
-import { chain } from "@/utils/chain";
+import { CHAIN } from "@/utils/chain";
 import { hexToBytes } from "@/utils/tools";
 import bs58 from "bs58";
 import { ethers } from "ethers";
@@ -85,9 +85,9 @@ interface GetAccountInfoParams {
 
 export async function getAccountInfo(data: GetAccountInfoParams) {
   let accountId: Uint8Array = new Uint8Array();
-  if (chain === "bsc") {
+  if (CHAIN === "BSC") {
     accountId = ethers.toBeArray(data.accountId);
-  } else if (chain === "sol") {
+  } else if (CHAIN === "SOL") {
     accountId = bs58.decode(data.accountId);
   }
   const threadArgs = {
@@ -110,9 +110,9 @@ export async function getBalances(data: GetBalancesParams) {
   if (!data.accountId) {
     return [];
   }
-  if (chain === "bsc") {
+  if (CHAIN === "BSC") {
     accountId = ethers.toBeArray(data.accountId);
-  } else if (chain === "sol") {
+  } else if (CHAIN === "SOL") {
     accountId = bs58.decode(data.accountId);
   }
   const threadArgs = {

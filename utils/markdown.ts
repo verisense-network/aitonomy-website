@@ -2,7 +2,7 @@ import DOMPurify from "dompurify";
 import { parse } from "marked";
 import { ethers } from "ethers";
 import bs58 from "bs58";
-import { chain } from "./chain";
+import { CHAIN } from "./chain";
 
 export function parseMarkdown(markdownText: string) {
   if (typeof window !== "undefined") {
@@ -45,7 +45,7 @@ export function extractMentions(markdownText: string): string[] {
 
 export function mentionsToAccountId(mentions: string[]): Uint8Array[] {
   return mentions.map((mention) => {
-    if (chain === "sol") {
+    if (CHAIN === "SOL") {
       return bs58.decode(mention);
     } else {
       return ethers.toBeArray(mention);

@@ -9,7 +9,7 @@ import { WalletId } from "./connect";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 import { useUserStore } from "@/stores/user";
-import { chain } from "../chain";
+import { CHAIN } from "../chain";
 import { BrowserProvider, ethers, TransactionRequest } from "ethers";
 
 export class OkxConnect {
@@ -51,7 +51,7 @@ export class OkxConnect {
     await this.checkConnected();
     console.log("connect", await this.wallet);
     let publicKey: string = "";
-    if (chain === "sol") {
+    if (CHAIN === "SOL") {
       const response = await this.wallet.solana.connect();
       publicKey = response.publicKey.toString();
 
@@ -125,7 +125,7 @@ export class OkxConnect {
 
   async signMessage(message: string): Promise<Uint8Array> {
     await this.checkConnected();
-    if (chain === "sol") {
+    if (CHAIN === "SOL") {
       const encoded = new TextEncoder().encode(message);
       const { signature } = await this.wallet.solana.signMessage(encoded);
       return new Uint8Array(signature);
@@ -145,7 +145,7 @@ export class OkxConnect {
     signature: Uint8Array,
     publicKey: Uint8Array
   ): Promise<boolean> {
-    if (chain === "sol") {
+    if (CHAIN === "SOL") {
       const pubkey = new PublicKey(publicKey);
 
       const messageHash = new TextEncoder().encode(message);
@@ -172,7 +172,7 @@ export class OkxConnect {
     amount: string
   ): Promise<Transaction | TransactionRequest> {
     await this.checkConnected();
-    if (chain === "sol") {
+    if (CHAIN === "SOL") {
       const transaction = new Transaction();
 
       const receiverAddress = new PublicKey(toAddress);
@@ -207,10 +207,10 @@ export class OkxConnect {
     transaction: Transaction | TransactionRequest
   ): Promise<any> {
     await this.checkConnected();
-    if (chain === "sol") {
+    if (CHAIN === "SOL") {
       const signedTx = await this.wallet.solana.signTransaction(transaction);
       return signedTx;
-    } else if (chain === "bsc") {
+    } else if (CHAIN === "BSC") {
       if (!this.ethersProvider) {
         throw new Error("Provider not found");
       }
@@ -225,7 +225,7 @@ export class OkxConnect {
   }
 
   async broadcastTransaction(signedTx: any) {
-    if (chain === "sol") {
+    if (CHAIN === "SOL") {
       const serializedTransaction = signedTx.serialize();
       const res = await this.solConnection.sendRawTransaction(
         serializedTransaction,
@@ -245,13 +245,13 @@ export class OkxConnect {
 
   async getFinalizedTransaction(txHash: string) {
     await this.checkConnected();
-    if (chain === "sol") {
+    if (CHAIN === "SOL") {
       const res = await this.solConnection.getTransaction(txHash, {
         commitment: "finalized",
         maxSupportedTransactionVersion: 0,
       });
       return res;
-    } else if (chain === "bsc") {
+    } else if (CHAIN === "BSC") {
       if (!this.ethersProvider) {
         throw new Error("Provider not found");
       }
