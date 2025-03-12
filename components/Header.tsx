@@ -16,7 +16,7 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 w-full h-16 border-b dark:bg-black dark:border-zinc-800 z-50">
-      <div className="max-w-7xl mx-auto h-full px-4 flex items-center justify-between md:px-0">
+      <div className="max-w-7xl mx-auto h-full px-4 flex items-center justify-between">
         <div className="flex-shrink-0 cursor-pointer" onClick={toHomePage}>
           <Image
             src="/logo.svg"

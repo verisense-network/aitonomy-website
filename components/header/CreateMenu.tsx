@@ -73,6 +73,9 @@ export default function CreateMenu() {
         onClose={() => setIsOpen(null)}
         isDismissable={false}
         size="xl"
+        classNames={{
+          body: "max-h-[90vh] overflow-y-auto md:max-h-[95vh]",
+        }}
       >
         <ModalContent>
           {(onClose) => (

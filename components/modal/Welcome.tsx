@@ -33,7 +33,14 @@ export default function WelcomeModal() {
   }, [setWelcomeModalIsOpen, setWelcomeModalIsReabled]);
 
   return (
-    <Modal isOpen={welcomeModalIsOpen} onClose={onModalClose} size="4xl">
+    <Modal
+      isOpen={welcomeModalIsOpen}
+      onClose={onModalClose}
+      size="4xl"
+      classNames={{
+        body: "max-h-[80vh] overflow-y-auto md:max-h-[85vh]",
+      }}
+    >
       <ModalContent>
         {(onClose) => (
           <>
