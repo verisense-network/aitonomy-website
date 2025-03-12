@@ -22,6 +22,7 @@ export async function signPayload(
   const accountInfo = await getAccountInfo({
     accountId: user.address,
   });
+  console.log("accountInfo", accountInfo);
   if (!accountInfo.nonce) {
     throw new Error("nonce not found");
   }
