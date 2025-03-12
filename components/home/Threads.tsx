@@ -4,9 +4,7 @@ import useMeilisearch from "@/hooks/useMeilisearch";
 import {
   Card,
   CardBody,
-  CardFooter,
   CardHeader,
-  Chip,
   Divider,
   Pagination,
   Spinner,
@@ -18,10 +16,9 @@ import { decodeId } from "@/utils/thread";
 import { formatTimestamp, hexToLittleEndian } from "@/utils/tools";
 import { twMerge } from "tailwind-merge";
 import CreateThread from "../community/thread/Create";
-import { UserAddressView } from "@/utils/format";
 import { parseMarkdown } from "@/utils/markdown";
 import truncateHtml from "truncate-html";
-import { useTheme } from "next-themes";
+import { decompressString } from "@/utils/compressString";
 
 export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full px-1 py-2 rounded-small">{children}</div>
@@ -57,10 +54,11 @@ export default function Threads({
     ? `id CONTAINS ${hexToLittleEndian(communityId)}`
     : "";
   const filterWithUser = userAddress ? `author = "${userAddress}"` : "";
-  const filter = `${filterWithCommunity}${filterWithUser
-    ? `${filterWithCommunity ? " AND " : ""}${filterWithUser}`
-    : ""
-    }`;
+  const filter = `${filterWithCommunity}${
+    filterWithUser
+      ? `${filterWithCommunity ? " AND " : ""}${filterWithUser}`
+      : ""
+  }`;
 
   const { isLoading, data, setParams } = useMeilisearch("thread", undefined, {
     sort: ["created_time:desc"],
@@ -99,7 +97,7 @@ export default function Threads({
           <CreateThread
             communityName={community?.name}
             reloadCommunity={forceUpdate}
-            onSuccess={() => { }}
+            onSuccess={() => {}}
           />
         )}
         {data?.hits?.length === 0 && (
@@ -113,7 +111,7 @@ export default function Threads({
               <Card
                 className="w-full p-2"
                 classNames={{
-                  base: "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                  base: "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900",
                 }}
                 key={hit.id}
                 onPress={() => toThreadPage(hit.id)}
@@ -124,7 +122,7 @@ export default function Threads({
                     <User
                       avatarProps={{
                         size: "sm",
-                        name: hit.community_name
+                        name: hit.community_name,
                       }}
                       name={hit.community_name}
                     />
@@ -138,7 +136,7 @@ export default function Threads({
                     className="prose max-w-none dark:prose-invert"
                     dangerouslySetInnerHTML={{
                       __html: truncateHtml(
-                        parseMarkdown(hit.content),
+                        parseMarkdown(decompressString(hit.content || "")),
                         120
                       ) as string,
                     }}

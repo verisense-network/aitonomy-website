@@ -2,7 +2,7 @@ import DOMPurify from "dompurify";
 import { parse } from "marked";
 
 export function parseMarkdown(markdownText: string) {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     return DOMPurify.sanitize(
       parse(markdownText, {
         async: false,

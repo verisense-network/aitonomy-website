@@ -17,6 +17,7 @@ import CreateComment from "./comment/Create";
 import { UserAddressView } from "@/utils/format";
 import { parseMarkdown } from "@/utils/markdown";
 import { useRouter } from "next/navigation";
+import { decompressString } from "@/utils/compressString";
 
 interface Props {
   threadId: string;
@@ -80,9 +81,11 @@ export default function ThreadComments({ threadId, community }: Props) {
               <div
                 className="prose max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{
-                  __html: parseMarkdown(comment.content),
+                  __html: parseMarkdown(
+                    decompressString(comment.content || "")
+                  ),
                 }}
-              ></div>
+              />
             </CardBody>
             <CardFooter className="text-sm text-gray-500 justify-between">
               <div>
