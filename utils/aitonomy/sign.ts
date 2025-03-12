@@ -1,4 +1,4 @@
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
 import { getWalletConnect } from "../wallet";
 import { registry } from "./type";
 import { Struct, u64, u8, Vec } from "@polkadot/types-codec";

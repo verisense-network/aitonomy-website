@@ -5,7 +5,7 @@ import {
   TransactionRequest,
 } from "ethers";
 import { WalletId } from "./connect";
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
 
 export class MetamaskConnect {
   id = WalletId.METAMASK;

@@ -11,7 +11,7 @@ import {
 import { useCallback, useEffect } from "react";
 import { parseMarkdown } from "@/utils/markdown";
 import { welcomeDoc } from "./docs";
-import { useAppearanceStore } from "@/store/appearance";
+import { useAppearanceStore } from "@/stores/appearance";
 
 export default function WelcomeModal() {
   const {

@@ -1,4 +1,4 @@
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
 import { getWalletConnect } from "@/utils/wallet";
 import {
   Button,

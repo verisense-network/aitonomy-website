@@ -33,8 +33,8 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { hexToLittleEndian } from "@/utils/tools";
 import CommunityCreate from "../community/Create";
-import { useAppearanceStore } from "@/store/appearance";
-import { useUserStore } from "@/store/user";
+import { useAppearanceStore } from "@/stores/appearance";
+import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
 
 export default function SideMenu() {
@@ -45,7 +45,7 @@ export default function SideMenu() {
   const [createCommunityModal, setCreateCommunityModal] = useState(false);
 
   const { data, isLoading } = useMeilisearch("community", undefined, {
-    // filter: "status = 'Active'", TODO: enable filterable status
+    // filter: "status = 'Active'",
     sort: ["created_time:desc"],
     limit: 5,
   });

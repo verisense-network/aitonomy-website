@@ -14,9 +14,9 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import PaymentModal from "./modal/Payment";
 import { activateCommunity, getBalances } from "@/app/actions";
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
 import { isYouAddress } from "../thread/utils";
-import { usePaymentCommunityStore } from "@/store/paymentCommunity";
+import { usePaymentCommunityStore } from "@/stores/paymentCommunity";
 import { CommunityStatus } from "./utils";
 import { getWalletConnect } from "@/utils/wallet";
 import { Id, toast } from "react-toastify";

@@ -9,9 +9,15 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import ContentEditor from "../../mdxEditor/ContentEditor";
 import { CreateCommentArg } from "@/utils/aitonomy";
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
 import { extractMarkdownImages } from "@/utils/markdown";
 import { compressString } from "@/utils/compressString";
+import dynamic from "next/dynamic";
+import { LockClosedIcon } from "@heroicons/react/24/outline";
+import dayjs from "@/lib/dayjs";
+import { Lock } from "@/components/Lock";
+
+const Countdown = dynamic(() => import("react-countdown"), { ssr: false });
 
 interface Props {
   threadId: string;
@@ -28,7 +34,7 @@ export interface CreateCommentParams {
 }
 
 export default function CreateComment({ threadId, replyTo, onSuccess }: Props) {
-  const { isLogin } = useUserStore();
+  const { isLogin, lastPostAt } = useUserStore();
   const { control, handleSubmit } = useForm<CreateCommentParams>({
     defaultValues: {
       thread: threadId,
@@ -93,9 +99,16 @@ export default function CreateComment({ threadId, replyTo, onSuccess }: Props) {
     [isLogin, onSuccess]
   );
 
+  console.log("lastPostAt", lastPostAt);
+  const countdownTime = lastPostAt
+    ? dayjs(lastPostAt).add(1, "m").valueOf()
+    : 0;
+  console.log("countdownTime", countdownTime);
+
   return (
     <Card className="relative">
       <Form onSubmit={handleSubmit(onSubmit)}>
+        {countdownTime > 0 && <Lock countdownTime={countdownTime} />}
         <Controller
           name="content"
           control={control}
@@ -118,7 +131,7 @@ export default function CreateComment({ threadId, replyTo, onSuccess }: Props) {
             </Suspense>
           )}
         />
-        <Button type="submit" className="absolute bottom-2 right-2 z-50">
+        <Button type="submit" className="absolute bottom-2 right-2 z-20">
           Submit
         </Button>
       </Form>

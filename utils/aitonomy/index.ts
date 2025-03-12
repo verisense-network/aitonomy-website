@@ -337,6 +337,7 @@ export async function getAccountInfoRpc(
   nonce: number;
   pubkey: string;
   alias?: string;
+  last_post_at: number;
 }> {
   console.log("args", args);
   const payload = new AccountId(registry, args.account_id).toHex();

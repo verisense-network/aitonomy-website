@@ -8,7 +8,7 @@ import {
 import { WalletId } from "./connect";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
 import { chain } from "../chain";
 import { BrowserProvider, ethers, TransactionRequest } from "ethers";
 

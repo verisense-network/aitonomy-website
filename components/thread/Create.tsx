@@ -22,6 +22,9 @@ import { toast } from "react-toastify";
 import dynamic from "next/dynamic";
 import { extractMarkdownImages } from "@/utils/markdown";
 import { compressString } from "@/utils/compressString";
+import { Lock } from "../Lock";
+import { useUserStore } from "@/stores/user";
+import dayjs from "@/lib/dayjs";
 
 const ContentEditor = dynamic(() => import("../mdxEditor/ContentEditor"), {
   ssr: false,
@@ -39,6 +42,7 @@ export default function ThreadCreate({
   onClose,
 }: Props) {
   const router = useRouter();
+  const { lastPostAt } = useUserStore();
   const { control, handleSubmit } = useForm<CreateThreadForm>({
     defaultValues: {
       community: defaultCommunity || "",
@@ -108,6 +112,10 @@ export default function ThreadCreate({
     },
     [onClose, router]
   );
+
+  const countdownTime = lastPostAt
+    ? dayjs(lastPostAt).add(1, "m").valueOf()
+    : 0;
 
   return (
     <Form
@@ -179,11 +187,12 @@ export default function ThreadCreate({
           required: "Please enter content",
         }}
         render={({ field, fieldState }) => (
-          <div className="w-full">
+          <div className="relative w-full">
             <span className={fieldState.error ? "text-red-500" : ""}>
               Content
             </span>
             <Suspense fallback={<Spinner />}>
+              {countdownTime > 0 && <Lock countdownTime={countdownTime} />}
               <ContentEditor
                 className="mt-2 w-full rounded-xl"
                 {...field}

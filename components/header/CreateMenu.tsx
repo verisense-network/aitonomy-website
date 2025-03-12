@@ -13,7 +13,7 @@ import {
 import { Key, Suspense, useCallback, useState } from "react";
 import CommunityCreate from "../community/Create";
 import ThreadCreate from "../thread/Create";
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
 
 const menuList = [

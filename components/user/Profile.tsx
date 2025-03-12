@@ -20,6 +20,8 @@ import { useCallback, useEffect, useState } from "react";
 import UpdateAliasName from "./UpdateAliasName";
 import { toast } from "react-toastify";
 import { isYouAddress } from "../thread/utils";
+import { useUserStore } from "@/stores/user";
+import { NAME_NOT_SET } from "@/utils/user";
 
 interface Props {
   address: string;
@@ -36,26 +38,15 @@ const TABLE_COLUMNS = [
   },
 ];
 
-const NAME_NOT_SET = "Name not set";
-
 export default function UserProfile({ address }: Props) {
   const [balances, setBalances] = useState<GetBalancesResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isShowUpdateName, setIsShowUpdateName] = useState(false);
-  const [userName, setUserName] = useState("");
+  const { name: userName } = useUserStore();
 
   const getUserProfile = useCallback(async () => {
     try {
       if (!address) return;
-      setIsLoading(true);
-
-      const account = await getAccountInfo({
-        accountId: address,
-      });
-      console.log("account", account);
-      const aliasName = account?.alias || NAME_NOT_SET;
-      setUserName(aliasName);
-
       if (isYouAddress(address)) {
         const balances = await getBalances({
           accountId: address,
@@ -97,7 +88,7 @@ export default function UserProfile({ address }: Props) {
               {isLoading && <Spinner />}
               {isShowUpdateName ? (
                 <UpdateAliasName
-                  defaultName={userName === NAME_NOT_SET ? "" : userName}
+                  defaultName={userName}
                   onSuccess={updateAliasNameOnSuccess}
                   onClose={() => setIsShowUpdateName(false)}
                 />

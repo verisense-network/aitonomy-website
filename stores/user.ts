@@ -14,10 +14,12 @@ type Store = {
   wallet: WalletId;
   address: string;
   publicKey: Uint8Array;
+  lastPostAt: number | null;
   setWallet: (wallet: WalletId) => void;
   setUser: (data: SetUser) => void;
   setUserName: (name: string) => void;
   logout: () => void;
+  setLastPostAt: (lastPostAt: number | null) => void;
 };
 
 type ComputedStore = {
@@ -37,6 +39,7 @@ export const useUserStore = create<Store>()(
       wallet: WalletId.OKX,
       address: "",
       publicKey: new Uint8Array(0),
+      lastPostAt: null,
       setWallet: (wallet) => set({ wallet }),
       setUser: (data) => set(data),
       setUserName: (name: string) => set({ name }),
@@ -47,6 +50,7 @@ export const useUserStore = create<Store>()(
           publicKey: new Uint8Array(0),
           address: "",
         }),
+      setLastPostAt: (lastPostAt: number | null) => set({ lastPostAt }),
     })),
     { name: "user", storage: createJSONStorage(() => localStorage) }
   )

@@ -11,7 +11,7 @@ import {
   ModalHeader,
 } from "@heroui/react";
 import { connectToWallet, WalletId } from "@/utils/wallet/connect";
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
 import { chain } from "@/utils/chain";
 
 const isSolChain = chain === "sol";

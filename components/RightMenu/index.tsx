@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppearanceStore } from "@/store/appearance";
+import { useAppearanceStore } from "@/stores/appearance";
 import { twMerge } from "tailwind-merge";
 
 export default function RightMenu() {

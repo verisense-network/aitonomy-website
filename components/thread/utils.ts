@@ -1,4 +1,4 @@
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
 
 export function isEqual(a: any, b: any) {
   return JSON.stringify(a) === JSON.stringify(b);
