@@ -161,7 +161,6 @@ export class MetamaskConnect {
     console.log("signer", signer);
     const sig = await signer.sendTransaction(tx);
     return sig.hash;
-    // return "0xbbf9d78389efdcec6d5ea9a80a09a1c2a88da43b9b6fcd440f7ca0f9b9916068";
   }
 
   async broadcastTransaction(sigHash: string) {

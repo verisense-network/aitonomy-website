@@ -30,7 +30,7 @@ export default function RootLayout({
             <Header />
             <div className="relative flex mt-16">
               <SideMenu />
-              <div className="w-[70vw] md:w-[1280px] mx-auto py-4 md:inline-flex md:space-x-4">
+              <div className="w-[90vw] md:w-[65vw] md:max-w-[1280px] mx-auto py-4 md:inline-flex md:space-x-4">
                 {children}
               </div>
               <RightMenu />

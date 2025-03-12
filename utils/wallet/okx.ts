@@ -10,7 +10,7 @@ import bs58 from "bs58";
 import nacl from "tweetnacl";
 import { useUserStore } from "@/store/user";
 import { chain } from "../chain";
-import { BrowserProvider, ethers } from "ethers";
+import { BrowserProvider, ethers, TransactionRequest } from "ethers";
 
 export class OkxConnect {
   id = WalletId.OKX;
@@ -170,7 +170,7 @@ export class OkxConnect {
   async createTransaction(
     toAddress: string,
     amount: string
-  ): Promise<Transaction | ethers.Transaction> {
+  ): Promise<Transaction | TransactionRequest> {
     await this.checkConnected();
     if (chain === "sol") {
       const transaction = new Transaction();
@@ -194,45 +194,33 @@ export class OkxConnect {
       if (!this.ethersProvider) {
         throw new Error("Provider not found");
       }
-      const tx = new ethers.Transaction();
-      tx.to = toAddress;
-      tx.value = ethers.parseEther(amount);
-      tx.chainId = 56;
-
-      const feeData = await this.ethersProvider.getFeeData();
-
-      if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
-        tx.type = 2;
-        tx.maxFeePerGas = feeData.maxFeePerGas;
-        tx.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
-      } else {
-        tx.type = 0;
-        if (feeData.gasPrice) {
-          tx.gasPrice = feeData.gasPrice;
-        } else {
-          tx.gasPrice = ethers.parseUnits("5", "gwei");
-        }
-      }
-
-      tx.gasLimit = await this.ethersProvider.estimateGas({
-        to: tx.to,
-        from: this.address,
-        value: tx.value,
-      });
+      const tx: TransactionRequest = {
+        to: ethers.getAddress(toAddress),
+        value: ethers.parseEther(amount),
+        chainId: 56,
+      };
       return tx;
     }
   }
 
   async signTransaction(
-    transaction: Transaction | ethers.Transaction
+    transaction: Transaction | TransactionRequest
   ): Promise<any> {
     await this.checkConnected();
     if (chain === "sol") {
       const signedTx = await this.wallet.solana.signTransaction(transaction);
       return signedTx;
     } else if (chain === "bsc") {
-      const signedTx = await this.wallet.ethers.signTransaction(transaction);
-      return signedTx;
+      if (!this.ethersProvider) {
+        throw new Error("Provider not found");
+      }
+      const signer = await this.ethersProvider.getSigner();
+      console.log("tx", transaction);
+      console.log("signer", signer);
+      const sig = await signer.sendTransaction(
+        transaction as TransactionRequest
+      );
+      return sig.hash;
     }
   }
 

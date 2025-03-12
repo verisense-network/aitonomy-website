@@ -92,8 +92,8 @@ export default function SideMenu() {
     <>
       <div
         className={twMerge(
-          sideBarIsOpen ? "w-[240px]" : "w-12",
-          "fixed top-16 left-0 h-[calc(100vh-4rem)] border-r-1 border-zinc-800"
+          sideBarIsOpen ? "w-[240px]" : "w-1 md:w-12",
+          "fixed top-16 left-0 h-[calc(100vh-4rem)] z-20 bg-black border-r-1 border-zinc-800"
         )}
       >
         <Button
@@ -168,9 +168,7 @@ export default function SideMenu() {
                         name={community.name}
                       />
                     }
-                  >
-                    {community.name}
-                  </ListboxItem>
+                  ></ListboxItem>
                 )) || []}
               </Listbox>
             </AccordionItem>
@@ -232,7 +230,7 @@ export default function SideMenu() {
         </Modal>
       </div>
       {/* Fixed Sidebar Placeholder */}
-      <div className={twMerge(sideBarIsOpen ? "w-[240px]" : "w-12")}></div>
+      <div className={twMerge(sideBarIsOpen ? "w-[240px]" : "w-1 md:w-12")} />
     </>
   );
 }
