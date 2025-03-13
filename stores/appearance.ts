@@ -9,16 +9,17 @@ type Store = {
   setSideBarIsOpen: (isOpen: boolean) => void;
   setWelcomeModalIsOpen: (isOpen: boolean) => void;
   setWelcomeModalIsReabled: (isReabled: boolean) => void;
+  setIsMobile: (isMobile: boolean) => void;
 };
 
-export const isMobile =
+export const checkIsMobile = (): boolean =>
   typeof window !== "undefined" &&
   window.matchMedia("(max-width: 768px)").matches;
 
 export const useAppearanceStore = create<Store>()(
   persist(
     (set) => ({
-      isMobile,
+      isMobile: checkIsMobile(),
       sideBarIsOpen: true,
       welcomeModalIsOpen: false,
       welcomeModalIsReabled: false,
@@ -27,7 +28,23 @@ export const useAppearanceStore = create<Store>()(
         set({ welcomeModalIsOpen: isOpen }),
       setWelcomeModalIsReabled: (isReabled: boolean) =>
         set({ welcomeModalIsReabled: isReabled }),
+      setIsMobile: (isMobile: boolean) => set({ isMobile }),
     }),
     { name: "appearance", storage: createJSONStorage(() => localStorage) }
   )
 );
+
+if (typeof window !== "undefined") {
+  let resizeListenerAdded = false;
+
+  const addResizeListener = () => {
+    if (!resizeListenerAdded) {
+      window.addEventListener("resize", () => {
+        useAppearanceStore.getState().setIsMobile(checkIsMobile());
+      });
+      resizeListenerAdded = true;
+    }
+  };
+
+  addResizeListener();
+}
