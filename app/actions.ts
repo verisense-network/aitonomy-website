@@ -143,6 +143,14 @@ interface GetAccountInfoParams {
 export async function getAccountInfo(data: GetAccountInfoParams) {
   try {
     let accountId: Uint8Array = new Uint8Array();
+
+    if (!data.accountId) {
+      return {
+        success: false,
+        message: "Account ID is required",
+      };
+    }
+
     if (CHAIN === "BSC") {
       accountId = ethers.toBeArray(data.accountId);
     } else if (CHAIN === "SOL") {

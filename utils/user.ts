@@ -7,6 +7,10 @@ export async function updateAccountInfo() {
   try {
     const { address, setUserName, setLastPostAt } = useUserStore.getState();
 
+    if (!address) {
+      return;
+    }
+
     const {
       success,
       data: account,

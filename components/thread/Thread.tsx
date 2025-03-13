@@ -17,6 +17,7 @@ import { UserAddressView } from "@/utils/format";
 import { parseMarkdown } from "@/utils/markdown";
 import { useRouter } from "next/navigation";
 import { decompressString } from "@/utils/compressString";
+import Link from "next/link";
 
 export default function ThreadView({ threadId }: { threadId: string }) {
   const router = useRouter();
@@ -59,20 +60,11 @@ export default function ThreadView({ threadId }: { threadId: string }) {
     })();
   }, [data, forceUpdate, isLoading, isValidating, threadId]);
 
-  const toUserProfilePage = useCallback(
-    (address: string) => {
-      router.push("/u/" + address);
-    },
-    [router]
-  );
-
   return (
     <div className="w-full">
       <Breadcrumbs className="m-2">
-        <BreadcrumbItem onClick={() => router.push("/")}>Home</BreadcrumbItem>
-        <BreadcrumbItem
-          onClick={() => toComunityPage(threadData?.formattedId?.community)}
-        >
+        <BreadcrumbItem href="/">Home</BreadcrumbItem>
+        <BreadcrumbItem href={`/c/${threadData?.formattedId?.community}`}>
           {threadData?.community_name}
         </BreadcrumbItem>
         <BreadcrumbItem>{threadData?.title}</BreadcrumbItem>
@@ -94,19 +86,20 @@ export default function ThreadView({ threadId }: { threadId: string }) {
             </CardBody>
             <CardFooter className="text-sm text-gray-500 justify-between">
               <div>
-                <User
-                  className="cursor-pointer"
-                  onClick={() => toUserProfilePage(threadData.author)}
-                  avatarProps={{
-                    name: threadData.author,
-                  }}
-                  name={
-                    <UserAddressView
-                      agentPubkey={""}
-                      address={threadData.author}
-                    />
-                  }
-                />
+                <Link href={`/u/${threadData.author}`}>
+                  <User
+                    className="cursor-pointer"
+                    avatarProps={{
+                      name: threadData.author,
+                    }}
+                    name={
+                      <UserAddressView
+                        agentPubkey={""}
+                        address={threadData.author}
+                      />
+                    }
+                  />
+                </Link>
               </div>
               <div className="flex space-x-2 items-center">
                 <div>{formatTimestamp(threadData.created_time)}</div>

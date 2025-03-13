@@ -4,14 +4,10 @@ import useMeilisearch from "@/hooks/useMeilisearch";
 import {
   ArrowLeftCircleIcon,
   Bars3Icon,
-  CurrencyDollarIcon,
   HomeIcon,
   PlusIcon,
   QuestionMarkCircleIcon,
-  ShieldCheckIcon,
   UserGroupIcon,
-  UserIcon,
-  UsersIcon,
 } from "@heroicons/react/24/outline";
 import {
   Accordion,
@@ -27,21 +23,30 @@ import {
   Spinner,
   User,
 } from "@heroui/react";
-import { Key, Suspense, useState } from "react";
+import { Suspense, useState } from "react";
 import { twMerge } from "tailwind-merge";
-import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { hexToLittleEndian } from "@/utils/tools";
 import CommunityCreate from "../community/Create";
 import { useAppearanceStore } from "@/stores/appearance";
 import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
+import Link from "next/link";
+
+const TopMenus = [
+  { name: "home", href: "/", icon: <HomeIcon className="w-5 h-5" /> },
+  {
+    name: "explore",
+    href: "/explore",
+    icon: <UserGroupIcon className="w-5 h-5" />,
+  },
+];
 
 export default function SideMenu() {
-  const { sideBarIsOpen, setSideBarIsOpen, setWelcomeModalIsOpen, isMobile } =
+  const { sideBarIsOpen, setSideBarIsOpen, setWelcomeModalIsOpen } =
     useAppearanceStore();
   const { isLogin } = useUserStore();
-  const router = useRouter();
+  const { isMobile } = useAppearanceStore();
   const [createCommunityModal, setCreateCommunityModal] = useState(false);
 
   const { data, isLoading } = useMeilisearch("community", undefined, {
@@ -58,51 +63,12 @@ export default function SideMenu() {
     setCreateCommunityModal(true);
   }, [isLogin, setCreateCommunityModal]);
 
-  const toCommunityPage = useCallback(
-    (id: Key) => {
-      const communityId = hexToLittleEndian(id as string);
-      router.push("/c/" + communityId);
-      if (isMobile) {
-        setSideBarIsOpen(false);
-      }
-    },
-    [router, isMobile, setSideBarIsOpen]
-  );
-
-  const onMenu1Actions = useCallback(
-    (key: Key) => {
-      if (key === "home") {
-        router.push("/");
-      } else if (key === "explore") {
-        router.push("/explore");
-      }
-      if (isMobile) {
-        setSideBarIsOpen(false);
-      }
-    },
-    [isMobile, router, setSideBarIsOpen]
-  );
-
-  const onMenu2Actions = useCallback(
-    (key: Key) => {
-      if (key === "how-to-works") {
-        setWelcomeModalIsOpen(true);
-      } else {
-        router.push(`/legals/${key as string}`);
-      }
-      if (isMobile) {
-        setSideBarIsOpen(false);
-      }
-    },
-    [isMobile, setWelcomeModalIsOpen, router, setSideBarIsOpen]
-  );
-
   return (
     <>
       <div
         className={twMerge(
-          sideBarIsOpen ? "w-[240px]" : "w-1 md:w-12",
-          "fixed top-16 left-0 h-[calc(100vh-4rem)] z-30 bg-black border-r-1 border-zinc-800"
+          sideBarIsOpen ? "md:w-[240px]" : "w-1 md:w-12",
+          "fixed top-16 left-0 h-[calc(100vh-4rem)] z-40 bg-black border-r-1 border-zinc-800"
         )}
       >
         <Button
@@ -125,20 +91,17 @@ export default function SideMenu() {
             itemClasses={{
               base: "py-3",
             }}
-            onAction={onMenu1Actions}
           >
-            <ListboxItem
-              key="home"
-              startContent={<HomeIcon className="w-5 h-5" />}
-            >
-              Home
-            </ListboxItem>
-            <ListboxItem
-              key="explore"
-              startContent={<UserGroupIcon className="w-5 h-5" />}
-            >
-              Explore
-            </ListboxItem>
+            {TopMenus.map((it) => (
+              <ListboxItem
+                key={it.name}
+                href={it.href}
+                startContent={it.icon}
+                onPress={() => isMobile && setSideBarIsOpen(false)}
+              >
+                {it.name}
+              </ListboxItem>
+            ))}
           </Listbox>
           <Accordion defaultSelectedKeys={["communities"]}>
             <AccordionItem
@@ -163,11 +126,11 @@ export default function SideMenu() {
                     {isLoading ? <Spinner /> : "No communities"}
                   </div>
                 }
-                onAction={toCommunityPage}
               >
                 {data?.hits?.map((community) => (
                   <ListboxItem
                     key={community.id}
+                    href={`/c/${hexToLittleEndian(community.id)}`}
                     startContent={
                       <User
                         avatarProps={{
@@ -177,6 +140,7 @@ export default function SideMenu() {
                         name={community.name}
                       />
                     }
+                    onPress={() => isMobile && setSideBarIsOpen(false)}
                   ></ListboxItem>
                 )) || []}
               </Listbox>
@@ -190,33 +154,44 @@ export default function SideMenu() {
             itemClasses={{
               base: "py-3",
             }}
-            onAction={onMenu2Actions}
           >
             <ListboxItem
               key="how-to-works"
               startContent={<QuestionMarkCircleIcon className="w-5 h-5" />}
+              onPress={() => setWelcomeModalIsOpen(true)}
             >
               How it works
             </ListboxItem>
-            <ListboxItem
-              key="privacy-policy"
-              startContent={<ShieldCheckIcon className="w-5 h-5" />}
+          </Listbox>
+          <div className="flex flex-wrap text-xs gap-x-2 gap-y-1 px-3 text-zinc-400">
+            <Link
+              className="text-xs"
+              color="foreground"
+              href="/legals/privacy-policy"
+              onClick={() => isMobile && setSideBarIsOpen(false)}
             >
               Privacy Policy
-            </ListboxItem>
-            <ListboxItem
-              key="terms-of-service"
-              startContent={<UsersIcon className="w-5 h-5" />}
+            </Link>
+            <Link
+              className="text-xs"
+              color="foreground"
+              href="/legals/terms-of-service"
+              onClick={() => isMobile && setSideBarIsOpen(false)}
             >
               Terms of Service
-            </ListboxItem>
-            <ListboxItem
-              key="fees"
-              startContent={<CurrencyDollarIcon className="w-5 h-5" />}
+            </Link>
+            <Link
+              className="text-xs"
+              color="foreground"
+              href="/legals/fees"
+              onClick={() => isMobile && setSideBarIsOpen(false)}
             >
               Fees
-            </ListboxItem>
-          </Listbox>
+            </Link>
+          </div>
+          <div className="px-3 mt-2 text-zinc-400 hover:text-zinc-300">
+            <span className="text-xs">Aitonomy.world 2025</span>
+          </div>
         </div>
         <Modal
           isOpen={createCommunityModal}
@@ -242,7 +217,15 @@ export default function SideMenu() {
         </Modal>
       </div>
       {/* Fixed Sidebar Placeholder */}
-      <div className={twMerge(sideBarIsOpen ? "w-[240px]" : "w-1 md:w-12")} />
+      <div
+        className={twMerge(sideBarIsOpen ? "md:w-[240px]" : "w-1 md:w-12")}
+      />
+      {isMobile && sideBarIsOpen && (
+        <div
+          className="fixed top-16 left-0 w-svw h-[calc(100vh-4rem)] bg-black bg-opacity-50 z-30"
+          onClick={() => setSideBarIsOpen(false)}
+        />
+      )}
     </>
   );
 }

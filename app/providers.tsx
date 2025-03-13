@@ -4,10 +4,12 @@ import { SWRConfig } from "swr";
 import { HeroUIProvider } from "@heroui/react";
 import { ToastContainer } from "react-toastify";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { useRouter } from "next/navigation";
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   return (
-    <HeroUIProvider>
+    <HeroUIProvider navigate={router.push}>
       <NextThemesProvider attribute="class" defaultTheme="dark">
         <ToastContainer autoClose={3500} toastClassName="mt-1 max-w-[98vw]" />
         <SWRConfig

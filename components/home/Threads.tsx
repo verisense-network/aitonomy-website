@@ -10,8 +10,7 @@ import {
   Spinner,
   User,
 } from "@heroui/react";
-import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { decodeId } from "@/utils/thread";
 import { formatTimestamp, hexToLittleEndian } from "@/utils/tools";
 import { twMerge } from "tailwind-merge";
@@ -19,6 +18,7 @@ import CreateThread from "../community/thread/Create";
 import { parseMarkdown } from "@/utils/markdown";
 import truncateHtml from "truncate-html";
 import { decompressString } from "@/utils/compressString";
+import Link from "next/link";
 
 export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full px-1 py-2 rounded-small">{children}</div>
@@ -37,8 +37,6 @@ export default function Threads({
   userAddress,
   isShowPostButton,
 }: ThreadsProps) {
-  const router = useRouter();
-
   const { data: communities, forceUpdate } = useMeilisearch(
     "community",
     undefined,
@@ -67,18 +65,19 @@ export default function Threads({
     filter,
   });
 
-  const toThreadPage = useCallback(
-    (key: string) => {
-      const thread = data?.hits.find((hit: any) => hit.id === key);
-      if (!thread) {
-        return;
-      }
-      const { community: communityId, thread: threadNumber } = decodeId(
-        thread.id
-      );
-      router.push("/c/" + communityId + "/" + threadNumber);
-    },
-    [data?.hits, router]
+  const threads = useMemo(
+    () =>
+      data?.hits.map((hit: any) => {
+        const { community: communityId, thread: threadNumber } = decodeId(
+          hit.id
+        );
+        return {
+          ...hit,
+          communityId,
+          threadNumber,
+        };
+      }) || [],
+    [data?.hits]
   );
 
   const pageChange = useCallback(
@@ -100,21 +99,22 @@ export default function Threads({
             onSuccess={() => {}}
           />
         )}
-        {data?.hits?.length === 0 && (
+        {!isLoading && threads?.length === 0 && (
           <div className="p-2">
             <h1 className="text-xl">No threads found</h1>
           </div>
         )}
         <div>
-          {data?.hits?.map((hit: any, index: number) => (
+          {threads?.map((hit: any, index: number) => (
             <>
               <Card
+                as={Link}
+                href={`/c/${hit.communityId}/${hit.threadNumber}`}
+                key={hit.id}
                 className="w-full p-2"
                 classNames={{
                   base: "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900",
                 }}
-                key={hit.id}
-                onPress={() => toThreadPage(hit.id)}
                 isPressable
               >
                 <CardHeader className="pb-0">
@@ -143,7 +143,9 @@ export default function Threads({
                   ></div>
                 </CardBody>
               </Card>
-              {index !== data?.hits?.length - 1 && <Divider className="my-1" />}
+              {index !== threads?.length - 1 && (
+                <Divider className="my-1" key={`divider-${hit.id}`} />
+              )}
             </>
           ))}
         </div>

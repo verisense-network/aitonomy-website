@@ -2,24 +2,22 @@
 
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { Avatar, Card, CardBody, Spinner } from "@heroui/react";
-import { useCallback } from "react";
+import { useMemo } from "react";
 import { hexToLittleEndian } from "@/utils/tools";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function PopularCommunity() {
-  const router = useRouter();
   const { data, isLoading } = useMeilisearch("community", undefined, {
     sort: ["created_time:desc"],
     hitsPerPage: 20,
   });
 
-  const toCommunityPage = useCallback(
-    (id: string) => {
-      const communityId = hexToLittleEndian(id);
-      router.push("/c/" + communityId);
-    },
-    [router]
-  );
+  const communities = useMemo(() => {
+    return data?.hits.map((it: any) => ({
+      ...it,
+      communityId: hexToLittleEndian(it.id),
+    }));
+  }, [data?.hits]);
 
   return (
     <div className="space-y-2">
@@ -30,18 +28,19 @@ export default function PopularCommunity() {
             <Spinner />
           </div>
         )}
-        {data?.hits.length === 0 && (
+        {communities?.length === 0 && (
           <div className="p-2">
             <h1 className="text-md">No Communities</h1>
           </div>
         )}
         {!isLoading &&
-          data?.hits.map((it: any) => (
+          communities?.map((it: any) => (
             <Card
+              as={Link}
               key={it.id}
+              href={`/c/${it.communityId}`}
               isPressable
-              className="w-full"
-              onPress={() => toCommunityPage(it.id)}
+              className="w-full duration-500"
             >
               <CardBody className="flex gap-2 justify-center items-center">
                 <Avatar name={it.name} src={it.logo} />

@@ -10,11 +10,6 @@ export function Lock({ countdownTime }: { countdownTime: number }) {
     .add(3, "m")
     .valueOf();
 
-  console.log(
-    "countdown",
-    dayjs.unix(countdownTime || 0).format("YYYY-MM-DD HH:mm:ss")
-  );
-
   return (
     isLocked && (
       <div className="absolute flex flex-col justify-center items-center bg-zinc-900 bg-opacity-80 top-0 left-0 w-full h-full z-30">
