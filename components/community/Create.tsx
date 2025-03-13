@@ -1,7 +1,7 @@
 import { createCommunity, uploadImage } from "@/app/actions";
 import { CreateCommunityArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
-import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
+import { COMMUNITY_REGEX, TOKEN_REGEX } from "@/utils/aitonomy/tools";
 import { CreateCommunityPayload, LLmName } from "@/utils/aitonomy/type";
 import { isDev } from "@/utils/tools";
 import {
@@ -422,7 +422,7 @@ export default function CommunityCreate({ onClose }: Props) {
           rules={{
             required: "Please enter a token name",
             validate: (value) => {
-              if (!COMMUNITY_REGEX.test(value)) {
+              if (!TOKEN_REGEX.test(value)) {
                 return "Invalid token name";
               }
               return true;
