@@ -1,4 +1,4 @@
-import { getAccountInfo, getBalances } from "@/app/actions";
+import { getBalances } from "@/app/actions";
 import { GetBalancesResponse } from "@/utils/aitonomy";
 import { Community } from "@/utils/aitonomy/type";
 import { formatAddress } from "@/utils/tools";
@@ -21,7 +21,7 @@ import UpdateAliasName from "./UpdateAliasName";
 import { toast } from "react-toastify";
 import { isYouAddress } from "../thread/utils";
 import { useUserStore } from "@/stores/user";
-import { NAME_NOT_SET } from "@/utils/user";
+import { updateAccountInfo } from "@/utils/user";
 
 interface Props {
   address: string;
@@ -47,6 +47,7 @@ export default function UserProfile({ address }: Props) {
   const getUserProfile = useCallback(async () => {
     try {
       if (!address) return;
+      await updateAccountInfo();
       if (isYouAddress(address)) {
         const balances = await getBalances({
           accountId: address,
@@ -94,13 +95,7 @@ export default function UserProfile({ address }: Props) {
                 />
               ) : (
                 <>
-                  <span
-                    className={`${
-                      userName === NAME_NOT_SET && "text-gray-500"
-                    }`}
-                  >
-                    {userName}
-                  </span>
+                  <span>{userName}</span>
                   {isYouAddress(address) && (
                     <Button onPress={updateAccountName} size="sm">
                       Update Name

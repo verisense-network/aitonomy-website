@@ -11,13 +11,13 @@ import {
 import { Key, useCallback, useEffect, useState } from "react";
 import LoginModal from "./modal/LoginModal";
 import { useUserStore } from "@/stores/user";
-import { getAccountInfo } from "@/app/actions";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { updateAccountInfo } from "@/utils/user";
 
 export default function UserMenu() {
   const [isOpenOption, setIsOpenOption] = useState<string | null>(null);
-  const { name, address, isLogin, setUserName, logout } = useUserStore();
+  const { name, address, isLogin, logout } = useUserStore();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -25,18 +25,14 @@ export default function UserMenu() {
     try {
       if (!address) return;
       setIsLoading(true);
-      const account = await getAccountInfo({
-        accountId: address,
-      });
-      const aliasName = account?.alias || name || address?.slice(0, 4);
-      setUserName(aliasName);
+      await updateAccountInfo();
       setIsLoading(false);
     } catch (e) {
       console.error(e);
       toast.error("Failed to get user profile");
       setIsLoading(false);
     }
-  }, [address, name, setUserName]);
+  }, [address]);
 
   const openMenu = useCallback(
     (key: Key) => {
