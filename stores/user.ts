@@ -49,6 +49,7 @@ export const useUserStore = create<Store>()(
           name: "",
           publicKey: new Uint8Array(0),
           address: "",
+          lastPostAt: null,
         }),
       setLastPostAt: (lastPostAt: number | null) => set({ lastPostAt }),
     })),
