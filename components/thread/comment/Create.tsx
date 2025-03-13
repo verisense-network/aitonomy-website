@@ -86,8 +86,15 @@ export default function CreateComment({
 
         const signature = await signPayload(payload, PostCommentPayload);
 
-        const contentId = await createComment(payload, signature);
+        const {
+          success,
+          data: contentId,
+          message: errorMessage,
+        } = await createComment(payload, signature);
         console.log("contentId", contentId);
+        if (!success) {
+          throw new Error(errorMessage);
+        }
         if (!contentId) return;
 
         const { comment } = decodeId(hexToLittleEndian(contentId));

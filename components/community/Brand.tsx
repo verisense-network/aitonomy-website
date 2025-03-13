@@ -98,7 +98,18 @@ export default function CommunityBrand({ communityId }: Props) {
             return;
           }
 
-          await activateCommunity(payload);
+          const { success, message: errorMessage } = await activateCommunity(
+            payload
+          );
+          if (!success) {
+            toast.update(toastId, {
+              render: `Failed to activate community: ${errorMessage}`,
+              type: "error",
+              isLoading: false,
+              autoClose: 2000,
+            });
+            return;
+          }
           console.log(
             `Checking community activation status: attempt ${renderCount}`
           );
@@ -157,19 +168,31 @@ export default function CommunityBrand({ communityId }: Props) {
   );
 
   const getBalance = useCallback(async () => {
-    const balances = await getBalances({
-      accountId: address,
-      gt: communityId,
-      limit: 1,
-    });
-    const current = balances[0];
-    if (!current) {
-      // setCurrentBalance(0);
-      return;
+    try {
+      const {
+        success,
+        data: balances,
+        message: errorMessage,
+      } = await getBalances({
+        accountId: address,
+        gt: communityId,
+        limit: 1,
+      });
+      if (!success || !balances) {
+        throw new Error(errorMessage);
+      }
+      const current = balances[0];
+      if (!current) {
+        // setCurrentBalance(0);
+        return;
+      }
+      const communityInfo = current[0];
+      const currentBalance = current[1];
+      setCurrentBalance(currentBalance);
+    } catch (e: any) {
+      console.error("getBalance error", e);
+      toast.error("Failed to get balance");
     }
-    const communityInfo = current[0];
-    const currentBalance = current[1];
-    setCurrentBalance(currentBalance);
   }, [address, communityId]);
 
   const retryWithStoreSignature = useCallback(async () => {
@@ -179,10 +202,18 @@ export default function CommunityBrand({ communityId }: Props) {
       console.error("signature not found");
       return;
     }
-    const res = await activateCommunity({
+    const {
+      success,
+      data: res,
+      message: errorMessage,
+    } = await activateCommunity({
       community: community?.name,
       tx: signature,
     });
+    if (!success) {
+      toast.error(errorMessage);
+      return;
+    }
     const toastId = toast.loading("checking activation status");
     checkCommunityActivateStatus(signature, toastId, 0);
     console.log("res", res);

@@ -89,8 +89,16 @@ export default function ThreadCreate({
         } as CreateThreadArg;
 
         const signature = await signPayload(payload, PostThreadPayload);
-        const contentId = await createThread(payload, signature);
+
+        const {
+          success,
+          data: contentId,
+          message: errorMessage,
+        } = await createThread(payload, signature);
         console.log("contentId", contentId);
+        if (!success) {
+          throw new Error(errorMessage);
+        }
         if (!contentId) return;
 
         const { community, thread } = decodeId(hexToLittleEndian(contentId));

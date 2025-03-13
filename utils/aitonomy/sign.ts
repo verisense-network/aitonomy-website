@@ -19,14 +19,21 @@ export async function signPayload(
 
   const wallet = getWalletConnect(user.wallet!);
 
-  const accountInfo = await getAccountInfo({
+  const {
+    success,
+    data: account,
+    message: errorMessage,
+  } = await getAccountInfo({
     accountId: user.address,
   });
-  console.log("accountInfo", accountInfo);
-  if (accountInfo.nonce === undefined || accountInfo.nonce === null) {
+  if (!success || !account) {
+    throw new Error(`Failed: ${errorMessage}`);
+  }
+  console.log("accountInfo", account);
+  if (account.nonce === undefined || account.nonce === null) {
     throw new Error("nonce not found");
   }
-  const nonce = accountInfo.nonce;
+  const nonce = account.nonce;
   console.log("nonce", nonce);
 
   const nonceEncoded = new u64(registry, nonce).toU8a();

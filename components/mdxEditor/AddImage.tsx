@@ -40,7 +40,10 @@ export default function AddImage() {
       const toastId = toast.loading("Uploading image");
       try {
         const image = acceptedFiles[0];
-        const url = await uploadImage(image);
+        const { success, data: url, message } = await uploadImage(image);
+        if (!success) {
+          throw new Error(`failed: ${message}`);
+        }
         setValue("src", url);
         setValue("altText", image.name);
         toast.update(toastId, {

@@ -27,7 +27,7 @@ import {
   Textarea,
   Tooltip,
 } from "@heroui/react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
@@ -58,6 +58,9 @@ const MOCKDATA = {
 export default function CommunityCreate({ onClose }: Props) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [llmAccordionSelectedKeys, setLlmAccordionSelectedKeys] = useState<
+    string[]
+  >([]);
   const { watch, control, setValue, handleSubmit, reset } =
     useForm<CreateCommunityArg>({
       defaultValues: {
@@ -92,7 +95,10 @@ export default function CommunityCreate({ onClose }: Props) {
       }
       try {
         setIsLoadingLogo(true);
-        const imageUrl = await uploadImage(image);
+        const { success, data: imageUrl, message } = await uploadImage(image);
+        if (!success) {
+          throw new Error(`failed: ${message}`);
+        }
         setValue("logo", imageUrl);
         setIsLoadingLogo(false);
       } catch (err: any) {
@@ -116,7 +122,10 @@ export default function CommunityCreate({ onClose }: Props) {
       }
       try {
         setIsLoadingTokenLogo(true);
-        const imageUrl = await uploadImage(image);
+        const { success, data: imageUrl, message } = await uploadImage(image);
+        if (!success) {
+          throw new Error(`failed: ${message}`);
+        }
         setValue("token.image", imageUrl);
         setIsLoadingTokenLogo(false);
       } catch (err: any) {
@@ -138,7 +147,21 @@ export default function CommunityCreate({ onClose }: Props) {
         const signature = await signPayload(data, CreateCommunityPayload);
 
         console.log("signature", signature);
-        const communityId = await createCommunity(data, signature);
+        const {
+          success,
+          data: communityId,
+          message,
+        } = await createCommunity(data, signature);
+        if (!success) {
+          if (message?.includes("LLM key not found")) {
+            setLlmAccordionSelectedKeys(["llm"]);
+            control.setError("llm_key", {
+              type: "manual",
+              message: "LLM key is required",
+            });
+          }
+          throw new Error(message);
+        }
         console.log("communityId", communityId);
         if (!communityId) return;
         onClose();
@@ -247,6 +270,7 @@ export default function CommunityCreate({ onClose }: Props) {
           )}
         />
       </div>
+      {/*  TODO: enable private switch */}
       {/* <Controller
         name="private"
         control={control}
@@ -457,6 +481,7 @@ export default function CommunityCreate({ onClose }: Props) {
         />
       </div>
       <Accordion
+        selectedKeys={llmAccordionSelectedKeys}
         selectionMode="multiple"
         variant="light"
         itemClasses={{

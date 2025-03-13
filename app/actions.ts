@@ -11,6 +11,7 @@ import {
   CreateThreadArg,
   createThreadRpc,
   getAccountInfoRpc,
+  GetBalancesResponse,
   getBalancesRpc,
   SetAliasArg,
   setAliasRpc,
@@ -27,18 +28,41 @@ if (!NUCLEUS_ID) {
 }
 
 export async function uploadImage(file: File) {
-  return uploadImageWithPostImages(file);
+  try {
+    const res = await uploadImageWithPostImages(file);
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("uploadImage error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
 }
 
 export async function createCommunity(
   form: CreateCommunityArg,
   signature: Signature
 ) {
-  const communityArgs = form;
+  try {
+    const communityArgs = form;
 
-  const res = await createCommunityRpc(NUCLEUS_ID, communityArgs, signature);
+    const res = await createCommunityRpc(NUCLEUS_ID, communityArgs, signature);
 
-  return res;
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("createCommunity error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
 }
 
 export interface CreateThreadForm {
@@ -53,30 +77,63 @@ export async function createThread(
   form: CreateThreadArg,
   signature: Signature
 ) {
-  const threadArgs = form;
+  try {
+    const threadArgs = form;
 
-  const res = await createThreadRpc(NUCLEUS_ID, threadArgs, signature);
+    const res = await createThreadRpc(NUCLEUS_ID, threadArgs, signature);
 
-  return res;
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("createThread error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
 }
 
 export async function createComment(
   form: CreateCommentArg,
   signature: Signature
 ) {
-  const commentArgs = form;
+  try {
+    const commentArgs = form;
 
-  const res = await createCommentRpc(NUCLEUS_ID, commentArgs, signature);
+    const res = await createCommentRpc(NUCLEUS_ID, commentArgs, signature);
 
-  return res;
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("createComment error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
 }
 
 export async function activateCommunity(data: ActivateCommunityArg) {
-  const threadArgs = data;
+  try {
+    const threadArgs = data;
 
-  const res = await activateCommunityRpc(NUCLEUS_ID, threadArgs);
+    const res = await activateCommunityRpc(NUCLEUS_ID, threadArgs);
 
-  return res;
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("activateCommunity error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
 }
 
 interface GetAccountInfoParams {
@@ -84,19 +141,30 @@ interface GetAccountInfoParams {
 }
 
 export async function getAccountInfo(data: GetAccountInfoParams) {
-  let accountId: Uint8Array = new Uint8Array();
-  if (CHAIN === "BSC") {
-    accountId = ethers.toBeArray(data.accountId);
-  } else if (CHAIN === "SOL") {
-    accountId = bs58.decode(data.accountId);
+  try {
+    let accountId: Uint8Array = new Uint8Array();
+    if (CHAIN === "BSC") {
+      accountId = ethers.toBeArray(data.accountId);
+    } else if (CHAIN === "SOL") {
+      accountId = bs58.decode(data.accountId);
+    }
+    const threadArgs = {
+      account_id: accountId,
+    };
+
+    const res = await getAccountInfoRpc(NUCLEUS_ID, threadArgs);
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("getAccountInfo error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
   }
-  const threadArgs = {
-    account_id: accountId,
-  };
-
-  const res = await getAccountInfoRpc(NUCLEUS_ID, threadArgs);
-
-  return res;
 }
 
 interface GetBalancesParams {
@@ -106,30 +174,55 @@ interface GetBalancesParams {
 }
 
 export async function getBalances(data: GetBalancesParams) {
-  let accountId: Uint8Array = new Uint8Array();
-  if (!data.accountId) {
-    return [];
-  }
-  if (CHAIN === "BSC") {
-    accountId = ethers.toBeArray(data.accountId);
-  } else if (CHAIN === "SOL") {
-    accountId = bs58.decode(data.accountId);
-  }
-  const threadArgs = {
-    account_id: accountId,
-    gt: data.gt ? hexToBytes(data.gt) : undefined,
-    limit: data.limit,
-  };
+  try {
+    let accountId: Uint8Array = new Uint8Array();
+    if (!data.accountId) {
+      return {
+        success: true,
+        data: [] as GetBalancesResponse[],
+      };
+    }
+    if (CHAIN === "BSC") {
+      accountId = ethers.toBeArray(data.accountId);
+    } else if (CHAIN === "SOL") {
+      accountId = bs58.decode(data.accountId);
+    }
+    const threadArgs = {
+      account_id: accountId,
+      gt: data.gt ? hexToBytes(data.gt) : undefined,
+      limit: data.limit,
+    };
 
-  const res = await getBalancesRpc(NUCLEUS_ID, threadArgs);
+    const res = await getBalancesRpc(NUCLEUS_ID, threadArgs);
 
-  return res;
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("getBalances error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
 }
 
 export async function setAlias(data: SetAliasArg, signature: Signature) {
-  const threadArgs = data;
+  try {
+    const threadArgs = data;
 
-  const res = await setAliasRpc(NUCLEUS_ID, threadArgs, signature);
+    const res = await setAliasRpc(NUCLEUS_ID, threadArgs, signature);
 
-  return res;
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("setAlias error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
 }

@@ -49,11 +49,18 @@ export default function UserProfile({ address }: Props) {
       if (!address) return;
       await updateAccountInfo();
       if (isYouAddress(address)) {
-        const balances = await getBalances({
+        const {
+          success,
+          data: balances,
+          message: errorMessage,
+        } = await getBalances({
           accountId: address,
           gt: undefined,
           limit: 10,
         });
+        if (!success || !balances) {
+          throw new Error(errorMessage);
+        }
         setBalances(balances);
       }
       setIsLoading(false);
