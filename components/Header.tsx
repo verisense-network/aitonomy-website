@@ -20,10 +20,8 @@ export default function Header() {
         <div className="flex-shrink-0 cursor-pointer" onClick={toHomePage}>
           <Image
             src="/logo.svg"
-            width={40}
-            height={60}
             alt="AItonomy.world Logo"
-            className="object-contain text-gray-400"
+            className="w-7 h-12 md:w-8 md:h-14 object-contain text-gray-400"
           />
         </div>
         <div className="max-w-xl w-full mx-4">
