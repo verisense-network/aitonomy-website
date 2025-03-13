@@ -13,7 +13,6 @@ import {
   LLmName,
   PostThreadArg,
   registry,
-  Signature,
   PostCommentArg,
   SetAliasArg,
 } from "./type";
@@ -36,6 +35,7 @@ interface Signature {
 
 export interface CreateCommunityArg {
   name: string;
+  private: boolean;
   logo: string;
   slug: string;
   description: string;
@@ -101,9 +101,9 @@ export async function createCommunityRpc(
 export interface CreateThreadArg {
   community: string;
   title: string;
-  content: string;
-  image?: string;
-  mention: string[];
+  content: Array<number>;
+  images: string[];
+  mention: Uint8Array[];
 }
 
 export async function createThreadRpc(
@@ -157,9 +157,9 @@ export async function createThreadRpc(
 
 export interface CreateCommentArg {
   thread: Uint8Array;
-  content: string;
+  content: Array<number>;
   image?: string;
-  mention: string[];
+  mention: Uint8Array[];
   reply_to?: string;
 }
 
@@ -221,13 +221,20 @@ export async function activateCommunityRpc(
   nucleusId: string,
   args: ActivateCommunityArg
 ) {
-  const rpcArgs = args;
+  const rpcArgs = {
+    ...args,
+    tx: ` ${args.tx}`,
+  };
 
   console.log("rpcArgs", rpcArgs);
 
   const payload = new ActivateCommunityArg(registry, rpcArgs).toHex();
 
   console.log("payload", payload);
+
+  const decoded = new ActivateCommunityArg(registry, payload).toHuman();
+  console.log("decoded", decoded);
+
   try {
     const provider = await getRpcClient();
     const response = await provider.send<any>("nucleus_post", [
@@ -327,9 +334,10 @@ export async function getAccountInfoRpc(
   nucleusId: string,
   args: GetAccountInfoArg
 ): Promise<{
-  nonce: string;
+  nonce: number;
   pubkey: string;
   alias?: string;
+  last_post_at: number;
 }> {
   console.log("args", args);
   const payload = new AccountId(registry, args.account_id).toHex();
@@ -358,7 +366,7 @@ export async function getAccountInfoRpc(
     if (decoded.isErr) {
       throw new Error(decoded.toString());
     }
-    const result = decoded.asOk.toHuman() as any;
+    const result = decoded.asOk.toJSON() as any;
 
     return result;
   } catch (err: any) {

@@ -17,8 +17,10 @@ import {
 } from "@/utils/aitonomy";
 import { Signature } from "@/utils/aitonomy/sign";
 import { NUCLEUS_ID } from "@/utils/aitonomy/tools";
+import { CHAIN } from "@/utils/chain";
 import { hexToBytes } from "@/utils/tools";
 import bs58 from "bs58";
+import { ethers } from "ethers";
 
 if (!NUCLEUS_ID) {
   throw new Error("Nucleus ID is not defined");
@@ -37,6 +39,14 @@ export async function createCommunity(
   const res = await createCommunityRpc(NUCLEUS_ID, communityArgs, signature);
 
   return res;
+}
+
+export interface CreateThreadForm {
+  community: string;
+  title: string;
+  content: string;
+  images: string[];
+  mention: string[];
 }
 
 export async function createThread(
@@ -74,8 +84,14 @@ interface GetAccountInfoParams {
 }
 
 export async function getAccountInfo(data: GetAccountInfoParams) {
+  let accountId: Uint8Array = new Uint8Array();
+  if (CHAIN === "BSC") {
+    accountId = ethers.toBeArray(data.accountId);
+  } else if (CHAIN === "SOL") {
+    accountId = bs58.decode(data.accountId);
+  }
   const threadArgs = {
-    account_id: bs58.decode(data.accountId),
+    account_id: accountId,
   };
 
   const res = await getAccountInfoRpc(NUCLEUS_ID, threadArgs);
@@ -90,9 +106,17 @@ interface GetBalancesParams {
 }
 
 export async function getBalances(data: GetBalancesParams) {
-  console.log("data", data);
+  let accountId: Uint8Array = new Uint8Array();
+  if (!data.accountId) {
+    return [];
+  }
+  if (CHAIN === "BSC") {
+    accountId = ethers.toBeArray(data.accountId);
+  } else if (CHAIN === "SOL") {
+    accountId = bs58.decode(data.accountId);
+  }
   const threadArgs = {
-    account_id: bs58.decode(data.accountId),
+    account_id: accountId,
     gt: data.gt ? hexToBytes(data.gt) : undefined,
     limit: data.limit,
   };

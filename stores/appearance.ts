@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 type Store = {
+  isMobile: boolean;
   sideBarIsOpen: boolean;
   welcomeModalIsOpen: boolean;
   welcomeModalIsReabled: boolean;
@@ -10,9 +11,14 @@ type Store = {
   setWelcomeModalIsReabled: (isReabled: boolean) => void;
 };
 
+export const isMobile =
+  typeof window !== "undefined" &&
+  window.matchMedia("(max-width: 768px)").matches;
+
 export const useAppearanceStore = create<Store>()(
   persist(
     (set) => ({
+      isMobile,
       sideBarIsOpen: true,
       welcomeModalIsOpen: false,
       welcomeModalIsReabled: false,

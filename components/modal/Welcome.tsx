@@ -11,7 +11,7 @@ import {
 import { useCallback, useEffect } from "react";
 import { parseMarkdown } from "@/utils/markdown";
 import { welcomeDoc } from "./docs";
-import { useAppearanceStore } from "@/store/appearance";
+import { useAppearanceStore } from "@/stores/appearance";
 
 export default function WelcomeModal() {
   const {
@@ -33,7 +33,14 @@ export default function WelcomeModal() {
   }, [setWelcomeModalIsOpen, setWelcomeModalIsReabled]);
 
   return (
-    <Modal isOpen={welcomeModalIsOpen} onClose={onModalClose} size="4xl">
+    <Modal
+      isOpen={welcomeModalIsOpen}
+      onClose={onModalClose}
+      size="4xl"
+      classNames={{
+        body: "max-h-[80vh] overflow-y-auto md:max-h-[85vh]",
+      }}
+    >
       <ModalContent>
         {(onClose) => (
           <>

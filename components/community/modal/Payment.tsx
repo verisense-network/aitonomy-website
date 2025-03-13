@@ -1,4 +1,4 @@
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
 import { getWalletConnect } from "@/utils/wallet";
 import {
   Button,
@@ -9,16 +9,18 @@ import {
   ModalContent,
   ModalHeader,
 } from "@heroui/react";
-import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { useCallback, useMemo, useState } from "react";
 import bs58 from "bs58";
 import { Id, toast } from "react-toastify";
+import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
+import { CHAIN } from "@/utils/chain";
+import { isDev } from "@/utils/tools";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   toAddress: string;
-  paymentLamports: number;
+  amount: string;
   onSuccess: (tx: string, toastId: Id) => void;
 }
 
@@ -26,12 +28,11 @@ export default function PaymentModal({
   isOpen,
   onClose,
   toAddress,
-  paymentLamports,
+  amount,
   onSuccess,
 }: Props) {
   const { address, wallet } = useUserStore();
   const fromAddress = address;
-  const amount = paymentLamports / LAMPORTS_PER_SOL;
   const [isLoading, setIsLoading] = useState(false);
 
   const toPay = useCallback(async () => {
@@ -41,15 +42,22 @@ export default function PaymentModal({
     try {
       setIsLoading(true);
       const walletConnect = getWalletConnect(wallet);
+      const readableAmount = formatReadableAmount(amount);
+      console.log("toAddress", toAddress);
+      console.log("readableAmount", readableAmount);
       const tx = await walletConnect.createTransaction(
-        new PublicKey(toAddress),
-        paymentLamports
+        toAddress,
+        readableAmount
       );
-      const signTx = await walletConnect.signTransaction(tx);
+      console.log("tx", tx);
+      const signTx = await walletConnect.signTransaction(tx as any);
 
-      await walletConnect.boardcastTransaction(signTx);
+      console.log("signTx", signTx);
 
-      const signatureHex = bs58.encode(signTx.signature);
+      await walletConnect.broadcastTransaction(signTx);
+
+      const signatureHex =
+        CHAIN === "SOL" ? bs58.encode(signTx.signature) : signTx;
       onSuccess(signatureHex, toastId);
       setIsLoading(false);
     } catch (e: any) {
@@ -62,7 +70,12 @@ export default function PaymentModal({
         autoClose: 3000,
       });
     }
-  }, [wallet, toAddress, paymentLamports, onSuccess]);
+  }, [wallet, toAddress, amount, onSuccess]);
+
+  const mockPayment = useCallback(() => {
+    const signatureHex = `0xc712feacbd7672e3d8f4b2ff4d8c4484747e9fa2730614ddc97dc2ce9870538a`;
+    onSuccess(signatureHex, 1);
+  }, [onSuccess]);
 
   const listData = useMemo(() => {
     return [
@@ -76,7 +89,7 @@ export default function PaymentModal({
       },
       {
         label: "Amount",
-        value: `${amount} SOL`,
+        value: `${amount ? formatReadableAmount(amount) : ""} ${VIEW_UNIT}`,
       },
     ];
   }, [fromAddress, toAddress, amount]);
@@ -109,6 +122,7 @@ export default function PaymentModal({
               >
                 Payment
               </Button>
+              {isDev && <Button onPress={mockPayment}>Mock</Button>}
             </ModalBody>
           </>
         )}

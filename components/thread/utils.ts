@@ -1,13 +1,16 @@
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
 
 export function isEqual(a: any, b: any) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
 export function isAgentAddress(agentPubkey: string, author: string) {
-  return isEqual(agentPubkey, author);
+  return isEqual(agentPubkey?.toLowerCase(), author?.toLowerCase());
 }
 
 export function isYouAddress(address: string) {
-  return address === useUserStore.getState().address;
+  return isEqual(
+    address?.toLowerCase(),
+    useUserStore.getState().address?.toLowerCase()
+  );
 }

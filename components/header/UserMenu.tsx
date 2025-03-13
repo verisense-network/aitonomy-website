@@ -10,7 +10,7 @@ import {
 } from "@heroui/react";
 import { Key, useCallback, useEffect, useState } from "react";
 import LoginModal from "./modal/LoginModal";
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
 import { getAccountInfo } from "@/app/actions";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";

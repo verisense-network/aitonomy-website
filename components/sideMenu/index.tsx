@@ -33,19 +33,19 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { hexToLittleEndian } from "@/utils/tools";
 import CommunityCreate from "../community/Create";
-import { useAppearanceStore } from "@/store/appearance";
-import { useUserStore } from "@/store/user";
+import { useAppearanceStore } from "@/stores/appearance";
+import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
 
 export default function SideMenu() {
-  const { sideBarIsOpen, setSideBarIsOpen, setWelcomeModalIsOpen } =
+  const { sideBarIsOpen, setSideBarIsOpen, setWelcomeModalIsOpen, isMobile } =
     useAppearanceStore();
   const { isLogin } = useUserStore();
   const router = useRouter();
   const [createCommunityModal, setCreateCommunityModal] = useState(false);
 
   const { data, isLoading } = useMeilisearch("community", undefined, {
-    // filter: "status = 'Active'", TODO: enable filterable status
+    // filter: "status = 'Active'",
     sort: ["created_time:desc"],
     limit: 5,
   });
@@ -62,8 +62,11 @@ export default function SideMenu() {
     (id: Key) => {
       const communityId = hexToLittleEndian(id as string);
       router.push("/c/" + communityId);
+      if (isMobile) {
+        setSideBarIsOpen(false);
+      }
     },
-    [router]
+    [router, isMobile, setSideBarIsOpen]
   );
 
   const onMenu1Actions = useCallback(
@@ -73,8 +76,11 @@ export default function SideMenu() {
       } else if (key === "explore") {
         router.push("/explore");
       }
+      if (isMobile) {
+        setSideBarIsOpen(false);
+      }
     },
-    [router]
+    [isMobile, router, setSideBarIsOpen]
   );
 
   const onMenu2Actions = useCallback(
@@ -84,23 +90,26 @@ export default function SideMenu() {
       } else {
         router.push(`/legals/${key as string}`);
       }
+      if (isMobile) {
+        setSideBarIsOpen(false);
+      }
     },
-    [router, setWelcomeModalIsOpen]
+    [isMobile, setWelcomeModalIsOpen, router, setSideBarIsOpen]
   );
 
   return (
     <>
       <div
         className={twMerge(
-          sideBarIsOpen ? "w-[240px]" : "w-12",
-          "fixed top-16 left-0 h-[calc(100vh-4rem)] border-r-1 border-zinc-800"
+          sideBarIsOpen ? "w-[240px]" : "w-1 md:w-12",
+          "fixed top-16 left-0 h-[calc(100vh-4rem)] z-30 bg-black border-r-1 border-zinc-800"
         )}
       >
         <Button
           onPress={() => setSideBarIsOpen(!sideBarIsOpen)}
           isIconOnly
           variant="light"
-          className="absolute top-12 -right-4 shadow-0 text-zinc-300"
+          className="absolute top-12 -right-5 shadow-0 text-zinc-300"
         >
           {sideBarIsOpen ? (
             <ArrowLeftCircleIcon className="w-8 h-8 bg-black" />
@@ -168,9 +177,7 @@ export default function SideMenu() {
                         name={community.name}
                       />
                     }
-                  >
-                    {community.name}
-                  </ListboxItem>
+                  ></ListboxItem>
                 )) || []}
               </Listbox>
             </AccordionItem>
@@ -216,6 +223,9 @@ export default function SideMenu() {
           onClose={() => setCreateCommunityModal(false)}
           isDismissable={false}
           size="xl"
+          classNames={{
+            body: "max-h-[90vh] overflow-y-auto md:max-h-[95vh]",
+          }}
         >
           <ModalContent>
             {(onClose) => (
@@ -232,7 +242,7 @@ export default function SideMenu() {
         </Modal>
       </div>
       {/* Fixed Sidebar Placeholder */}
-      <div className={twMerge(sideBarIsOpen ? "w-[240px]" : "w-12")}></div>
+      <div className={twMerge(sideBarIsOpen ? "w-[240px]" : "w-1 md:w-12")} />
     </>
   );
 }

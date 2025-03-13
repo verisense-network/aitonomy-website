@@ -14,13 +14,13 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import PaymentModal from "./modal/Payment";
 import { activateCommunity, getBalances } from "@/app/actions";
-import { useUserStore } from "@/store/user";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { useUserStore } from "@/stores/user";
 import { isYouAddress } from "../thread/utils";
-import { usePaymentCommunityStore } from "@/store/paymentCommunity";
+import { usePaymentCommunityStore } from "@/stores/paymentCommunity";
 import { CommunityStatus } from "./utils";
 import { getWalletConnect } from "@/utils/wallet";
 import { Id, toast } from "react-toastify";
+import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
 
 interface Props {
   communityId: string;
@@ -50,8 +50,8 @@ export default function CommunityBrand({ communityId }: Props) {
 
   const community = data?.hits[0];
 
-  const paymentLamports = community?.status?.WaitingTx;
-  const paymentSol = paymentLamports / LAMPORTS_PER_SOL;
+  const amount = community?.status?.WaitingTx;
+  const viewAmount = amount ? formatReadableAmount(amount) : "";
 
   const isCreateFailed =
     community && community?.status?.[CommunityStatus.CreateFailed];
@@ -80,20 +80,16 @@ export default function CommunityBrand({ communityId }: Props) {
       if (communityCurrent.status !== CommunityStatus.Active) {
         setIsActivatingLoading(true);
         const userWallet = getWalletConnect(wallet);
-        const connection = userWallet.connection;
         if (retryCount < MAX_RETRY) {
           if (!txHash) return;
           const payload = { community: communityCurrent?.name, tx: txHash };
           console.log("payload", payload);
-          const tx = await connection.getTransaction(txHash, {
-            commitment: "finalized",
-            maxSupportedTransactionVersion: 0,
-          });
+          const tx = await userWallet.getFinalizedTransaction(txHash);
 
           console.log("tx", tx);
 
           const renderCount = `${retryCount + 1}/${MAX_RETRY}`;
-          if (!tx || tx?.meta?.err) {
+          if (!tx || (tx as any)?.meta?.err) {
             await sleep(3000);
             toast.update(toastId, {
               render: `Checking transaction status...${renderCount}`,
@@ -226,7 +222,7 @@ export default function CommunityBrand({ communityId }: Props) {
             <div className="flex space-x-4 items-center">
               <Avatar name={community?.name} src={community?.logo} size="lg" />
               <h1 className="text-2xl font-bold">{community?.name}</h1>
-              {shouldShowActivateCommunity && paymentSol > 0 && (
+              {shouldShowActivateCommunity && Number(viewAmount) > 0 && (
                 <div className="flex">
                   <Chip
                     color="warning"
@@ -236,7 +232,9 @@ export default function CommunityBrand({ communityId }: Props) {
                       content: "flex space-x-2 items-center",
                     }}
                   >
-                    <span>Waiting tx {paymentSol} SOL</span>
+                    <span>
+                      Waiting tx {viewAmount} {VIEW_UNIT}
+                    </span>
                     {!isLoading &&
                       (hasStoredSignature ? (
                         <Button
@@ -306,7 +304,7 @@ export default function CommunityBrand({ communityId }: Props) {
         isOpen={isOpenPaymentModal}
         onClose={() => setIsOpenPaymentModal(false)}
         toAddress={community?.agent_pubkey}
-        paymentLamports={paymentLamports}
+        amount={amount}
         onSuccess={onSuccess}
       />
     </>

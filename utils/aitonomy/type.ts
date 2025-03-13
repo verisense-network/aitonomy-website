@@ -1,5 +1,6 @@
-import { GenericAccountId32, TypeRegistry } from "@polkadot/types";
+import { TypeRegistry } from "@polkadot/types";
 import {
+  Bool,
   Enum,
   i64,
   Null,
@@ -14,7 +15,13 @@ import {
   U8aFixed,
   Vec,
 } from "@polkadot/types-codec";
-import { Codec, CodecClass } from "@polkadot/types-codec/types";
+import {
+  AnyU8a,
+  Codec,
+  CodecClass,
+  Registry,
+  U8aBitLength,
+} from "@polkadot/types-codec/types";
 
 export type TypesDef<T = Codec> = Record<string, string | CodecClass<T>>;
 
@@ -33,8 +40,33 @@ pub type EventId = u64;
 pub type ContentId = u128;
  */
 
-export const AccountId = GenericAccountId32;
-export const Signature = U8aFixed.with(512);
+// export const AccountId = GenericAccountId32;
+
+/**
+pub struct H160(pub [u8; 20]);
+pub type AccountId = H160;
+ */
+
+export class H160 extends U8aFixed {
+  constructor(registry: Registry, value?: AnyU8a, bitLength?: U8aBitLength) {
+    super(registry, value, 160); // 160 位 = 20 字节
+  }
+}
+
+export const AccountId = H160;
+
+// export const Signature = U8aFixed.with(512);
+/**
+ * 
+    pub struct EcdsaSignature(pub [u8; 65]);
+ */
+
+export class EcdsaSignature extends U8aFixed {
+  constructor(registry: Registry, value?: AnyU8a, bitLength?: U8aBitLength) {
+    super(registry, value, 520); // 520 位 = 65 字节
+  }
+}
+
 export const Pubkey = AccountId;
 
 export const CommunityId = u32;
@@ -172,17 +204,23 @@ export enum LLmName {
   DeepSeek = "DeepSeek",
 }
 /**
-    pub struct Args<T> {
-        pub signature: Signature,
-        pub signer: Pubkey,
+ * 
+    type SignedArgs<T> = Args<T, EcdsaSignature>;
+  
+    pub struct Args<T, S> {
+        pub signature: S,
+        pub signer: AccountId,
         pub nonce: u64,
         pub payload: T,
     }
  */
-export function createWithArgs<S extends CodecClass<Struct<any>>>(payload: S) {
+export function createWithArgs<T extends CodecClass<Struct<any>>>(
+  payload: T,
+  signature = EcdsaSignature
+) {
   return Struct.with({
-    signature: Signature,
-    signer: Pubkey,
+    signature,
+    signer: AccountId,
     nonce: u64,
     payload,
   });
@@ -206,6 +244,7 @@ export const TokenMetadataArg = Struct.with({
 /**
     pub struct CreateCommunityArg {
         pub name: String,
+        pub private: bool,
         pub logo: String,
         pub token: TokenMetadataArg,
         pub slug: String,
@@ -218,6 +257,7 @@ export const TokenMetadataArg = Struct.with({
  */
 export const CreateCommunityPayload = Struct.with({
   name: Text,
+  private: Bool,
   logo: Text,
   token: TokenMetadataArg,
   slug: Text,
@@ -234,16 +274,16 @@ export const CreateCommunityArg = createWithArgs(CreateCommunityPayload);
     pub struct PostThreadArg {
         pub community: String,
         pub title: String,
-        pub content: String,
-        pub image: Option<String>,
+        pub content: Vec<u8>,
+        pub images: Vec<String>,
         pub mention: Vec<AccountId>,
     }
  */
 export const PostThreadPayload = Struct.with({
   community: Text,
   title: Text,
-  content: Text,
-  image: Option.with(Text),
+  content: Vec.with(u8),
+  images: Vec.with(Text),
   mention: Vec.with(AccountId),
 });
 
@@ -252,16 +292,16 @@ export const PostThreadArg = createWithArgs(PostThreadPayload);
 /**
     pub struct PostCommentArg {
         pub thread: ContentId,
-        pub content: String,
-        pub image: Option<String>,
+        pub content: Vec<u8>,
+        pub images: Vec<String>,
         pub mention: Vec<AccountId>,
         pub reply_to: Option<ContentId>,
     }
  */
 export const PostCommentPayload = Struct.with({
   thread: ContentId,
-  content: Text,
-  image: Option.with(Text),
+  content: Vec.with(u8),
+  images: Vec.with(Text),
   mention: Vec.with(AccountId),
   reply_to: Option.with(ContentId),
 });
@@ -281,16 +321,18 @@ export const ActivateCommunityArg = Struct.with({
 });
 
 /**
-  pub struct Account {
+pub struct Account {
     pub nonce: u64,
-    pub pubkey: Pubkey,
+    pub address: H160,
     pub alias: Option<String>,
-  }
+    pub last_post_at: i64,
+}
  */
 export const Account = Struct.with({
-  nonce: U64,
-  pubkey: Pubkey,
+  nonce: u64,
+  address: H160,
   alias: Option.with(Text),
+  last_post_at: i64,
 });
 
 /**
@@ -317,9 +359,10 @@ export const SetAliasPayload = Struct.with({
 export const SetAliasArg = createWithArgs(SetAliasPayload);
 
 registry.register({
-  Signature,
+  EcdsaSignature,
   Account,
   AccountId,
+  H160,
   Pubkey,
   CommunityId,
   EventId,

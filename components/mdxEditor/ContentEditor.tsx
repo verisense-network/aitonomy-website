@@ -22,9 +22,12 @@ import {
 } from "@mdxeditor/editor";
 import { ForwardedRef } from "react";
 import "@mdxeditor/editor/style.css";
+import "./dark-editor.css";
 import { twMerge } from "tailwind-merge";
 import AddImage from "./AddImage";
 import { useTheme } from "next-themes";
+import AddMention from "./AddMention";
+import { basicDark } from "cm6-theme-basic-dark";
 
 interface EditorProps extends MDXEditorProps {
   editorRef?: ForwardedRef<MDXEditorMethods> | null;
@@ -45,6 +48,7 @@ export default function ContentEditor({ editorRef, ...props }: EditorProps) {
               <AddImage />
               <CreateLink />
               <InsertCodeBlock />
+              <AddMention />
             </>
           ),
         }),
@@ -56,10 +60,12 @@ export default function ContentEditor({ editorRef, ...props }: EditorProps) {
         imagePlugin(),
         linkPlugin(),
         linkDialogPlugin(),
-        codeBlockPlugin({ defaultCodeBlockLanguage: "js" }),
+        codeBlockPlugin({ defaultCodeBlockLanguage: "txt" }),
         codeMirrorPlugin({
+          codeMirrorExtensions: [basicDark],
           autoLoadLanguageSupport: true,
           codeBlockLanguages: {
+            txt: "Text",
             rust: "Rust",
             ts: "TypeScript",
             js: "JavaScript",

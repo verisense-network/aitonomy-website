@@ -13,7 +13,7 @@ import {
 import { Key, Suspense, useCallback, useState } from "react";
 import CommunityCreate from "../community/Create";
 import ThreadCreate from "../thread/Create";
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
 
 const menuList = [
@@ -73,6 +73,9 @@ export default function CreateMenu() {
         onClose={() => setIsOpen(null)}
         isDismissable={false}
         size="xl"
+        classNames={{
+          body: "max-h-[90vh] overflow-y-auto md:max-h-[95vh]",
+        }}
       >
         <ModalContent>
           {(onClose) => (

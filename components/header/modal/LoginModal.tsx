@@ -11,17 +11,32 @@ import {
   ModalHeader,
 } from "@heroui/react";
 import { connectToWallet, WalletId } from "@/utils/wallet/connect";
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
+import { CHAIN } from "@/utils/chain";
 
-const WALLETS = [
-  {
-    id: WalletId.OKX,
-    title: "OKX",
-    icon: null,
-  },
+const isSolChain = CHAIN === "SOL";
+
+const SOL_WALLETS = [
   {
     id: WalletId.PHANTOM,
     title: "Phantom",
+    icon: null,
+  },
+];
+
+const BSC_WALLETS = [
+  {
+    id: WalletId.METAMASK,
+    title: "MetaMask",
+    icon: null,
+  },
+];
+
+const WALLETS = [
+  ...(isSolChain ? SOL_WALLETS : BSC_WALLETS),
+  {
+    id: WalletId.OKX,
+    title: "OKX",
     icon: null,
   },
 ];

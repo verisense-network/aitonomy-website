@@ -1,5 +1,6 @@
 import {
   Connection,
+  LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
   Transaction,
@@ -7,7 +8,7 @@ import {
 import { WalletId } from "./connect";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
-import { useUserStore } from "@/store/user";
+import { useUserStore } from "@/stores/user";
 
 export class PhantomConnect {
   id = WalletId.PHANTOM;
@@ -87,7 +88,7 @@ export class PhantomConnect {
     this.publicKey = publicKey;
   }
 
-  async createTransaction(toAddress: PublicKey, lamports: number) {
+  async createTransaction(toAddress: string, amount: string) {
     const transaction = new Transaction();
 
     const receiverAddress = new PublicKey(toAddress);
@@ -96,7 +97,7 @@ export class PhantomConnect {
       SystemProgram.transfer({
         fromPubkey: new PublicKey(this.publicKey),
         toPubkey: receiverAddress,
-        lamports,
+        lamports: Number(amount) / LAMPORTS_PER_SOL,
       })
     );
 
@@ -113,7 +114,7 @@ export class PhantomConnect {
     return signedTx;
   }
 
-  async boardcastTransaction(signedTx: any) {
+  async broadcastTransaction(signedTx: any) {
     const serializedTransaction = signedTx.serialize();
     const res = await this.connection.sendRawTransaction(
       serializedTransaction,
@@ -122,6 +123,15 @@ export class PhantomConnect {
         preflightCommitment: "confirmed",
       }
     );
+    return res;
+  }
+
+  async getFinalizedTransaction(txHash: string) {
+    await this.checkConnected();
+    const res = await this.connection.getTransaction(txHash, {
+      commitment: "finalized",
+      maxSupportedTransactionVersion: 0,
+    });
     return res;
   }
 }

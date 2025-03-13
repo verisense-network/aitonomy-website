@@ -49,7 +49,6 @@ export default function AddImage() {
           isLoading: false,
           autoClose: 1500,
         });
-        seOpenImageDialog(false);
         setLoading(false);
       } catch (e: any) {
         toast.update(toastId, {
@@ -176,7 +175,7 @@ export default function AddImage() {
                       type="button"
                       onPress={() => handleSubmit(onSubmit)()}
                     >
-                      {loading ? "Uploading" : "Save"}
+                      {loading ? "Uploading" : "Insert"}
                     </Button>
                   </div>
                 </Form>

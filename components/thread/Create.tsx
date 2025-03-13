@@ -1,4 +1,4 @@
-import { createThread } from "@/app/actions";
+import { createThread, CreateThreadForm } from "@/app/actions";
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { CreateThreadArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
@@ -15,12 +15,20 @@ import {
   Spinner,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { Suspense, useCallback, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 import dynamic from "next/dynamic";
-import { extractMarkdownImages } from "@/utils/markdown";
+import {
+  extractMarkdownImages,
+  extractMentions,
+  mentionsToAccountId,
+} from "@/utils/markdown";
+import { compressString } from "@/utils/compressString";
+import { Lock } from "../Lock";
+import { useUserStore } from "@/stores/user";
+import { updateAccountInfo } from "@/utils/user";
 
 const ContentEditor = dynamic(() => import("../mdxEditor/ContentEditor"), {
   ssr: false,
@@ -38,11 +46,13 @@ export default function ThreadCreate({
   onClose,
 }: Props) {
   const router = useRouter();
-  const { control, handleSubmit } = useForm<CreateThreadArg>({
+  const { lastPostAt } = useUserStore();
+  const { control, handleSubmit } = useForm<CreateThreadForm>({
     defaultValues: {
       community: defaultCommunity || "",
       title: "",
       content: "",
+      images: [],
       mention: [],
     },
   });
@@ -61,7 +71,7 @@ export default function ThreadCreate({
   const communities = communitiesData?.hits ?? [];
 
   const onSubmit = useCallback(
-    async (data: CreateThreadArg) => {
+    async (data: CreateThreadForm) => {
       console.log(data);
       const toastId = toast.loading(
         "Posting continue to complete in your wallet"
@@ -69,14 +79,16 @@ export default function ThreadCreate({
       console.log("toastId", toastId);
       try {
         const images = extractMarkdownImages(data.content);
+        const content = compressString(data.content);
+        const mention = extractMentions(data.content);
         const payload = {
           ...data,
-          image: images.length > 0 ? images[0] : undefined,
-          mention: new Array(0).fill(new Array(32).fill(0)),
+          content: Array.from(content),
+          images,
+          mention: mentionsToAccountId(mention),
         } as CreateThreadArg;
 
         const signature = await signPayload(payload, PostThreadPayload);
-
         const contentId = await createThread(payload, signature);
         console.log("contentId", contentId);
         if (!contentId) return;
@@ -93,6 +105,7 @@ export default function ThreadCreate({
           router.push(`/c/${community}/${thread}`);
         }, 1500);
         onClose();
+        updateAccountInfo();
       } catch (e: any) {
         console.error("e", e);
         toast.update(toastId, {
@@ -105,6 +118,10 @@ export default function ThreadCreate({
     },
     [onClose, router]
   );
+
+  useEffect(() => {
+    updateAccountInfo();
+  }, []);
 
   return (
     <Form
@@ -176,11 +193,12 @@ export default function ThreadCreate({
           required: "Please enter content",
         }}
         render={({ field, fieldState }) => (
-          <div className="w-full">
+          <div className="relative w-full">
             <span className={fieldState.error ? "text-red-500" : ""}>
               Content
             </span>
             <Suspense fallback={<Spinner />}>
+              <Lock countdownTime={lastPostAt || 0} />
               <ContentEditor
                 className="mt-2 w-full rounded-xl"
                 {...field}
