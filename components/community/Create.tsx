@@ -247,7 +247,7 @@ export default function CommunityCreate({ onClose }: Props) {
           )}
         />
       </div>
-      <Controller
+      {/* <Controller
         name="private"
         control={control}
         render={({ field, fieldState }) => (
@@ -284,7 +284,7 @@ export default function CommunityCreate({ onClose }: Props) {
             </div>
           </Switch>
         )}
-      />
+      /> */}
       <Controller
         name="slug"
         control={control}
