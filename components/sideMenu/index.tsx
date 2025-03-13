@@ -34,9 +34,9 @@ import { toast } from "react-toastify";
 import Link from "next/link";
 
 const TopMenus = [
-  { name: "home", href: "/", icon: <HomeIcon className="w-5 h-5" /> },
+  { name: "Home", href: "/", icon: <HomeIcon className="w-5 h-5" /> },
   {
-    name: "explore",
+    name: "Explore",
     href: "/explore",
     icon: <UserGroupIcon className="w-5 h-5" />,
   },
