@@ -18,6 +18,7 @@ import { parseMarkdown } from "@/utils/markdown";
 import { useRouter } from "next/navigation";
 import { decompressString } from "@/utils/compressString";
 import Link from "next/link";
+import ShareButtons from "../share/ShareButtons";
 
 export default function ThreadView({ threadId }: { threadId: string }) {
   const router = useRouter();
@@ -73,8 +74,11 @@ export default function ThreadView({ threadId }: { threadId: string }) {
         {isLoading && <Spinner />}
         {!isLoading && threadData && (
           <>
-            <CardHeader>
+            <CardHeader className="flex justify-between items-center">
               <h1 className="text-xl font-bold">{threadData.title}</h1>
+              <div className="flex justify-end">
+                <ShareButtons type="thread" url={location.href} />
+              </div>
             </CardHeader>
             <CardBody>
               <div
