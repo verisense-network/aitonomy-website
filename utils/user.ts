@@ -10,7 +10,7 @@ export async function updateAccountInfo() {
     const account = await getAccountInfo({
       accountId: address,
     });
-    const aliasName = account?.alias || NAME_NOT_SET;
+    const aliasName = account?.alias || address?.slice(0, 4);
     console.log("aliasName", aliasName);
     console.log("setLastPostAt", account.last_post_at);
     setUserName(aliasName);
