@@ -7,14 +7,13 @@ import {
 } from "react-share";
 
 interface Props {
-  type: "community" | "thread" | "comment";
+  title: string;
   url: string;
 }
-export default function ShareButtons({ type, url }: Props) {
+export default function ShareButtons({ title, url }: Props) {
   const shareContent = `
-   The exciting content comes from the Aitonomy Forum.
-   ${url}
-  `;
+${title}
+Aitonomy link: ${url}`;
   return (
     <div className="flex items-center space-x-2">
       <ShareIcon className="w-4 h-4" />

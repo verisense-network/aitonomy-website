@@ -77,7 +77,7 @@ export default function ThreadView({ threadId }: { threadId: string }) {
             <CardHeader className="flex justify-between items-center">
               <h1 className="text-xl font-bold">{threadData.title}</h1>
               <div className="flex justify-end">
-                <ShareButtons type="thread" url={location.href} />
+                <ShareButtons title={threadData.title} url={location.href} />
               </div>
             </CardHeader>
             <CardBody>
