@@ -110,6 +110,9 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                   )}
                 </Card>
               ))}
+              <Alert color="default" className="text-sm" variant="flat">
+                Please disable other EVM chain wallets before connecting.
+              </Alert>
             </ModalBody>
             <ModalFooter />
           </>
