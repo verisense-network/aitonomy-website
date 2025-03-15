@@ -121,25 +121,6 @@ export const CommunityStatus = Enum.with({
   Frozen: u64,
 });
 
-/**
- * 
-pub struct Community {
-    pub id: String,
-    pub logo: String,
-    pub name: String,
-    pub slug: String,
-    pub description: String,
-    pub token_info: TokenMetadata,
-    pub prompt: String,
-    pub creator: AccountId,
-    pub agent_pubkey: AccountId,
-    pub llm_vendor: LlmVendor,
-    pub llm_assistant_id: String,
-    pub status: CommunityStatus,
-    pub created_time: i64,
-}
- */
-
 export type AccountId = string;
 
 export type TokenMetadata = {
@@ -183,8 +164,28 @@ export type Community = {
   created_time: number;
 };
 
+/**
+ * 
+pub struct Community {
+    pub id: String,
+    pub private: bool,
+    pub logo: String,
+    pub name: String,
+    pub slug: String,
+    pub description: String,
+    pub token_info: TokenMetadata,
+    pub prompt: String,
+    pub creator: AccountId,
+    pub agent_pubkey: AccountId,
+    pub llm_vendor: LlmVendor,
+    pub llm_assistant_id: String,
+    pub status: CommunityStatus,
+    pub created_time: i64,
+}
+ */
 export const Community = Struct.with({
   id: Text,
+  private: Bool,
   logo: Text,
   name: Text,
   slug: Text,

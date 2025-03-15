@@ -13,7 +13,7 @@ import {
 } from "@heroui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import PaymentModal from "./modal/Payment";
-import { activateCommunity, getBalances, getCommunity } from "@/app/actions";
+import { activateCommunity, getBalances } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
 import { isYouAddress } from "../thread/utils";
 import { usePaymentCommunityStore } from "@/stores/paymentCommunity";
@@ -168,6 +168,7 @@ export default function CommunityBrand({ communityId }: Props) {
   );
 
   const getBalance = useCallback(async () => {
+    if (!address || !communityId) return;
     try {
       const {
         success,
@@ -181,18 +182,19 @@ export default function CommunityBrand({ communityId }: Props) {
       if (!success || !balances) {
         throw new Error(errorMessage);
       }
-      const current = balances[0];
+      const current = balances?.find(
+        (item) => item[0]?.id === hexToLittleEndian(communityId)
+      );
       if (!current) {
-        // setCurrentBalance(0);
+        setCurrentBalance(0);
         return;
       }
-      const communityInfo = current[0];
+      // const communityInfo = current[0];
       const currentBalance = current[1];
       setCurrentBalance(currentBalance);
     } catch (e: any) {
       console.error("getBalance error", e);
-      // TODO: fix get balances error
-      // toast.error("Failed to get balance");
+      toast.error("Failed to get balance");
     }
   }, [address, communityId]);
 
@@ -222,7 +224,6 @@ export default function CommunityBrand({ communityId }: Props) {
 
   useEffect(() => {
     getBalance();
-    getCommunity(communityId);
   }, [getBalance, communityId]);
 
   useEffect(() => {
@@ -317,13 +318,17 @@ export default function CommunityBrand({ communityId }: Props) {
               {isActivatingLoading && <Spinner title="Activating..." />}
             </div>
             <div className="flex items-center space-x-2">
-              {currentBalance && <div>Balance: {currentBalance}</div>}
               <div className="flex flex-col items-center">
                 <Avatar
                   src={community?.token_info?.image}
                   name={community?.token_info?.symbol}
                 />
-                <span className="text-md">{community?.token_info?.symbol}</span>
+                <div className="flex items-center mt-1 space-x-1 text-md">
+                  <span>{currentBalance}</span>
+                  <span className="text-sm">
+                    {community?.token_info?.symbol}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
