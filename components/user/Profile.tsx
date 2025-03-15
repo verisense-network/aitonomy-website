@@ -1,4 +1,4 @@
-import { getBalances } from "@/app/actions";
+import { getAccountInfo, getBalances } from "@/app/actions";
 import { GetBalancesResponse } from "@/utils/aitonomy";
 import { Community } from "@/utils/aitonomy/type";
 import { formatAddress } from "@/utils/tools";
@@ -42,12 +42,21 @@ export default function UserProfile({ address }: Props) {
   const [balances, setBalances] = useState<GetBalancesResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isShowUpdateName, setIsShowUpdateName] = useState(false);
-  const { name: userName } = useUserStore();
+  const [userName, setUserName] = useState("");
 
   const getUserProfile = useCallback(async () => {
     try {
       if (!address) return;
-      await updateAccountInfo();
+      const {
+        success,
+        data,
+        message: errorMessage,
+      } = await getAccountInfo({ accountId: address });
+      if (!success || !data) {
+        throw new Error(errorMessage);
+      }
+      setUserName(data.alias || NAME_NOT_SET);
+
       if (isYouAddress(address)) {
         const {
           success,
@@ -66,8 +75,7 @@ export default function UserProfile({ address }: Props) {
       setIsLoading(false);
     } catch (e) {
       console.error(e);
-      // TODO: fix get balances error
-      // toast.error("Failed to get user profile");
+      toast.error(`Failed to get user profile: ${e}`);
       setIsLoading(false);
     }
   }, [address]);
@@ -103,7 +111,9 @@ export default function UserProfile({ address }: Props) {
                 />
               ) : (
                 <>
-                  <span className={userName ? "" : "text-gray-500"}>
+                  <span
+                    className={userName !== NAME_NOT_SET ? "" : "text-gray-500"}
+                  >
                     {userName || NAME_NOT_SET}
                   </span>
                   {isYouAddress(address) && (

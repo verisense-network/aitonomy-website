@@ -106,11 +106,10 @@ export default function Threads({
         )}
         <div>
           {threads?.map((hit: any, index: number) => (
-            <>
+            <div key={hit.id}>
               <Card
                 as={Link}
                 href={`/c/${hit.communityId}/${hit.threadNumber}`}
-                key={hit.id}
                 className="w-full p-2"
                 classNames={{
                   base: "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900",
@@ -143,10 +142,8 @@ export default function Threads({
                   ></div>
                 </CardBody>
               </Card>
-              {index !== threads?.length - 1 && (
-                <Divider className="my-1" key={`divider-${hit.id}`} />
-              )}
-            </>
+              {index !== threads?.length - 1 && <Divider className="my-1" />}
+            </div>
           ))}
         </div>
       </div>

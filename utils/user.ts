@@ -22,8 +22,6 @@ export async function updateAccountInfo() {
       throw new Error(errorMessage);
     }
     const aliasName = account?.alias || address?.slice(0, 4);
-    console.log("aliasName", aliasName);
-    console.log("setLastPostAt", account.last_post_at);
     setUserName(aliasName);
     setLastPostAt(account.last_post_at);
   } catch (e: any) {

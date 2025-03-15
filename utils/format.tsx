@@ -32,7 +32,7 @@ export function NamedAddressView({ address, name }: NamedAddressViewProps) {
   return (
     <div className="space-x-2">
       <span className="font-semibold text-md">
-        {(name && (name.startsWith("0x") ? "" : name)) || ""}
+        {(name && (name.startsWith("0x") ? name.slice(0, 4) : name)) || ""}
       </span>
       <AddressViewFormat address={address} />
     </div>
