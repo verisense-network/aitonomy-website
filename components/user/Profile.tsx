@@ -21,7 +21,7 @@ import UpdateAliasName from "./UpdateAliasName";
 import { toast } from "react-toastify";
 import { isYouAddress } from "../thread/utils";
 import { useUserStore } from "@/stores/user";
-import { updateAccountInfo } from "@/utils/user";
+import { NAME_NOT_SET, updateAccountInfo } from "@/utils/user";
 
 interface Props {
   address: string;
@@ -66,7 +66,8 @@ export default function UserProfile({ address }: Props) {
       setIsLoading(false);
     } catch (e) {
       console.error(e);
-      toast.error("Failed to get user profile");
+      // TODO: fix get balances error
+      // toast.error("Failed to get user profile");
       setIsLoading(false);
     }
   }, [address]);
@@ -102,7 +103,9 @@ export default function UserProfile({ address }: Props) {
                 />
               ) : (
                 <>
-                  <span>{userName}</span>
+                  <span className={userName ? "" : "text-gray-500"}>
+                    {userName || NAME_NOT_SET}
+                  </span>
                   {isYouAddress(address) && (
                     <Button onPress={updateAccountName} size="sm">
                       Update Name

@@ -4,10 +4,13 @@ import useMeilisearch from "@/hooks/useMeilisearch";
 import {
   ArrowLeftCircleIcon,
   Bars3Icon,
+  CurrencyDollarIcon,
   HomeIcon,
   PlusIcon,
   QuestionMarkCircleIcon,
+  ShieldCheckIcon,
   UserGroupIcon,
+  UsersIcon,
 } from "@heroicons/react/24/outline";
 import {
   Accordion,
@@ -39,6 +42,24 @@ const TopMenus = [
     name: "Explore",
     href: "/explore",
     icon: <UserGroupIcon className="w-5 h-5" />,
+  },
+];
+
+const Legals = [
+  {
+    name: "Privacy Policy",
+    href: "/legals/privacy-policy",
+    icon: <ShieldCheckIcon className="w-5 h-5" />,
+  },
+  {
+    name: "Terms of Service",
+    href: "/legals/terms-of-service",
+    icon: <UsersIcon className="w-5 h-5" />,
+  },
+  {
+    name: "Fees",
+    href: "/legals/fees",
+    icon: <CurrencyDollarIcon className="w-5 h-5" />,
   },
 ];
 
@@ -162,33 +183,19 @@ export default function SideMenu() {
             >
               How it works
             </ListboxItem>
+            {
+              Legals.map((it) => (
+                <ListboxItem
+                  key={it.name}
+                  startContent={it.icon}
+                  onPress={() => isMobile && setSideBarIsOpen(false)}
+                  href={it.href}
+                >
+                  {it.name}
+                </ListboxItem>
+              )) as any
+            }
           </Listbox>
-          <div className="flex flex-wrap text-xs gap-x-2 gap-y-1 px-3 text-zinc-400">
-            <Link
-              className="text-xs"
-              color="foreground"
-              href="/legals/privacy-policy"
-              onClick={() => isMobile && setSideBarIsOpen(false)}
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              className="text-xs"
-              color="foreground"
-              href="/legals/terms-of-service"
-              onClick={() => isMobile && setSideBarIsOpen(false)}
-            >
-              Terms of Service
-            </Link>
-            <Link
-              className="text-xs"
-              color="foreground"
-              href="/legals/fees"
-              onClick={() => isMobile && setSideBarIsOpen(false)}
-            >
-              Fees
-            </Link>
-          </div>
           <div className="px-3 mt-2 text-zinc-400 hover:text-zinc-300">
             <span className="text-xs">Aitonomy.world 2025</span>
           </div>
