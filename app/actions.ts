@@ -13,6 +13,7 @@ import {
   getAccountInfoRpc,
   GetBalancesResponse,
   getBalancesRpc,
+  getCommunityRpc,
   SetAliasArg,
   setAliasRpc,
 } from "@/utils/aitonomy";
@@ -228,6 +229,23 @@ export async function setAlias(data: SetAliasArg, signature: Signature) {
     };
   } catch (e: any) {
     console.error("setAlias error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+export async function getCommunity(id: string) {
+  try {
+    const res = await getCommunityRpc(NUCLEUS_ID, { id: hexToBytes(id) });
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("getCommunity error", e);
     return {
       success: false,
       message: e.message,

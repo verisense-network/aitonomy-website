@@ -13,7 +13,7 @@ import {
 } from "@heroui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import PaymentModal from "./modal/Payment";
-import { activateCommunity, getBalances } from "@/app/actions";
+import { activateCommunity, getBalances, getCommunity } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
 import { isYouAddress } from "../thread/utils";
 import { usePaymentCommunityStore } from "@/stores/paymentCommunity";
@@ -191,7 +191,8 @@ export default function CommunityBrand({ communityId }: Props) {
       setCurrentBalance(currentBalance);
     } catch (e: any) {
       console.error("getBalance error", e);
-      toast.error("Failed to get balance");
+      // TODO: fix get balances error
+      // toast.error("Failed to get balance");
     }
   }, [address, communityId]);
 
@@ -221,7 +222,8 @@ export default function CommunityBrand({ communityId }: Props) {
 
   useEffect(() => {
     getBalance();
-  }, [getBalance]);
+    getCommunity(communityId);
+  }, [getBalance, communityId]);
 
   useEffect(() => {
     (async () => {

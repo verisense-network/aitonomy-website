@@ -421,3 +421,48 @@ export async function setAliasRpc(
     throw err;
   }
 }
+
+export interface GetCommunityArg {
+  id: Uint8Array;
+}
+
+export async function getCommunityRpc(
+  nucleusId: string,
+  args: GetCommunityArg
+) {
+  console.log("args", args);
+  const communityId = new CommunityId(registry, args.id);
+  const payload = communityId.toHex();
+
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_get", [
+      nucleusId,
+      "get_community",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * Result<Option<Community>, String>
+     */
+    const ResultStruct = Result.with({
+      Ok: Option.with(Community),
+      Err: Text,
+    });
+
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    if (decoded.isErr) {
+      throw new Error(decoded.toString());
+    }
+    const result = decoded.asOk.toJSON() as any;
+    console.log("getCommunityRpc result", result);
+    return result;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+}
