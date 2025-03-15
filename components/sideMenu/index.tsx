@@ -197,7 +197,7 @@ export default function SideMenu() {
             }
           </Listbox>
           <div className="px-3 mt-2 text-zinc-400 hover:text-zinc-300">
-            <span className="text-xs">Aitonomy.world 2025</span>
+            <span className="text-xs">AItonomy.world 2025</span>
           </div>
         </div>
         <Modal
