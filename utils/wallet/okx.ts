@@ -22,13 +22,14 @@ export class OkxConnect {
     "https://mainnet.helius-rpc.com/?api-key=64dbe6d2-9641-43c6-bb86-0e3d748f31b1",
     "confirmed"
   );
+  isOkxWallet: boolean = false;
 
   constructor() {
-    if (
+    this.isOkxWallet =
       typeof window !== "undefined" &&
       window.okxwallet &&
-      window.okxwallet.isOkxWallet
-    ) {
+      window.okxwallet.isOkxWallet;
+    if (this.isOkxWallet) {
       this.wallet = window.okxwallet;
 
       this.checkStoredPublicKey();
@@ -114,6 +115,11 @@ export class OkxConnect {
   }
 
   async checkConnected() {
+    if (!this.wallet || !this.isOkxWallet) {
+      throw new Error(
+        "OKX Wallet extension not found. Please install it first."
+      );
+    }
     await this.wallet.enable();
     if (!this.wallet.isConnected()) {
       await this.wallet.handleConnect();

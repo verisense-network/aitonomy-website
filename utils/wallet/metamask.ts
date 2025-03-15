@@ -16,14 +16,24 @@ export class MetamaskConnect {
   jsonRpcProvider: JsonRpcProvider = new ethers.JsonRpcProvider(
     "https://bsc-dataseed.binance.org/"
   );
+  isMetaMask: boolean = false;
 
   constructor() {
-    if (
+    this.isMetaMask =
       typeof window !== "undefined" &&
       window.ethereum &&
       window.ethereum.isMetaMask &&
-      !window.ethereum.isPhantom
-    ) {
+      !window.ethereum.isOkxWallet &&
+      !window.ethereum.isPhantom;
+
+    console.log(
+      "isMetaMask",
+      this.isMetaMask,
+      window.ethereum.isOkxWallet,
+      window.ethereum.isPhantom
+    );
+
+    if (this.isMetaMask) {
       this.wallet = window.ethereum;
 
       this.checkStoredPublicKey();
@@ -102,6 +112,9 @@ export class MetamaskConnect {
   }
 
   async checkConnected() {
+    if (!this.isMetaMask || !this.wallet) {
+      throw new Error("MetaMask extension not found. Please install it first.");
+    }
     await this.wallet.enable();
     if (!this.wallet.isConnected()) {
       await this.wallet.handleConnect();

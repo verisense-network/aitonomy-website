@@ -44,8 +44,6 @@ const WALLETS = [
   },
 ];
 
-console.log("WALLETS", WALLETS);
-
 interface Props {
   isOpen: boolean;
   onClose: () => void;
