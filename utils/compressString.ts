@@ -7,6 +7,11 @@ export function compressString(str: string): Uint8Array {
 }
 
 export function decompressString(compressed: Uint8Array): string {
-  const decompressed = pako.ungzip(compressed);
-  return new TextDecoder().decode(decompressed);
+  try {
+    const decompressed = pako.ungzip(new Uint8Array(compressed));
+    return new TextDecoder().decode(decompressed);
+  } catch (e) {
+    console.error("[decompressString] error", e, compressed);
+    return "> __DECOMPRESS_ERROR__";
+  }
 }

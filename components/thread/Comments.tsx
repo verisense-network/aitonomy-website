@@ -114,7 +114,7 @@ export default function ThreadComments({
                 className="prose max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{
                   __html: parseMarkdown(
-                    decompressString(comment.content || "")
+                    decompressString(comment.content || [])
                   ),
                 }}
               />
