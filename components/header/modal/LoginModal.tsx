@@ -13,6 +13,9 @@ import {
 import { connectToWallet, WalletId } from "@/utils/wallet/connect";
 import { useUserStore } from "@/stores/user";
 import { CHAIN } from "@/utils/chain";
+import MetamaskLogo from "./icons/metamask-icon.svg";
+import OKXLogo from "./icons/OKX_logo.svg";
+import Image from "next/image";
 
 const isSolChain = CHAIN === "SOL";
 
@@ -28,7 +31,7 @@ const BSC_WALLETS = [
   {
     id: WalletId.METAMASK,
     title: "MetaMask",
-    icon: null,
+    icon: MetamaskLogo,
   },
 ];
 
@@ -37,9 +40,11 @@ const WALLETS = [
   {
     id: WalletId.OKX,
     title: "OKX",
-    icon: null,
+    icon: OKXLogo,
   },
 ];
+
+console.log("WALLETS", WALLETS);
 
 interface Props {
   isOpen: boolean;
@@ -88,7 +93,18 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                   isPressable
                   onPress={() => connectWallet(wallet.id)}
                 >
-                  <CardBody>{wallet.title}</CardBody>
+                  <CardBody className="p-5">
+                    <div className="flex space-x-2 items-center">
+                      {wallet?.icon && (
+                        <Image
+                          className="w-6 h-6"
+                          src={wallet.icon}
+                          alt={wallet.title}
+                        />
+                      )}
+                      <span className="ml-2">{wallet.title}</span>
+                    </div>
+                  </CardBody>
                   {walletError?.walletId === wallet.id && (
                     <CardFooter>
                       <Alert color="danger">{walletError.errorMessage}</Alert>
