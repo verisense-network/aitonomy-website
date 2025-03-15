@@ -11,6 +11,7 @@ import {
   CreateThreadArg,
   createThreadRpc,
   getAccountInfoRpc,
+  getAccountsRpc,
   GetBalancesResponse,
   getBalancesRpc,
   getCommunityRpc,
@@ -169,6 +170,39 @@ export async function getAccountInfo(data: GetAccountInfoParams) {
     };
   } catch (e: any) {
     console.error("getAccountInfo error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+interface GetAccountsParams {
+  accountIds: string[];
+}
+
+export async function getAccounts(data: GetAccountsParams) {
+  try {
+    const accountIds = data.accountIds.map((id) => {
+      if (CHAIN === "BSC") {
+        return ethers.toBeArray(id);
+      } else if (CHAIN === "SOL") {
+        return bs58.decode(id);
+      }
+      return new Uint8Array();
+    });
+    const threadArgs = {
+      account_ids: accountIds,
+    };
+
+    const res = await getAccountsRpc(NUCLEUS_ID, threadArgs);
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("getAccounts error", e);
     return {
       success: false,
       message: e.message,

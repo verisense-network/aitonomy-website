@@ -330,15 +330,17 @@ export interface GetAccountInfoArg {
   account_id: Uint8Array;
 }
 
+export interface GetAccountInfoResponse {
+  nonce: number;
+  address: string;
+  alias?: string;
+  last_post_at: number;
+}
+
 export async function getAccountInfoRpc(
   nucleusId: string,
   args: GetAccountInfoArg
-): Promise<{
-  nonce: number;
-  pubkey: string;
-  alias?: string;
-  last_post_at: number;
-}> {
+): Promise<GetAccountInfoResponse> {
   console.log("args", args);
   const payload = new AccountId(registry, args.account_id).toHex();
   console.log("payload", payload);
@@ -359,6 +361,47 @@ export async function getAccountInfoRpc(
      */
     const ResultStruct = Result.with({
       Ok: Account,
+      Err: Text,
+    });
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    if (decoded.isErr) {
+      throw new Error(decoded.toString());
+    }
+    const result = decoded.asOk.toJSON() as any;
+
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export interface GetAccountsArg {
+  account_ids: Uint8Array[];
+}
+
+export async function getAccountsRpc(nucleusId: string, args: GetAccountsArg) {
+  console.log("args", args);
+  const payload = new Vec(registry, AccountId, args.account_ids).toHex();
+  console.log("payload", payload);
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_get", [
+      nucleusId,
+      "get_accounts",
+      payload,
+    ]);
+
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * Result<Vec<Account>, String>
+     */
+    const ResultStruct = Result.with({
+      Ok: Vec.with(Account),
       Err: Text,
     });
     const decoded = new ResultStruct(registry, responseBytes);

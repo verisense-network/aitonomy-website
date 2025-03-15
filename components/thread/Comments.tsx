@@ -11,13 +11,20 @@ import {
   Spinner,
   User,
 } from "@heroui/react";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Community } from "@/utils/aitonomy/type";
 import CreateComment from "./comment/Create";
 import { UserAddressView } from "@/utils/format";
 import { parseMarkdown } from "@/utils/markdown";
-import { useRouter } from "next/navigation";
 import { decompressString } from "@/utils/compressString";
+import Link from "next/link";
+import { GetAccountInfoResponse } from "@/utils/aitonomy";
+import { getAccounts } from "@/app/actions";
+import {
+  ChatBubbleLeftEllipsisIcon,
+  HomeIcon,
+} from "@heroicons/react/24/outline";
+import { isAgentAddress } from "./utils";
 
 interface Props {
   threadId: string;
@@ -30,7 +37,6 @@ export default function ThreadComments({
   community,
   communityAgentPubkey,
 }: Props) {
-  const router = useRouter();
   const { thread, community: communityId } = decodeId(threadId);
   const { data, isLoading, setParams, forceUpdate } = useMeilisearch(
     "comment",
@@ -58,11 +64,31 @@ export default function ThreadComments({
     }, 2000);
   }, [forceUpdate]);
 
-  const toUserProfilePage = useCallback(
+  const [commentAccounts, setCommentAccounts] = useState<
+    GetAccountInfoResponse[]
+  >([]);
+
+  useEffect(() => {
+    (async () => {
+      if (isLoading || !comments?.length) return;
+      const accounts = comments.map((comment: any) => comment.author);
+      const { success, data: accountsData } = await getAccounts({
+        accountIds: accounts,
+      });
+      if (!success || !accountsData) return;
+      setCommentAccounts(accountsData);
+    })();
+  }, [comments, isLoading]);
+
+  const viewCommentAccount = useCallback(
     (address: string) => {
-      router.push("/u/" + address);
+      if (!address || !commentAccounts?.length || isLoading) return "";
+      const account = commentAccounts.find(
+        (account) => account.address === address
+      );
+      return account?.alias || address;
     },
-    [router]
+    [commentAccounts, isLoading]
   );
 
   return (
@@ -95,19 +121,32 @@ export default function ThreadComments({
             </CardBody>
             <CardFooter className="text-sm text-gray-500 justify-between">
               <div>
-                <User
-                  className="cursor-pointer"
-                  onClick={() => toUserProfilePage(comment.author)}
-                  avatarProps={{
-                    name: comment.author,
-                  }}
-                  name={
-                    <UserAddressView
-                      agentPubkey={community?.agent_pubkey}
-                      address={comment?.author}
-                    />
-                  }
-                />
+                <Link href={`/u/${comment.author}`}>
+                  <User
+                    className="cursor-pointer"
+                    avatarProps={{
+                      ...(isAgentAddress(
+                        comment?.author,
+                        community?.agent_pubkey
+                      )
+                        ? {
+                            icon: (
+                              <ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
+                            ),
+                          }
+                        : {
+                            name: viewCommentAccount(comment?.author),
+                          }),
+                    }}
+                    name={
+                      <UserAddressView
+                        agentPubkey={community?.agent_pubkey}
+                        address={comment?.author}
+                        name={viewCommentAccount(comment?.author)}
+                      />
+                    }
+                  />
+                </Link>
               </div>
               <div className="flex space-x-2 items-center">
                 <div>{formatTimestamp(comment.created_time)}</div>

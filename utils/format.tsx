@@ -25,13 +25,15 @@ export function AddressViewFormat({
 
 interface NamedAddressViewProps {
   address: string;
-  name: string;
+  name?: string;
 }
 
 export function NamedAddressView({ address, name }: NamedAddressViewProps) {
   return (
     <div className="space-x-2">
-      <span className="font-semibold text-md">{name}</span>
+      <span className="font-semibold text-md">
+        {(name && (name.startsWith("0x") ? "" : name)) || ""}
+      </span>
       <AddressViewFormat address={address} />
     </div>
   );
@@ -40,18 +42,20 @@ export function NamedAddressView({ address, name }: NamedAddressViewProps) {
 interface UserAddressViewProps {
   agentPubkey: string;
   address: string;
+  name?: string;
 }
 
 export function UserAddressView({
   agentPubkey,
   address,
+  name,
 }: UserAddressViewProps) {
   return isAgentAddress(agentPubkey, address) ? (
     <NamedAddressView address={address} name="Agent" />
   ) : isYouAddress(address) ? (
     <NamedAddressView address={address} name="You" />
   ) : (
-    <AddressViewFormat address={address} bracket={false} />
+    <NamedAddressView address={address} name={name} />
   );
 }
 

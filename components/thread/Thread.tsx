@@ -12,16 +12,16 @@ import {
   Spinner,
   User,
 } from "@heroui/react";
-import { useCallback, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { UserAddressView } from "@/utils/format";
 import { parseMarkdown } from "@/utils/markdown";
-import { useRouter } from "next/navigation";
 import { decompressString } from "@/utils/compressString";
 import Link from "next/link";
 import ShareButtons from "../share/ShareButtons";
+import { getAccountInfo } from "@/app/actions";
+import { GetAccountInfoResponse } from "@/utils/aitonomy";
 
 export default function ThreadView({ threadId }: { threadId: string }) {
-  const router = useRouter();
   const { data, isLoading, isValidating, forceUpdate } = useMeilisearch(
     "thread",
     undefined,
@@ -31,15 +31,30 @@ export default function ThreadView({ threadId }: { threadId: string }) {
   );
 
   const threadData = data?.hits[0];
+  const [threadAccount, setThreadAccount] = useState<GetAccountInfoResponse>({
+    address: "",
+    alias: "",
+    last_post_at: 0,
+    nonce: 0,
+  });
 
   const content = decompressString(threadData?.content || "");
 
-  const toComunityPage = useCallback(
-    (communityId: string) => {
-      router.push("/c/" + communityId);
-    },
-    [router]
-  );
+  useEffect(() => {
+    if (!threadData?.author) return;
+
+    (async () => {
+      const userAddress = threadData?.author;
+
+      const { success, data } = await getAccountInfo({
+        accountId: userAddress,
+      });
+
+      if (!success || !data) return;
+
+      setThreadAccount(data);
+    })();
+  }, [threadData]);
 
   useEffect(() => {
     (async () => {
@@ -94,12 +109,13 @@ export default function ThreadView({ threadId }: { threadId: string }) {
                   <User
                     className="cursor-pointer"
                     avatarProps={{
-                      name: threadData.author,
+                      name: threadAccount?.alias || threadData.author,
                     }}
                     name={
                       <UserAddressView
                         agentPubkey={""}
-                        address={threadData.author}
+                        address={threadAccount?.address || threadData.author}
+                        name={threadAccount?.alias || threadData.author}
                       />
                     }
                   />
