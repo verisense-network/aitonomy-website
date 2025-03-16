@@ -4,19 +4,32 @@ Aitonomy Website
 
 First, run the development server:
 
-install pnpm
+### Prerequisites
+
+- Node.js v20.19.0 or higher
+- pnpm
+
+### Install node
 
 ```bash
-corepack enable pnpm
+# nvm https://github.com/nvm-sh/nvm
+nvm install 20.19.0
+nvm use 20.19.0
+
+# fnm https://github.com/Schniz/fnm
+fnm install 20.19.0
+fnm use 20.19.0
 ```
 
-or global install pnpm
+### Install pnpm
+
+https://pnpm.io/installation
 
 ```bash
-npm install -g pnpm
+pnpm setup
 ```
 
-install dependencies
+### Install dependencies
 
 ```bash
 pnpm install
