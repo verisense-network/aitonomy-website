@@ -21,23 +21,16 @@ export class MetamaskConnect {
   constructor() {
     this.isMetaMask =
       typeof window !== "undefined" &&
-      window.ethereum &&
-      window.ethereum.isMetaMask &&
-      !window.ethereum.isOkxWallet &&
-      !window.ethereum.isPhantom;
-
-    console.log(
-      "isMetaMask",
-      this.isMetaMask,
-      window.ethereum.isOkxWallet,
-      window.ethereum.isPhantom
-    );
+      window?.ethereum &&
+      window.ethereum?.isMetaMask &&
+      !window.ethereum?.isOkxWallet &&
+      !window.ethereum?.isPhantom;
 
     if (this.isMetaMask) {
       this.wallet = window.ethereum;
 
       this.checkStoredPublicKey();
-    } else if (window.ethereum && window.ethereum.isPhantom) {
+    } else if (window.ethereum && window.ethereum?.isPhantom) {
       throw new Error(
         "Phantom Wallet extension already exists. Please disable Phantom extension first."
       );

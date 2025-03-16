@@ -120,6 +120,11 @@ export class OkxConnect {
         "OKX Wallet extension not found. Please install it first."
       );
     }
+    if (!window.ethereum) {
+      throw new Error(
+        "Ethereum provider not found, Please install MetaMask first."
+      );
+    }
     await this.wallet.enable();
     if (!this.wallet.isConnected()) {
       await this.wallet.handleConnect();
