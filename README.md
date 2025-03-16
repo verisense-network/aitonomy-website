@@ -23,9 +23,8 @@ fnm use 20.19.0
 
 ### Install pnpm
 
-https://pnpm.io/installation
-
 ```bash
+# pnpm https://pnpm.io/installation
 pnpm setup
 ```
 
