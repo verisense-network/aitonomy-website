@@ -4,17 +4,12 @@ import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX, TOKEN_REGEX } from "@/utils/aitonomy/tools";
 import { CreateCommunityPayload, LLmName } from "@/utils/aitonomy/type";
 import { isDev } from "@/utils/tools";
-import {
-  PhotoIcon,
-  QuestionMarkCircleIcon,
-  ShieldCheckIcon,
-} from "@heroicons/react/24/outline";
+import { PhotoIcon, QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import {
   Accordion,
   AccordionItem,
   Avatar,
   Button,
-  cn,
   Form,
   Input,
   Popover,
@@ -23,11 +18,10 @@ import {
   Select,
   SelectItem,
   Spinner,
-  Switch,
   Textarea,
   Tooltip,
 } from "@heroui/react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
@@ -185,7 +179,7 @@ export default function CommunityCreate({ onClose }: Props) {
       }
       setIsLoading(false);
     },
-    [onClose, router]
+    [control, onClose, router]
   );
 
   const setMockData = useCallback(() => {
@@ -482,6 +476,9 @@ export default function CommunityCreate({ onClose }: Props) {
       </div>
       <Accordion
         selectedKeys={llmAccordionSelectedKeys}
+        onSelectionChange={(keys) =>
+          setLlmAccordionSelectedKeys(keys as unknown as string[])
+        }
         selectionMode="multiple"
         variant="light"
         itemClasses={{
