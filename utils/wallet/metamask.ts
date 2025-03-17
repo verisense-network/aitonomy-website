@@ -30,6 +30,7 @@ export class MetamaskConnect {
     this.sdk.init().then(() => {
       this.wallet = this.sdk.getProvider();
     });
+    this.checkStoredPublicKey();
   }
 
   async checkStoredPublicKey() {
