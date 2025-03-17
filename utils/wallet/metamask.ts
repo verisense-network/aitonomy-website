@@ -4,6 +4,7 @@ import {
   JsonRpcProvider,
   TransactionRequest,
 } from "ethers";
+import { MetaMaskSDK } from "@metamask/sdk";
 import { WalletId } from "./connect";
 import { useUserStore } from "@/stores/user";
 
@@ -12,22 +13,24 @@ export class MetamaskConnect {
   wallet: any;
   address: string = "";
   publicKey: Uint8Array = new Uint8Array(32);
+  sdk = new MetaMaskSDK({
+    dappMetadata: {
+      name: "Aitonomy",
+      url: window.location.href,
+    },
+    injectProvider: true,
+    infuraAPIKey: process.env.NEXT_PUBLIC_INFURA_API_KEY,
+  });
   provider: BrowserProvider | null = null;
   jsonRpcProvider: JsonRpcProvider = new ethers.JsonRpcProvider(
     "https://bsc-dataseed.binance.org/"
   );
-  isMetaMask: boolean = false;
 
   constructor() {
-    this.isMetaMask =
-      typeof window !== "undefined" &&
-      window?.ethereum &&
-      window.ethereum?.isMetaMask &&
-      !window.ethereum?.isOkxWallet &&
-      !window.ethereum?.isPhantom;
-
-    if (this.isMetaMask) {
-      this.wallet = window.ethereum;
+    if (typeof window.ethereum !== "undefined" && window.ethereum?.isMetaMask) {
+      this.sdk.init().then(() => {
+        this.wallet = this.sdk.getProvider();
+      });
 
       this.checkStoredPublicKey();
     } else if (window.ethereum && window.ethereum?.isPhantom) {
@@ -49,17 +52,14 @@ export class MetamaskConnect {
 
   async connect() {
     await this.checkConnected();
-    const response = await this.wallet.request({
-      method: "eth_requestAccounts",
-    });
-    console.log("response", response);
-    const publicKey = response?.[0];
+    const accounts = await this.sdk.connect();
+    const publicKey = accounts[0];
 
     if (!publicKey) {
-      throw new Error("Failed to connect");
+      throw new Error("account not found");
     }
     if (!this.provider) {
-      this.provider = new ethers.BrowserProvider(window.ethereum);
+      this.provider = new ethers.BrowserProvider(this.wallet);
     }
 
     const network = await this.provider.getNetwork();
@@ -105,15 +105,18 @@ export class MetamaskConnect {
   }
 
   async checkConnected() {
-    if (!this.isMetaMask || !this.wallet) {
+    await this.sdk.init();
+    this.wallet = this.sdk.getProvider();
+    console.log("this.wallet", this.wallet);
+    if (typeof window.ethereum === "undefined" || !this.wallet) {
       throw new Error("MetaMask extension not found. Please install it first.");
     }
     await this.wallet.enable();
     if (!this.wallet.isConnected()) {
-      await this.wallet.handleConnect();
+      await this.connect();
     }
     if (!this.provider) {
-      this.provider = new ethers.BrowserProvider(window.ethereum);
+      this.provider = new ethers.BrowserProvider(this.wallet);
     }
   }
 
