@@ -9,7 +9,7 @@ import {
   Spinner,
 } from "@heroui/react";
 import { Key, useCallback, useEffect, useState } from "react";
-import LoginModal from "./modal/LoginModal";
+import LoginModal from "../modal/login/Login";
 import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
