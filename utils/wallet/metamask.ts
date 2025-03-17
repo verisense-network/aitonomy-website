@@ -44,7 +44,7 @@ export class MetamaskConnect {
     if (!window.ethereum) {
       // open MetaMask App
       window.open(
-        "https://metamask.app.link/dapp/192.168.50.212:3000",
+        `https://metamask.app.link/dapp/${window.location.origin}`,
         "_blank"
       );
       return "Continue to MetaMask";
@@ -114,7 +114,6 @@ export class MetamaskConnect {
     await this.sdk.init();
     await this.sdk.connect();
     this.wallet = this.sdk.getProvider();
-    console.log("this.wallet", this.wallet);
 
     if (!this.wallet) {
       throw new Error("MetaMask extension not found. Please install it first.");
