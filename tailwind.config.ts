@@ -23,12 +23,14 @@ export default {
     },
   },
   darkMode: "class",
-  plugins: [heroui({
-    themes: {
-      dark: {
-        colors: {
+  plugins: [
+    heroui({
+      themes: {
+        dark: {
+          colors: {},
         },
       },
-    },
-  }), typography()],
+    }),
+    typography(),
+  ],
 } satisfies Config;

@@ -4,39 +4,32 @@ import {
   JsonRpcProvider,
   TransactionRequest,
 } from "ethers";
+import { MetaMaskSDK, SDKProvider } from "@metamask/sdk";
 import { WalletId } from "./connect";
 import { useUserStore } from "@/stores/user";
 
 export class MetamaskConnect {
   id = WalletId.METAMASK;
-  wallet: any;
+  wallet: SDKProvider | undefined;
   address: string = "";
   publicKey: Uint8Array = new Uint8Array(32);
+  sdk = new MetaMaskSDK({
+    dappMetadata: {
+      name: "Aitonomy",
+      url: window.location.origin,
+    },
+    injectProvider: true,
+    infuraAPIKey: process.env.NEXT_PUBLIC_INFURA_API_KEY,
+    useDeeplink: true,
+    checkInstallationOnAllCalls: true,
+  });
   provider: BrowserProvider | null = null;
   jsonRpcProvider: JsonRpcProvider = new ethers.JsonRpcProvider(
-    "https://bsc-dataseed.binance.org/"
+    "https://bsc-dataseed1.binance.org/"
   );
-  isMetaMask: boolean = false;
 
   constructor() {
-    this.isMetaMask =
-      typeof window !== "undefined" &&
-      window?.ethereum &&
-      window.ethereum?.isMetaMask &&
-      !window.ethereum?.isOkxWallet &&
-      !window.ethereum?.isPhantom;
-
-    if (this.isMetaMask) {
-      this.wallet = window.ethereum;
-
-      this.checkStoredPublicKey();
-    } else if (window.ethereum && window.ethereum?.isPhantom) {
-      throw new Error(
-        "Phantom Wallet extension already exists. Please disable Phantom extension first."
-      );
-    } else {
-      throw new Error("MetaMask extension not found. Please install it first.");
-    }
+    this.checkStoredPublicKey();
   }
 
   async checkStoredPublicKey() {
@@ -49,83 +42,120 @@ export class MetamaskConnect {
 
   async connect() {
     await this.checkConnected();
-    const response = await this.wallet.request({
-      method: "eth_requestAccounts",
-    });
-    console.log("response", response);
-    const publicKey = response?.[0];
+    const accounts = await this.sdk.connect();
+    const publicKey = accounts[0];
 
     if (!publicKey) {
-      throw new Error("Failed to connect");
-    }
-    if (!this.provider) {
-      this.provider = new ethers.BrowserProvider(window.ethereum);
+      throw new Error("account not found");
     }
 
-    const network = await this.provider.getNetwork();
-    const chainId = Number(network.chainId);
+    if (!this.wallet) {
+      throw new Error("MetaMask extension not found. Please install it first.");
+    }
 
-    if (chainId !== 56) {
+    const signer = await this.provider!.getSigner();
+
+    this.address = await signer.getAddress();
+    this.publicKey = ethers.toBeArray(this.address);
+    console.log("this.publicKey", this.publicKey);
+    console.log("this.address", this.address);
+
+    const chainId = this.wallet.getChainId();
+    console.log("chainId", chainId);
+
+    const bscNetworkId = "0x38";
+
+    if (chainId !== bscNetworkId) {
       try {
-        await window.ethereum.request({
+        await this.wallet.request({
           method: "wallet_switchEthereumChain",
           params: [{ chainId: "0x38" }],
         });
       } catch (switchError: any) {
         if (switchError.code === 4902) {
-          await window.ethereum.request({
+          const res = await this.wallet?.request({
             method: "wallet_addEthereumChain",
             params: [
               {
                 chainId: "0x38",
+                rpcUrls: ["https://bsc-dataseed.binance.org/"],
                 chainName: "Binance Smart Chain",
                 nativeCurrency: {
                   name: "BNB",
                   symbol: "BNB",
                   decimals: 18,
                 },
-                rpcUrls: ["https://bsc-dataseed.binance.org/"],
-                blockExplorerUrls: ["https://bscscan.com/"],
+                blockExplorerUrls: ["https://bscscan.com"],
               },
             ],
           });
+          console.log("add bsc chain", res);
         } else {
           throw switchError;
         }
       }
     }
 
-    this.provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await this.provider.getSigner();
-
-    this.address = await signer.getAddress();
-    this.publicKey = ethers.toBeArray(this.address);
-
     return this.publicKey;
   }
 
   async checkConnected() {
-    if (!this.isMetaMask || !this.wallet) {
-      throw new Error("MetaMask extension not found. Please install it first.");
-    }
-    await this.wallet.enable();
-    if (!this.wallet.isConnected()) {
-      await this.wallet.handleConnect();
-    }
-    if (!this.provider) {
-      this.provider = new ethers.BrowserProvider(window.ethereum);
+    try {
+      if (!this.sdk.isInitialized()) {
+        await this.sdk.init();
+      }
+      console.log("isInitialized", this.sdk.isInitialized());
+      if (!this.sdk.isExtensionActive) {
+        return;
+      }
+
+      if (!this.wallet) {
+        this.wallet = this.sdk.getProvider();
+      }
+      console.log("this.wallet", this.wallet);
+      console.log("this.wallet.isConnected", this.wallet?.isConnected());
+      if (!this.wallet?.isConnected()) {
+        await this.sdk.connect();
+      }
+      if (!this.provider) {
+        this.provider = new ethers.BrowserProvider(window.ethereum as any);
+      }
+
+      if (window.ethereum && window.ethereum?.isPhantom) {
+        throw new Error(
+          "Phantom Wallet extension already exists. Please disable Phantom extension first."
+        );
+      } else if (!window.ethereum) {
+        throw new Error(
+          "MetaMask extension not found. Please install it first."
+        );
+      }
+    } catch (error: any) {
+      console.error("Error checking connection:", error);
+      if (error.code === -32002) {
+        throw new Error("Click Continue to connect");
+      } else {
+        throw error;
+      }
     }
   }
 
   async signMessage(message: string): Promise<Uint8Array> {
     await this.checkConnected();
+    console.log("this.wallet", this.wallet);
+    if (!this.wallet) {
+      throw new Error("MetaMask extension not found. Please install it first.");
+    }
     const encoded = new TextEncoder().encode(message);
     const hexMsg = ethers.hexlify(encoded);
-    const signature: string = await this.wallet.request({
+    const signature = await this.wallet.request({
       method: "personal_sign",
       params: [hexMsg, this.address],
     });
-    return ethers.getBytes(signature);
+    if (!signature) {
+      throw new Error("Signature not found");
+    }
+    return ethers.getBytes(signature as string);
   }
 
   async verifySignature(
@@ -145,10 +175,6 @@ export class MetamaskConnect {
     toAddress: string,
     amount: string
   ): Promise<TransactionRequest> {
-    await this.checkConnected();
-    if (!this.provider) {
-      throw new Error("Provider not found");
-    }
     const tx: TransactionRequest = {
       to: ethers.getAddress(toAddress),
       value: ethers.parseEther(amount),
@@ -158,10 +184,12 @@ export class MetamaskConnect {
   }
 
   async signTransaction(tx: TransactionRequest): Promise<string> {
-    await this.checkConnected();
+    this.provider = new ethers.BrowserProvider(window.ethereum as any);
+
     if (!this.provider) {
-      throw new Error("Provider not found");
+      throw new Error("please install or enable metamask first");
     }
+
     const signer = await this.provider.getSigner();
     console.log("tx", tx);
     console.log("signer", signer);

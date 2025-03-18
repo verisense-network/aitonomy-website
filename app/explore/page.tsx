@@ -14,14 +14,14 @@ export default function ExplorePage() {
   return (
     <div className="max-w-7xl min-w-72 mx-auto py-4">
       <h1 className="text-lg font-bold py-4">Explore Communities</h1>
-      <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
+      <div className="w-full grid grid-cols-3 gap-2 md:grid-cols-6">
         {isLoading && <Spinner />}
         {data?.hits?.map((community) => (
           <Card
             as={Link}
             key={community.id}
             isPressable
-            className="w-full"
+            className="min-w-20 md:min-w-30"
             href={`/c/${hexToLittleEndian(community.id)}`}
           >
             <CardBody className="flex gap-2 justify-center items-center">

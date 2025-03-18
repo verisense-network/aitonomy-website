@@ -9,6 +9,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Spinner,
 } from "@heroui/react";
 import { connectToWallet, WalletId } from "@/utils/wallet/connect";
 import { useUserStore } from "@/stores/user";
@@ -54,20 +55,25 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     walletId: WalletId;
     errorMessage: string;
   }>();
+  const [isConnectingWallet, setIsConnectingWallet] = useState<WalletId | null>(
+    null
+  );
 
   const connectWallet = useCallback(
     async (key: Key) => {
       setWalletError(undefined);
       const wallet = WALLETS.find((it) => it.id === key);
       if (!wallet) return;
-      console.log("wallet", wallet);
 
       try {
+        setIsConnectingWallet(wallet.id);
         await connectToWallet(wallet.id);
+        setIsConnectingWallet(null);
         if (useUserStore.getState().isLogin) {
           onClose();
         }
       } catch (e: any) {
+        setIsConnectingWallet(null);
         console.error("[LoginModal] connect error", e);
         setWalletError({
           walletId: wallet.id,
@@ -90,6 +96,8 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                   key={wallet.id}
                   isPressable
                   onPress={() => connectWallet(wallet.id)}
+                  disableRipple={isConnectingWallet === wallet.id}
+                  isDisabled={isConnectingWallet === wallet.id}
                 >
                   <CardBody className="p-5">
                     <div className="flex space-x-2 items-center">
@@ -101,6 +109,9 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                         />
                       )}
                       <span className="ml-2">{wallet.title}</span>
+                      {isConnectingWallet === wallet.id && (
+                        <Spinner size="sm" />
+                      )}
                     </div>
                   </CardBody>
                   {walletError?.walletId === wallet.id && (

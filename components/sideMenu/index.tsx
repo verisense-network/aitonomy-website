@@ -115,6 +115,7 @@ export default function SideMenu() {
           >
             {TopMenus.map((it) => (
               <ListboxItem
+                as={Link}
                 key={it.name}
                 href={it.href}
                 startContent={it.icon}
@@ -150,6 +151,7 @@ export default function SideMenu() {
               >
                 {data?.hits?.map((community) => (
                   <ListboxItem
+                    as={Link}
                     key={community.id}
                     href={`/c/${hexToLittleEndian(community.id)}`}
                     startContent={
@@ -186,6 +188,7 @@ export default function SideMenu() {
             {
               Legals.map((it) => (
                 <ListboxItem
+                  as={Link}
                   key={it.name}
                   startContent={it.icon}
                   onPress={() => isMobile && setSideBarIsOpen(false)}

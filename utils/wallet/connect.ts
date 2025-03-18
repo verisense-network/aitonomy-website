@@ -10,7 +10,13 @@ export enum WalletId {
 export async function connectToWallet(walletId: WalletId) {
   const walletConnect = getWalletConnect(walletId);
 
-  await walletConnect.connect();
+  const msg = await walletConnect.connect();
+
+  console.log("msg", msg, walletConnect);
+
+  if (msg && !walletConnect.address) {
+    throw msg;
+  }
 
   const publicKey = walletConnect.publicKey;
   const address = walletConnect.address;
