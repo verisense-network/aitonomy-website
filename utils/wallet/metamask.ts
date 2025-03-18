@@ -186,6 +186,10 @@ export class MetamaskConnect {
   async signTransaction(tx: TransactionRequest): Promise<string> {
     this.provider = new ethers.BrowserProvider(window.ethereum as any);
 
+    if (!this.provider) {
+      throw new Error("please install or enable metamask first");
+    }
+
     const signer = await this.provider.getSigner();
     console.log("tx", tx);
     console.log("signer", signer);
