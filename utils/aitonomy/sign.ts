@@ -49,6 +49,7 @@ export async function signPayload(
 
   const message = Buffer.from(messageBuf).toString("hex");
 
+  console.log("call sign");
   const signature = await wallet.signMessage(message);
   console.log("signature", signature);
   console.log("sig hex", Buffer.from(signature).toString("hex"));

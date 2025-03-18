@@ -61,8 +61,6 @@ export default function LoginModal({ isOpen, onClose }: Props) {
 
   const connectWallet = useCallback(
     async (key: Key) => {
-      if (isConnectingWallet) return;
-
       setWalletError(undefined);
       const wallet = WALLETS.find((it) => it.id === key);
       if (!wallet) return;
@@ -70,8 +68,8 @@ export default function LoginModal({ isOpen, onClose }: Props) {
       try {
         setIsConnectingWallet(wallet.id);
         await connectToWallet(wallet.id);
+        setIsConnectingWallet(null);
         if (useUserStore.getState().isLogin) {
-          setIsConnectingWallet(null);
           onClose();
         }
       } catch (e: any) {
@@ -83,7 +81,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
         });
       }
     },
-    [onClose, isConnectingWallet]
+    [onClose]
   );
 
   return (
