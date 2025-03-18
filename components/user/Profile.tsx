@@ -20,8 +20,7 @@ import { useCallback, useEffect, useState } from "react";
 import UpdateAliasName from "./UpdateAliasName";
 import { toast } from "react-toastify";
 import { isYouAddress } from "../thread/utils";
-import { useUserStore } from "@/stores/user";
-import { NAME_NOT_SET, updateAccountInfo } from "@/utils/user";
+import { NAME_NOT_SET } from "@/utils/user";
 
 interface Props {
   address: string;
@@ -47,6 +46,7 @@ export default function UserProfile({ address }: Props) {
   const getUserProfile = useCallback(async () => {
     try {
       if (!address) return;
+      setIsLoading(true);
       const {
         success,
         data,
@@ -143,6 +143,8 @@ export default function UserProfile({ address }: Props) {
                     balance: b[1],
                   }))}
                   emptyContent="No balances"
+                  isLoading={isLoading}
+                  loadingContent={<Spinner />}
                 >
                   {(item) => (
                     <TableRow key={item.community.name}>

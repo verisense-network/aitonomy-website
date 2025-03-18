@@ -20,6 +20,7 @@ export class MetamaskConnect {
     },
     injectProvider: true,
     infuraAPIKey: process.env.NEXT_PUBLIC_INFURA_API_KEY,
+    useDeeplink: true,
   });
   provider: BrowserProvider | null = null;
   jsonRpcProvider: JsonRpcProvider = new ethers.JsonRpcProvider(

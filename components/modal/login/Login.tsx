@@ -61,6 +61,8 @@ export default function LoginModal({ isOpen, onClose }: Props) {
 
   const connectWallet = useCallback(
     async (key: Key) => {
+      if (isConnectingWallet) return;
+
       setWalletError(undefined);
       const wallet = WALLETS.find((it) => it.id === key);
       if (!wallet) return;
@@ -81,7 +83,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
         });
       }
     },
-    [onClose]
+    [onClose, isConnectingWallet]
   );
 
   return (
@@ -96,6 +98,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                   key={wallet.id}
                   isPressable
                   onPress={() => connectWallet(wallet.id)}
+                  disableRipple={isConnectingWallet === wallet.id}
                   isDisabled={isConnectingWallet === wallet.id}
                 >
                   <CardBody className="p-5">
