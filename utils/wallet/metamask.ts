@@ -43,9 +43,7 @@ export class MetamaskConnect {
   async connect() {
     await this.checkConnected();
     const accounts = await this.sdk.connect();
-    console.log("accounts", accounts);
     const publicKey = accounts[0];
-    console.log("publicKey", publicKey);
 
     if (!publicKey) {
       throw new Error("account not found");
@@ -54,12 +52,8 @@ export class MetamaskConnect {
     if (!this.wallet) {
       throw new Error("MetaMask extension not found. Please install it first.");
     }
-    if (!this.provider) {
-      this.provider = new ethers.BrowserProvider(this.wallet);
-    }
 
-    this.provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await this.provider.getSigner();
+    const signer = await this.provider!.getSigner();
 
     this.address = await signer.getAddress();
     this.publicKey = ethers.toBeArray(this.address);
@@ -124,7 +118,7 @@ export class MetamaskConnect {
         await this.sdk.connect();
       }
       if (!this.provider) {
-        this.provider = new ethers.BrowserProvider(this.wallet as any);
+        this.provider = new ethers.BrowserProvider(window.ethereum as any);
       }
 
       if (window.ethereum && window.ethereum?.isPhantom) {
@@ -181,10 +175,6 @@ export class MetamaskConnect {
     toAddress: string,
     amount: string
   ): Promise<TransactionRequest> {
-    await this.checkConnected();
-    if (!this.provider) {
-      throw new Error("Provider not found");
-    }
     const tx: TransactionRequest = {
       to: ethers.getAddress(toAddress),
       value: ethers.parseEther(amount),
@@ -194,10 +184,8 @@ export class MetamaskConnect {
   }
 
   async signTransaction(tx: TransactionRequest): Promise<string> {
-    await this.checkConnected();
-    if (!this.provider) {
-      throw new Error("Provider not found");
-    }
+    this.provider = new ethers.BrowserProvider(window.ethereum as any);
+
     const signer = await this.provider.getSigner();
     console.log("tx", tx);
     console.log("signer", signer);

@@ -1,6 +1,5 @@
 import { useUserStore } from "@/stores/user";
 import { getWalletConnect } from "./index";
-import { addMetaMaskListener } from "../user";
 
 export enum WalletId {
   OKX = "okx",
@@ -27,8 +26,6 @@ export async function connectToWallet(walletId: WalletId) {
 
   userStore.setUser({ name, publicKey, address });
   userStore.setWallet(walletId);
-
-  addMetaMaskListener();
 
   return publicKey;
 }
