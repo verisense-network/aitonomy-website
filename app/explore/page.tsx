@@ -21,7 +21,7 @@ export default function ExplorePage() {
             as={Link}
             key={community.id}
             isPressable
-            className="min-w-30"
+            className="min-w-20 md:min-w-30"
             href={`/c/${hexToLittleEndian(community.id)}`}
           >
             <CardBody className="flex gap-2 justify-center items-center">

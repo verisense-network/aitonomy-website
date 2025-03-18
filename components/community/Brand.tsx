@@ -21,6 +21,7 @@ import { CommunityStatus } from "./utils";
 import { getWalletConnect } from "@/utils/wallet";
 import { Id, toast } from "react-toastify";
 import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
+import { useAppearanceStore } from "@/stores/appearance";
 
 interface Props {
   communityId: string;
@@ -33,6 +34,7 @@ export default function CommunityBrand({ communityId }: Props) {
   const [isActivatingLoading, setIsActivatingLoading] = useState(false);
   const [currentBalance, setCurrentBalance] = useState<number | null>(null);
   const { isLogin, address, wallet } = useUserStore();
+  const { isMobile } = useAppearanceStore();
   const {
     setSignature: storePaymentSignature,
     community: storedCommunity,
@@ -250,17 +252,17 @@ export default function CommunityBrand({ communityId }: Props) {
 
   return (
     <>
-      <Card className="m-2 p-4 min-h-40">
+      <Card className="m-2 p-2 md:p-4 min-h-40">
         <CardHeader>
           <div className="flex justify-between items-center w-full">
-            <div className="flex space-x-4 items-center">
+            <div className="flex flex-wrap space-x-4 items-center">
               <Avatar name={community?.name} src={community?.logo} size="lg" />
               <h1 className="text-2xl font-bold">{community?.name}</h1>
               {shouldShowActivateCommunity && Number(viewAmount) > 0 && (
                 <div className="flex">
                   <Chip
                     color="warning"
-                    size="lg"
+                    size={isMobile ? "sm" : "lg"}
                     classNames={{
                       base: "h-9",
                       content: "flex space-x-2 items-center",
