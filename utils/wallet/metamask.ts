@@ -7,6 +7,7 @@ import {
 import { MetaMaskSDK, SDKProvider } from "@metamask/sdk";
 import { WalletId } from "./connect";
 import { useUserStore } from "@/stores/user";
+import { isDev } from "../tools";
 
 export class MetamaskConnect {
   id = WalletId.METAMASK;
@@ -21,7 +22,16 @@ export class MetamaskConnect {
     injectProvider: true,
     infuraAPIKey: process.env.NEXT_PUBLIC_INFURA_API_KEY,
     useDeeplink: true,
-    checkInstallationOnAllCalls: true,
+    checkInstallationImmediately: true,
+    i18nOptions: {
+      enabled: true,
+    },
+    logging: {
+      developerMode: isDev,
+    },
+    storage: {
+      enabled: true,
+    },
   });
   provider: BrowserProvider | null = null;
   jsonRpcProvider: JsonRpcProvider = new ethers.JsonRpcProvider(
@@ -49,10 +59,6 @@ export class MetamaskConnect {
       throw new Error("account not found");
     }
 
-    if (!this.wallet) {
-      throw new Error("MetaMask extension not found. Please install it first.");
-    }
-
     const signer = await this.provider!.getSigner();
 
     this.address = await signer.getAddress();
@@ -60,8 +66,7 @@ export class MetamaskConnect {
     console.log("this.publicKey", this.publicKey);
     console.log("this.address", this.address);
 
-    const chainId = this.wallet.getChainId();
-    console.log("chainId", chainId);
+    const chainId = this.wallet!.getChainId();
 
     const bscNetworkId = "0x38";
 
@@ -104,19 +109,12 @@ export class MetamaskConnect {
       if (!this.sdk.isInitialized()) {
         await this.sdk.init();
       }
-      console.log("isInitialized", this.sdk.isInitialized());
-      if (!this.sdk.isExtensionActive) {
-        return;
-      }
 
-      if (!this.wallet) {
-        this.wallet = this.sdk.getProvider();
-      }
-      console.log("this.wallet", this.wallet);
-      console.log("this.wallet.isConnected", this.wallet?.isConnected());
       if (!this.wallet?.isConnected()) {
         await this.sdk.connect();
+        this.wallet = this.sdk.getProvider();
       }
+
       if (!this.provider) {
         this.provider = new ethers.BrowserProvider(window.ethereum as any);
       }
@@ -142,13 +140,10 @@ export class MetamaskConnect {
 
   async signMessage(message: string): Promise<Uint8Array> {
     await this.checkConnected();
-    console.log("this.wallet", this.wallet);
-    if (!this.wallet) {
-      throw new Error("MetaMask extension not found. Please install it first.");
-    }
+
     const encoded = new TextEncoder().encode(message);
     const hexMsg = ethers.hexlify(encoded);
-    const signature = await this.wallet.request({
+    const signature = await this.wallet!.request({
       method: "personal_sign",
       params: [hexMsg, this.address],
     });
@@ -177,24 +172,21 @@ export class MetamaskConnect {
   ): Promise<TransactionRequest> {
     const tx: TransactionRequest = {
       to: ethers.getAddress(toAddress),
-      value: ethers.parseEther(amount),
-      chainId: 56,
+      from: ethers.getAddress(this.address),
+      value: ethers.parseUnits(amount, "ether").toString(16),
     };
     return tx;
   }
 
   async signTransaction(tx: TransactionRequest): Promise<string> {
-    this.provider = new ethers.BrowserProvider(window.ethereum as any);
+    await this.checkConnected();
 
-    if (!this.provider) {
-      throw new Error("please install or enable metamask first");
-    }
+    const sig = await this.wallet!.request({
+      method: "eth_sendTransaction",
+      params: [tx],
+    });
 
-    const signer = await this.provider.getSigner();
-    console.log("tx", tx);
-    console.log("signer", signer);
-    const sig = await signer.sendTransaction(tx);
-    return sig.hash;
+    return sig as string;
   }
 
   async broadcastTransaction(sigHash: string) {
