@@ -72,7 +72,7 @@ export class MetamaskConnect {
 
     if (chainId !== bscNetworkId) {
       try {
-        await this.wallet.request({
+        await this.wallet!.request({
           method: "wallet_switchEthereumChain",
           params: [{ chainId: "0x38" }],
         });
