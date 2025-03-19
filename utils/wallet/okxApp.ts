@@ -1,6 +1,6 @@
 import { WalletId } from "./id";
 import { useUserStore } from "@/stores/user";
-import { ethers } from "ethers";
+import { ethers, JsonRpcProvider, TransactionRequest } from "ethers";
 import { CHAIN } from "../chain";
 import { OKXUniversalProvider } from "@okxconnect/universal-provider";
 
@@ -68,6 +68,9 @@ export class OkxAppConnect {
   wallet: OKXUniversalProvider | null = null;
   address: string = "";
   publicKey: Uint8Array = new Uint8Array(32);
+  ethersProvider: JsonRpcProvider = new ethers.JsonRpcProvider(
+    "https://bsc-dataseed1.binance.org/"
+  );
 
   constructor() {
     this.checkConnected();
@@ -191,71 +194,42 @@ export class OkxAppConnect {
   async createTransaction(
     toAddress: string,
     amount: string
-  ): Promise<Transaction | TransactionRequest> {
+  ): Promise<TransactionRequest> {
     await this.checkConnected();
-    if (CHAIN === "SOL") {
-      const transaction = new Transaction();
-
-      const receiverAddress = new PublicKey(toAddress);
-
-      transaction.add(
-        SystemProgram.transfer({
-          fromPubkey: new PublicKey(this.publicKey),
-          toPubkey: receiverAddress,
-          lamports: Number(amount) / LAMPORTS_PER_SOL,
-        })
-      );
-
-      const { blockhash } = await this.solConnection.getLatestBlockhash();
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = new PublicKey(this.publicKey);
-
-      return transaction;
-    } else {
-      if (!this.ethersProvider) {
-        throw new Error("Provider not found");
-      }
-      const tx: TransactionRequest = {
-        to: ethers.getAddress(toAddress),
-        value: ethers.parseEther(amount),
-        chainId: 56,
-      };
-      return tx;
-    }
+    const tx: TransactionRequest = {
+      to: ethers.getAddress(toAddress),
+      from: ethers.getAddress(this.address),
+      value: ethers.parseUnits(amount, "ether").toString(16),
+    };
+    return tx;
   }
 
-  async signTransaction(
-    transaction: Transaction | TransactionRequest
-  ): Promise<any> {
+  async signTransaction(transaction: TransactionRequest): Promise<any> {
     await this.checkConnected();
-    if (CHAIN === "SOL") {
-      const signedTx = await this.wallet.solana.signTransaction(transaction);
-      return signedTx;
-    } else if (CHAIN === "BSC") {
-      if (!this.ethersProvider) {
-        throw new Error("Provider not found");
-      }
-      const signer = await this.ethersProvider.getSigner();
-      console.log("tx", transaction);
-      console.log("signer", signer);
-      const sig = await signer.sendTransaction(
-        transaction as TransactionRequest
-      );
-      return sig.hash;
+    if (!this.wallet) {
+      throw new Error("OKX SDK initialized failed. Please reload page.");
     }
+    const signedTx = await this.wallet!.request(
+      {
+        method: "eth_sendTransaction",
+        params: [transaction],
+      },
+      bscNetworkId
+    );
+    return signedTx;
   }
 
   async broadcastTransaction(signedTx: any) {
     if (CHAIN === "SOL") {
-      const serializedTransaction = signedTx.serialize();
-      const res = await this.solConnection.sendRawTransaction(
-        serializedTransaction,
-        {
-          skipPreflight: false,
-          preflightCommitment: "confirmed",
-        }
-      );
-      return res;
+      // const serializedTransaction = signedTx.serialize();
+      // const res = await this.solConnection.sendRawTransaction(
+      //   serializedTransaction,
+      //   {
+      //     skipPreflight: false,
+      //     preflightCommitment: "confirmed",
+      //   }
+      // );
+      // return res;
     } else {
       /**
        * BSC use sendTransaction broadcastTransaction
@@ -267,11 +241,11 @@ export class OkxAppConnect {
   async getFinalizedTransaction(txHash: string) {
     await this.checkConnected();
     if (CHAIN === "SOL") {
-      const res = await this.solConnection.getTransaction(txHash, {
-        commitment: "finalized",
-        maxSupportedTransactionVersion: 0,
-      });
-      return res;
+      // const res = await this.solConnection.getTransaction(txHash, {
+      //   commitment: "finalized",
+      //   maxSupportedTransactionVersion: 0,
+      // });
+      // return res;
     } else if (CHAIN === "BSC") {
       if (!this.ethersProvider) {
         throw new Error("Provider not found");
