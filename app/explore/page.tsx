@@ -8,7 +8,6 @@ import Link from "next/link";
 export default function ExplorePage() {
   const { data, isLoading } = useMeilisearch("community", undefined, {
     sort: ["created_time:desc"],
-    limit: 5,
   });
 
   return (
