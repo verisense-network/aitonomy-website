@@ -83,9 +83,11 @@ export class OkxAppConnect {
 
   async connect() {
     await this.checkConnected();
+    console.log("connect");
     if (!this.wallet) {
       throw new Error("OKX SDK initialized failed. Please reload page.");
     }
+    console.log("call getSession");
     const response = await getSession();
 
     console.log("response", response);
@@ -148,6 +150,7 @@ export class OkxAppConnect {
       console.log("connected", this.wallet.connected());
       if (!this.wallet.connected()) {
         const session = await getSession();
+        console.log("connected session", session);
         if (!session) {
           throw new Error("Failed to connect");
         }
