@@ -111,6 +111,7 @@ export class MetamaskConnect {
         infuraAPIKey: process.env.NEXT_PUBLIC_INFURA_API_KEY,
         useDeeplink: true,
         checkInstallationImmediately: true,
+        checkInstallationOnAllCalls: true,
         i18nOptions: {
           enabled: true,
         },
