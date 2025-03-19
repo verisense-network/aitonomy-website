@@ -13,9 +13,18 @@ type Store = {
   setIsMobile: (isMobile: boolean) => void;
 };
 
-export const checkIsMobile = (): boolean =>
-  typeof window !== "undefined" &&
-  window.matchMedia("(max-width: 768px)").matches;
+export const checkIsMobile = (): boolean => {
+  if (typeof window !== "undefined") {
+    const ua = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+    const screenWidth = window.innerWidth <= 767;
+    const touchSupport =
+      "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    return ua || (screenWidth && touchSupport);
+  }
+  return false;
+};
 
 export const useAppearanceStore = create<Store>()(
   persist(
