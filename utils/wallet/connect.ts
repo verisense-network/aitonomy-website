@@ -9,8 +9,6 @@ export async function connectToWallet(walletId: WalletId) {
 
   const msg = await walletConnect.connect();
 
-  console.log("msg", msg, walletConnect);
-
   if (msg && !walletConnect.address) {
     throw msg;
   }

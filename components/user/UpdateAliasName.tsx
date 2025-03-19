@@ -51,7 +51,7 @@ export default function UpdateAliasName({
   return (
     <div>
       <Form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 items-center">
           <Controller
             name="alias"
             control={control}
@@ -74,12 +74,14 @@ export default function UpdateAliasName({
               />
             )}
           />
-          <Button type="submit" size="md">
-            Submit
-          </Button>
-          <Button size="md" onPress={onClose}>
-            Close
-          </Button>
+          <div className="flex flex-col space-y-2">
+            <Button type="submit" size="sm">
+              Submit
+            </Button>
+            <Button size="sm" onPress={onClose}>
+              Close
+            </Button>
+          </div>
         </div>
       </Form>
     </div>

@@ -2,78 +2,25 @@ import { WalletId } from "./id";
 import { useUserStore } from "@/stores/user";
 import { ethers, JsonRpcProvider, TransactionRequest } from "ethers";
 import { CHAIN } from "../chain";
-import { OKXUniversalProvider } from "@okxconnect/universal-provider";
-
-let okxProvider: OKXUniversalProvider | null = null;
+import {
+  OKXUniversalProvider,
+  SessionTypes,
+} from "@okxconnect/universal-provider";
 
 const bscNetworkId = "eip155:56";
-
-export const getOkxProvider = async () => {
-  if (okxProvider) return okxProvider;
-  const provider = await OKXUniversalProvider.init({
-    dappMetaData: {
-      name: "Aitonomy",
-      manifestUrl: "https://aitonomy-website.vercel.app/",
-      icon: "https://aitonomy-website.vercel.app/icon.ico",
-    },
-  });
-  okxProvider = provider;
-  okxProvider.on("session_update", (session: any) => {
-    console.log("session", session);
-  });
-  okxProvider.on("session_delete", ({ topic }: { topic: string }) => {
-    console.log("topic", topic);
-  });
-  return provider;
-};
-
-let accountSession: {
-  publicKey: Uint8Array;
-  address: string;
-} | null = null;
-
-export const getSession = async () => {
-  const provider = await getOkxProvider();
-  if (!provider) {
-    throw new Error("OKX SDK initialized failed. Please reload page.");
-  }
-  if (accountSession && provider.connected()) return accountSession;
-
-  const session = await provider.connect({
-    namespaces: {
-      eip155: {
-        chains: ["eip155:56"],
-        defaultChain: "56",
-      },
-    },
-    optionalNamespaces: {},
-    sessionConfig: {},
-  });
-  if (!session) {
-    throw new Error("Failed to connect");
-  }
-  const address = session.namespaces.eip155.accounts[0].split(":").pop();
-  if (!address) {
-    throw new Error("Failed to get address");
-  }
-  accountSession = {
-    publicKey: ethers.toBeArray(address!),
-    address: address!,
-  };
-  return accountSession;
-};
-
 export class OkxAppConnect {
   id = WalletId.OKX;
-  wallet: OKXUniversalProvider | null = null;
+  private static wallet: OKXUniversalProvider | null = null;
+  static connecting = false;
   address: string = "";
   publicKey: Uint8Array = new Uint8Array(32);
   ethersProvider: JsonRpcProvider = new ethers.JsonRpcProvider(
     "https://bsc-dataseed1.binance.org/"
   );
+  session: SessionTypes.Struct | null = null;
 
   constructor() {
-    this.checkConnected();
+    this.checkStoredPublicKey();
   }
 
   async checkStoredPublicKey() {
@@ -81,42 +28,46 @@ export class OkxAppConnect {
     if (userStore.publicKey.length === 0) return;
     this.publicKey = new Uint8Array(Object.values(userStore.publicKey));
     this.address = userStore.address;
-    await this.checkConnected();
   }
 
   async connect() {
     await this.checkConnected();
-    console.log("connect");
-    if (!this.wallet) {
+    if (!OkxAppConnect.wallet) {
       throw new Error("OKX SDK initialized failed. Please reload page.");
     }
-    console.log("call getSession");
-    const response = await getSession();
+    const session = this.session || (await this.getSession());
+    if (!session) {
+      throw new Error("get session failed");
+    }
+    this.session = session;
 
-    console.log("response", response);
+    const address = session.namespaces.eip155.accounts[0].split(":").pop()!;
+    if (!address) {
+      throw new Error("Failed to get address");
+    }
 
-    const publicKey = response?.publicKey;
+    this.address = address;
+    this.publicKey = ethers.toBeArray(address);
 
-    if (!publicKey) {
+    if (!this.publicKey) {
       throw new Error("get session publickey failed");
     }
 
     const chainId = Number(
-      await this.wallet.request({
+      await OkxAppConnect.wallet.request({
         method: "eth_chainId",
       })
     );
-    console.log("chainId", chainId);
 
     if (chainId !== 56) {
       try {
-        await window.ethereum.request({
+        await OkxAppConnect.wallet.request({
           method: "wallet_switchEthereumChain",
           params: [{ chainId: "0x38" }],
         });
       } catch (switchError: any) {
         if (switchError.code === 4902) {
-          await window.ethereum.request({
+          await OkxAppConnect.wallet.request({
             method: "wallet_addEthereumChain",
             params: [
               {
@@ -138,37 +89,66 @@ export class OkxAppConnect {
       }
     }
 
-    this.address = response.address;
-    this.publicKey = publicKey;
-
     return this.publicKey;
   }
 
   async checkConnected() {
-    try {
-      if (!this.wallet) {
-        const provider = await getOkxProvider();
-        this.wallet = provider;
-      }
-      console.log("connected", this.wallet.connected());
-      if (!this.wallet.connected()) {
-        const session = await getSession();
-        console.log("connected session", session);
-        if (!session) {
-          throw new Error("Failed to connect");
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      throw new Error("Failed to initialize OKX Universal Provider");
+    if (OkxAppConnect.connecting) {
+      return false;
     }
+    let provider: OKXUniversalProvider | null = OkxAppConnect.wallet;
+    if (!OkxAppConnect.connecting && !OkxAppConnect.wallet) {
+      OkxAppConnect.connecting = true;
+      provider = await OKXUniversalProvider.init({
+        dappMetaData: {
+          name: "Aitonomy",
+          manifestUrl: "https://aitonomy-website.vercel.app/",
+          icon: "https://aitonomy-website.vercel.app/icon.ico",
+        },
+      });
+      OkxAppConnect.wallet = provider;
+      provider.on("session_update", (session: any) => {});
+      provider.on("session_delete", ({ topic }: { topic: string }) => {
+        console.log("topic", topic);
+      });
+    }
+    const connected = provider?.connected();
+    if (!connected) {
+      const session = await this.getSession(provider!);
+      if (!session) {
+        throw new Error("get session failed");
+      }
+      const address = session.namespaces.eip155.accounts[0].split(":").pop();
+      if (!address) {
+        throw new Error("get address failed");
+      }
+      this.session = session;
+    }
+    OkxAppConnect.connecting = false;
+    return true;
+  }
+
+  async getSession(provider?: OKXUniversalProvider) {
+    return await (provider || OkxAppConnect.wallet!).connect({
+      namespaces: {
+        eip155: {
+          chains: ["eip155:56"],
+          defaultChain: "56",
+        },
+      },
+      optionalNamespaces: {},
+      sessionConfig: {},
+    });
   }
 
   async signMessage(message: string): Promise<Uint8Array> {
-    await this.checkConnected();
+    const connected = await this.checkConnected();
+    if (!connected) {
+      throw new Error("not connected");
+    }
     const encoded = new TextEncoder().encode(message);
     const hexMsg = ethers.hexlify(encoded);
-    const signature: string = await this.wallet!.request(
+    const signature: string = await OkxAppConnect.wallet!.request(
       {
         method: "personal_sign",
         params: [hexMsg, this.address],
@@ -206,10 +186,10 @@ export class OkxAppConnect {
 
   async signTransaction(transaction: TransactionRequest): Promise<any> {
     await this.checkConnected();
-    if (!this.wallet) {
+    if (!OkxAppConnect.wallet) {
       throw new Error("OKX SDK initialized failed. Please reload page.");
     }
-    const signedTx = await this.wallet!.request(
+    const signedTx = await OkxAppConnect.wallet!.request(
       {
         method: "eth_sendTransaction",
         params: [transaction],

@@ -232,7 +232,7 @@ export default function SideMenu() {
       />
       {isMobile && sideBarIsOpen && (
         <div
-          className="fixed top-16 left-0 w-svw h-[calc(100vh-4rem)] bg-black bg-opacity-50 z-30"
+          className="fixed top-16 left-0 w-svw h-[calc(100vh-4rem)] bg-black/50 z-30"
           onClick={() => setSideBarIsOpen(false)}
         />
       )}

@@ -33,7 +33,6 @@ export async function updateAccountInfo() {
     setLastPostAt(account.last_post_at);
 
     const wallet = getWalletConnect(walletId);
-
     wallet.checkConnected();
   } catch (e: any) {
     console.error("updateAccountInfo error", e);
