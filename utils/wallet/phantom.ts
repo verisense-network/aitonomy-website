@@ -5,10 +5,10 @@ import {
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";
-import { WalletId } from "./connect";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 import { useUserStore } from "@/stores/user";
+import { WalletId } from "./id";
 
 export class PhantomConnect {
   id = WalletId.PHANTOM;

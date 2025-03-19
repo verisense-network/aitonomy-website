@@ -1,18 +1,30 @@
 import DOMPurify from "dompurify";
-import { parse } from "marked";
+import { Marked } from "marked";
+import { markedHighlight } from "marked-highlight";
+import hljs from "highlight.js";
 import { ethers } from "ethers";
 import bs58 from "bs58";
 import { CHAIN } from "./chain";
 
 export function parseMarkdown(markdownText: string) {
+  const marked = new Marked(
+    markedHighlight({
+      emptyLangClass: "hljs",
+      langPrefix: "hljs language-",
+      highlight(code, lang, _info) {
+        const language = hljs.getLanguage(lang) ? lang : "plaintext";
+        return hljs.highlight(code, { language }).value;
+      },
+    })
+  );
   if (typeof window !== "undefined") {
     return DOMPurify.sanitize(
-      parse(markdownText, {
+      marked.parse(markdownText, {
         async: false,
       })
     );
   }
-  return parse(markdownText, {
+  return marked.parse(markdownText, {
     async: false,
   });
 }

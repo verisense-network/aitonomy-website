@@ -79,8 +79,13 @@ export default function ThreadView({ threadId }: { threadId: string }) {
   return (
     <div className="w-full">
       <Breadcrumbs className="m-2">
-        <BreadcrumbItem href="/">Home</BreadcrumbItem>
-        <BreadcrumbItem href={`/c/${threadData?.formattedId?.community}`}>
+        <BreadcrumbItem as={Link} href="/">
+          Home
+        </BreadcrumbItem>
+        <BreadcrumbItem
+          as={Link}
+          href={`/c/${threadData?.formattedId?.community}`}
+        >
           {threadData?.community_name}
         </BreadcrumbItem>
         <BreadcrumbItem>{threadData?.title}</BreadcrumbItem>
@@ -89,9 +94,9 @@ export default function ThreadView({ threadId }: { threadId: string }) {
         {isLoading && <Spinner />}
         {!isLoading && threadData && (
           <>
-            <CardHeader className="flex justify-between items-center">
-              <h1 className="text-xl font-bold">{threadData.title}</h1>
-              <div className="flex justify-end">
+            <CardHeader className="flex flex-col md:flex-row items-stretch space-y-2">
+              <h1 className="flex-1 text-xl font-bold">{threadData.title}</h1>
+              <div className="flex flex-1 justify-end">
                 <ShareButtons title={threadData.title} url={location.href} />
               </div>
             </CardHeader>

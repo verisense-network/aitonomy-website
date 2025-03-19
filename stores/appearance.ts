@@ -1,3 +1,4 @@
+import { debounce } from "@/utils/tools";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
@@ -12,15 +13,24 @@ type Store = {
   setIsMobile: (isMobile: boolean) => void;
 };
 
-export const checkIsMobile = (): boolean =>
-  typeof window !== "undefined" &&
-  window.matchMedia("(max-width: 768px)").matches;
+export const checkIsMobile = (): boolean => {
+  if (typeof window !== "undefined") {
+    const ua = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+    const screenWidth = window.innerWidth <= 767;
+    const touchSupport =
+      "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    return ua || (screenWidth && touchSupport);
+  }
+  return false;
+};
 
 export const useAppearanceStore = create<Store>()(
   persist(
     (set) => ({
       isMobile: checkIsMobile(),
-      sideBarIsOpen: true,
+      sideBarIsOpen: false,
       welcomeModalIsOpen: false,
       welcomeModalIsReabled: false,
       setSideBarIsOpen: (isOpen: boolean) => set({ sideBarIsOpen: isOpen }),
@@ -39,9 +49,16 @@ if (typeof window !== "undefined") {
 
   const addResizeListener = () => {
     if (!resizeListenerAdded) {
-      window.addEventListener("resize", () => {
-        useAppearanceStore.getState().setIsMobile(checkIsMobile());
-      });
+      window.addEventListener(
+        "resize",
+        debounce(() => {
+          console.log("resize");
+          const isMobile = checkIsMobile();
+          useAppearanceStore.getState().setIsMobile(isMobile);
+
+          useAppearanceStore.getState().setSideBarIsOpen(!isMobile);
+        }, 500)
+      );
       resizeListenerAdded = true;
     }
   };

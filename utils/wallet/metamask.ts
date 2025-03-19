@@ -5,38 +5,26 @@ import {
   TransactionRequest,
 } from "ethers";
 import { MetaMaskSDK, SDKProvider } from "@metamask/sdk";
-import { WalletId } from "./connect";
+import { WalletId } from "./id";
 import { useUserStore } from "@/stores/user";
 import { isDev } from "../tools";
 
+const bscNetworkId = "0x38";
 export class MetamaskConnect {
   id = WalletId.METAMASK;
-  wallet: SDKProvider | undefined;
+  private static sdk: MetaMaskSDK | null = null;
+  private static wallet: SDKProvider | undefined;
+  static connecting = false;
   address: string = "";
   publicKey: Uint8Array = new Uint8Array(32);
-  sdk = new MetaMaskSDK({
-    dappMetadata: {
-      name: "Aitonomy",
-      url: window.location.origin,
-    },
-    injectProvider: true,
-    infuraAPIKey: process.env.NEXT_PUBLIC_INFURA_API_KEY,
-    useDeeplink: true,
-    checkInstallationImmediately: true,
-    i18nOptions: {
-      enabled: true,
-    },
-    logging: {
-      developerMode: isDev,
-    },
-    storage: {
-      enabled: true,
-    },
-  });
-  provider: BrowserProvider | null = null;
+  static provider =
+    typeof window !== "undefined" && window.ethereum
+      ? new ethers.BrowserProvider(window.ethereum)
+      : null;
   jsonRpcProvider: JsonRpcProvider = new ethers.JsonRpcProvider(
     "https://bsc-dataseed1.binance.org/"
   );
+  accounts: string[] = [];
 
   constructor() {
     this.checkStoredPublicKey();
@@ -47,42 +35,45 @@ export class MetamaskConnect {
     if (userStore.publicKey.length === 0) return;
     this.publicKey = new Uint8Array(Object.values(userStore.publicKey));
     this.address = userStore.address;
-    await this.checkConnected();
   }
 
   async connect() {
     await this.checkConnected();
-    const accounts = await this.sdk.connect();
-    const publicKey = accounts[0];
+    const accounts = this.accounts?.length
+      ? this.accounts
+      : await MetamaskConnect.sdk!.connect();
 
-    if (!publicKey) {
+    const address = accounts[0];
+
+    if (!address) {
       throw new Error("account not found");
     }
 
-    const signer = await this.provider!.getSigner();
+    const provider = this.getProvider();
+    if (!provider) {
+      throw new Error("MetaMask provider not found");
+    }
+    const signer = await provider.getSigner();
 
     this.address = await signer.getAddress();
     this.publicKey = ethers.toBeArray(this.address);
-    console.log("this.publicKey", this.publicKey);
-    console.log("this.address", this.address);
 
-    const chainId = this.wallet!.getChainId();
-
-    const bscNetworkId = "0x38";
+    const chainId = MetamaskConnect.wallet!.getChainId();
 
     if (chainId !== bscNetworkId) {
       try {
-        await this.wallet!.request({
+        await MetamaskConnect.wallet!.request({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0x38" }],
+          params: [{ chainId: bscNetworkId }],
         });
       } catch (switchError: any) {
+        console.log("switchError", switchError);
         if (switchError.code === 4902) {
-          const res = await this.wallet?.request({
+          const res = await MetamaskConnect.wallet?.request({
             method: "wallet_addEthereumChain",
             params: [
               {
-                chainId: "0x38",
+                chainId: bscNetworkId,
                 rpcUrls: ["https://bsc-dataseed.binance.org/"],
                 chainName: "Binance Smart Chain",
                 nativeCurrency: {
@@ -105,36 +96,72 @@ export class MetamaskConnect {
   }
 
   async checkConnected() {
-    try {
-      if (!this.sdk.isInitialized()) {
-        await this.sdk.init();
-      }
+    if (MetamaskConnect.connecting) {
+      return false;
+    }
 
-      if (!this.wallet?.isConnected()) {
-        await this.sdk.connect();
-        this.wallet = this.sdk.getProvider();
-      }
+    if (!MetamaskConnect.sdk?.isInitialized()) {
+      MetamaskConnect.connecting = true;
+      MetamaskConnect.sdk = new MetaMaskSDK({
+        dappMetadata: {
+          name: "Aitonomy",
+          url: window.location.origin,
+        },
+        injectProvider: true,
+        infuraAPIKey: process.env.NEXT_PUBLIC_INFURA_API_KEY,
+        useDeeplink: true,
+        checkInstallationImmediately: true,
+        i18nOptions: {
+          enabled: true,
+        },
+        logging: {
+          developerMode: isDev,
+        },
+        storage: {
+          enabled: true,
+        },
+      });
+      await MetamaskConnect.sdk.init();
+    }
 
-      if (!this.provider) {
-        this.provider = new ethers.BrowserProvider(window.ethereum as any);
-      }
+    if (!MetamaskConnect.wallet?.isConnected()) {
+      this.accounts = await MetamaskConnect.sdk!.connect();
+      MetamaskConnect.wallet = MetamaskConnect.sdk!.getProvider();
+    }
 
-      if (window.ethereum && window.ethereum?.isPhantom) {
-        throw new Error(
-          "Phantom Wallet extension already exists. Please disable Phantom extension first."
-        );
-      } else if (!window.ethereum) {
-        throw new Error(
-          "MetaMask extension not found. Please install it first."
-        );
-      }
-    } catch (error: any) {
-      console.error("Error checking connection:", error);
-      if (error.code === -32002) {
-        throw new Error("Click Continue to connect");
-      } else {
-        throw error;
-      }
+    await this.switchChain();
+
+    if (window.ethereum && window.ethereum?.isPhantom) {
+      throw new Error(
+        "Phantom Wallet extension already exists. Please disable Phantom extension first."
+      );
+    } else if (!window.ethereum) {
+      throw new Error("MetaMask extension not found. Please install it first.");
+    }
+
+    MetamaskConnect.connecting = false;
+
+    return true;
+  }
+
+  getProvider() {
+    if (!MetamaskConnect.provider) {
+      MetamaskConnect.provider =
+        typeof window !== "undefined" && window.ethereum
+          ? new ethers.BrowserProvider(window.ethereum)
+          : null;
+    }
+    return MetamaskConnect.provider;
+  }
+
+  async switchChain() {
+    const chainId = MetamaskConnect.wallet!.getChainId();
+
+    if (chainId !== bscNetworkId) {
+      await MetamaskConnect.wallet!.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: bscNetworkId }],
+      });
     }
   }
 
@@ -143,7 +170,7 @@ export class MetamaskConnect {
 
     const encoded = new TextEncoder().encode(message);
     const hexMsg = ethers.hexlify(encoded);
-    const signature = await this.wallet!.request({
+    const signature = await MetamaskConnect.wallet!.request({
       method: "personal_sign",
       params: [hexMsg, this.address],
     });
@@ -181,7 +208,7 @@ export class MetamaskConnect {
   async signTransaction(tx: TransactionRequest): Promise<string> {
     await this.checkConnected();
 
-    const sig = await this.wallet!.request({
+    const sig = await MetamaskConnect.wallet!.request({
       method: "eth_sendTransaction",
       params: [tx],
     });
