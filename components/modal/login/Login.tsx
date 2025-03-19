@@ -11,14 +11,18 @@ import {
   ModalHeader,
   Spinner,
 } from "@heroui/react";
-import { connectToWallet, WalletId } from "@/utils/wallet/connect";
+import { connectToWallet } from "@/utils/wallet/connect";
+import { WalletId } from "@/utils/wallet/id";
 import { useUserStore } from "@/stores/user";
 import { CHAIN } from "@/utils/chain";
 import MetamaskLogo from "./icons/metamask-icon.svg";
 import OKXLogo from "./icons/OKX_logo.svg";
 import Image from "next/image";
+import { useAppearanceStore } from "@/stores/appearance";
 
 const isSolChain = CHAIN === "SOL";
+
+const isMobile = useAppearanceStore.getState().isMobile;
 
 const SOL_WALLETS = [
   {
@@ -38,11 +42,21 @@ const BSC_WALLETS = [
 
 const WALLETS = [
   ...(isSolChain ? SOL_WALLETS : BSC_WALLETS),
-  {
-    id: WalletId.OKX,
-    title: "OKX",
-    icon: OKXLogo,
-  },
+  ...(isMobile
+    ? [
+        {
+          id: WalletId.OKX_APP,
+          title: "OKX App",
+          icon: OKXLogo,
+        },
+      ]
+    : [
+        {
+          id: WalletId.OKX,
+          title: "OKX",
+          icon: OKXLogo,
+        },
+      ]),
 ];
 
 interface Props {

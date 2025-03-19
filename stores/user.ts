@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createComputed } from "zustand-computed";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { WalletId } from "@/utils/wallet/connect";
+import { WalletId } from "@/utils/wallet/id";
 
 type SetUser = {
   name: string;
@@ -36,7 +36,7 @@ export const useUserStore = create<Store>()(
   persist(
     computed((set) => ({
       name: "",
-      wallet: WalletId.OKX,
+      wallet: WalletId.METAMASK,
       address: "",
       publicKey: new Uint8Array(0),
       lastPostAt: null,

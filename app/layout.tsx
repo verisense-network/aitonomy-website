@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import SideMenu from "@/components/sideMenu";
 import RightMenu from "@/components/RightMenu";
 import WelcomeModal from "@/components/modal/Welcome";
+import "highlight.js/styles/atom-one-dark.min.css";
 
 const inter = Inter({
   subsets: ["latin"],

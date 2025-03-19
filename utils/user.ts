@@ -1,6 +1,5 @@
 import { getAccountInfo } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
-import { ethers } from "ethers";
 import { getWalletConnect } from "./wallet";
 
 export const NAME_NOT_SET = "Name not set";

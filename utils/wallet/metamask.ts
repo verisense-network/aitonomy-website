@@ -5,10 +5,11 @@ import {
   TransactionRequest,
 } from "ethers";
 import { MetaMaskSDK, SDKProvider } from "@metamask/sdk";
-import { WalletId } from "./connect";
+import { WalletId } from "./id";
 import { useUserStore } from "@/stores/user";
 import { isDev } from "../tools";
 
+const bscNetworkId = "0x38";
 export class MetamaskConnect {
   id = WalletId.METAMASK;
   wallet: SDKProvider | undefined;
@@ -68,13 +69,11 @@ export class MetamaskConnect {
 
     const chainId = this.wallet!.getChainId();
 
-    const bscNetworkId = "0x38";
-
     if (chainId !== bscNetworkId) {
       try {
         await this.wallet!.request({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0x38" }],
+          params: [{ chainId: bscNetworkId }],
         });
       } catch (switchError: any) {
         if (switchError.code === 4902) {
@@ -82,7 +81,7 @@ export class MetamaskConnect {
             method: "wallet_addEthereumChain",
             params: [
               {
-                chainId: "0x38",
+                chainId: bscNetworkId,
                 rpcUrls: ["https://bsc-dataseed.binance.org/"],
                 chainName: "Binance Smart Chain",
                 nativeCurrency: {
@@ -119,6 +118,8 @@ export class MetamaskConnect {
         this.provider = new ethers.BrowserProvider(window.ethereum as any);
       }
 
+      await this.switchChain();
+
       if (window.ethereum && window.ethereum?.isPhantom) {
         throw new Error(
           "Phantom Wallet extension already exists. Please disable Phantom extension first."
@@ -135,6 +136,17 @@ export class MetamaskConnect {
       } else {
         throw error;
       }
+    }
+  }
+
+  async switchChain() {
+    const chainId = this.wallet!.getChainId();
+
+    if (chainId !== bscNetworkId) {
+      await this.wallet!.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: bscNetworkId }],
+      });
     }
   }
 

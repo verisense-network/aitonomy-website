@@ -1,11 +1,8 @@
+"use client";
+
 import { useUserStore } from "@/stores/user";
 import { getWalletConnect } from "./index";
-
-export enum WalletId {
-  OKX = "okx",
-  PHANTOM = "phantom",
-  METAMASK = "metamask",
-}
+import { WalletId } from "./id";
 
 export async function connectToWallet(walletId: WalletId) {
   const walletConnect = getWalletConnect(walletId);

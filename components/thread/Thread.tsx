@@ -79,8 +79,13 @@ export default function ThreadView({ threadId }: { threadId: string }) {
   return (
     <div className="w-full">
       <Breadcrumbs className="m-2">
-        <BreadcrumbItem href="/">Home</BreadcrumbItem>
-        <BreadcrumbItem href={`/c/${threadData?.formattedId?.community}`}>
+        <BreadcrumbItem as={Link} href="/">
+          Home
+        </BreadcrumbItem>
+        <BreadcrumbItem
+          as={Link}
+          href={`/c/${threadData?.formattedId?.community}`}
+        >
           {threadData?.community_name}
         </BreadcrumbItem>
         <BreadcrumbItem>{threadData?.title}</BreadcrumbItem>

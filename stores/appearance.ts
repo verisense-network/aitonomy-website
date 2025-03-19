@@ -1,3 +1,4 @@
+import { debounce } from "@/utils/tools";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
@@ -20,7 +21,7 @@ export const useAppearanceStore = create<Store>()(
   persist(
     (set) => ({
       isMobile: checkIsMobile(),
-      sideBarIsOpen: true,
+      sideBarIsOpen: false,
       welcomeModalIsOpen: false,
       welcomeModalIsReabled: false,
       setSideBarIsOpen: (isOpen: boolean) => set({ sideBarIsOpen: isOpen }),
@@ -39,9 +40,16 @@ if (typeof window !== "undefined") {
 
   const addResizeListener = () => {
     if (!resizeListenerAdded) {
-      window.addEventListener("resize", () => {
-        useAppearanceStore.getState().setIsMobile(checkIsMobile());
-      });
+      window.addEventListener(
+        "resize",
+        debounce(() => {
+          console.log("resize");
+          const isMobile = checkIsMobile();
+          useAppearanceStore.getState().setIsMobile(isMobile);
+
+          useAppearanceStore.getState().setSideBarIsOpen(!isMobile);
+        }, 500)
+      );
       resizeListenerAdded = true;
     }
   };

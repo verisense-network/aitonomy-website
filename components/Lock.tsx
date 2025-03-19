@@ -26,7 +26,7 @@ export function Lock({ countdownTime }: { countdownTime: number }) {
           />
         </div>
         <div className="mt-5">
-          <p className="text-gray-300">
+          <p className="text-gray-300 text-center">
             After the countdown ends, you can post content
           </p>
         </div>
