@@ -3,5 +3,6 @@ export enum CommunityStatus {
   WaitingTx = "WaitingTx",
   CreateFailed = "CreateFailed",
   Active = "Active",
+  TokenIssued = "TokenIssued",
   Frozen = "Frozen",
 }

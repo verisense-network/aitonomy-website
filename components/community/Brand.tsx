@@ -22,6 +22,7 @@ import { getWalletConnect } from "@/utils/wallet";
 import { Id, toast } from "react-toastify";
 import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
 import { useAppearanceStore } from "@/stores/appearance";
+import { CheckBadgeIcon } from "@heroicons/react/24/outline";
 
 interface Props {
   communityId: string;
@@ -55,8 +56,15 @@ export default function CommunityBrand({ communityId }: Props) {
   const amount = community?.status?.WaitingTx;
   const viewAmount = amount ? formatReadableAmount(amount) : "";
 
-  const isCreateFailed =
-    community && community?.status?.[CommunityStatus.CreateFailed];
+  const isCommunityStatus = useCallback(
+    (status: CommunityStatus) => {
+      return (
+        community &&
+        (community?.status?.[status] || community?.status === status)
+      );
+    },
+    [community]
+  );
 
   const hasStoredSignature =
     community?.name === storedCommunity && storedSignature;
@@ -257,7 +265,12 @@ export default function CommunityBrand({ communityId }: Props) {
           <div className="flex justify-between items-center w-full">
             <div className="flex flex-wrap space-x-4 items-center">
               <Avatar name={community?.name} src={community?.logo} size="lg" />
-              <h1 className="text-2xl font-bold">{community?.name}</h1>
+              <h1 className="flex items-center text-2xl font-bold">
+                {community?.name}
+                {isCommunityStatus(CommunityStatus.Active) && (
+                  <CheckBadgeIcon className="ml-2 w-6 h-6 text-success" />
+                )}
+              </h1>
               {shouldShowActivateCommunity && Number(viewAmount) > 0 && (
                 <div className="flex">
                   <Chip
@@ -294,44 +307,47 @@ export default function CommunityBrand({ communityId }: Props) {
                   </Chip>
                 </div>
               )}
-              {shouldShowActivateCommunity && isCreateFailed && (
-                <Chip
-                  color="danger"
-                  size="lg"
-                  classNames={{
-                    base: "h-9",
-                    content: "flex space-x-2 items-center",
-                  }}
-                >
-                  <span>Create Failed</span>
-                  {!isLoading && hasStoredSignature && (
-                    <Button
-                      variant="shadow"
-                      size="sm"
-                      color="primary"
-                      onPress={retryWithStoreSignature}
-                    >
-                      Retry
-                    </Button>
-                  )}
-                </Chip>
-              )}
+              {shouldShowActivateCommunity &&
+                isCommunityStatus(CommunityStatus.CreateFailed) && (
+                  <Chip
+                    color="danger"
+                    size="lg"
+                    classNames={{
+                      base: "h-9",
+                      content: "flex space-x-2 items-center",
+                    }}
+                  >
+                    <span>Create Failed</span>
+                    {!isLoading && hasStoredSignature && (
+                      <Button
+                        variant="shadow"
+                        size="sm"
+                        color="primary"
+                        onPress={retryWithStoreSignature}
+                      >
+                        Retry
+                      </Button>
+                    )}
+                  </Chip>
+                )}
               {isLoading && <Spinner />}
               {isActivatingLoading && <Spinner title="Activating..." />}
             </div>
             <div className="flex items-center space-x-2">
-              <div className="flex flex-col items-center">
-                <Avatar
-                  src={community?.token_info?.image}
-                  name={community?.token_info?.symbol}
-                />
-                <div className="flex items-center mt-1 space-x-1 text-md">
-                  <span>{currentBalance}</span>
-                  <span className="text-sm">
-                    {community?.token_info?.symbol}
-                  </span>
+              {isCommunityStatus(CommunityStatus.Active) && (
+                <div className="flex flex-col items-center">
+                  <Avatar
+                    src={community?.token_info?.image}
+                    name={community?.token_info?.symbol}
+                  />
+                  <div className="flex items-center mt-1 space-x-1 text-md">
+                    <span>{currentBalance}</span>
+                    <span className="text-sm">
+                      {community?.token_info?.symbol}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </CardHeader>
