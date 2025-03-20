@@ -10,6 +10,7 @@ import {
   CardHeader,
   Chip,
   Spinner,
+  Tooltip,
 } from "@heroui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import PaymentModal from "./modal/Payment";
@@ -22,7 +23,10 @@ import { getWalletConnect } from "@/utils/wallet";
 import { Id, toast } from "react-toastify";
 import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
 import { useAppearanceStore } from "@/stores/appearance";
-import { CheckBadgeIcon } from "@heroicons/react/24/outline";
+import {
+  CheckBadgeIcon,
+  ExclamationCircleIcon,
+} from "@heroicons/react/24/outline";
 
 interface Props {
   communityId: string;
@@ -267,9 +271,16 @@ export default function CommunityBrand({ communityId }: Props) {
               <Avatar name={community?.name} src={community?.logo} size="lg" />
               <h1 className="flex items-center text-2xl font-bold">
                 {community?.name}
-                {isCommunityStatus(CommunityStatus.Active) && (
-                  <CheckBadgeIcon className="ml-2 w-6 h-6 text-success" />
-                )}
+                {!isLoading &&
+                  (isCommunityStatus(CommunityStatus.Active) ? (
+                    <Tooltip content="Active">
+                      <CheckBadgeIcon className="ml-2 w-6 h-6 text-success" />
+                    </Tooltip>
+                  ) : (
+                    <Tooltip content="Inactive">
+                      <ExclamationCircleIcon className="ml-2 w-6 h-6 text-danger" />
+                    </Tooltip>
+                  ))}
               </h1>
               {shouldShowActivateCommunity && Number(viewAmount) > 0 && (
                 <div className="flex">
