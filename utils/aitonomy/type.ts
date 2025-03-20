@@ -111,6 +111,7 @@ pub enum CommunityStatus {
     CreateFailed(String),
     Active,
     Frozen(u64),
+    TokenIssued(String),
 }
  */
 export const CommunityStatus = Enum.with({
@@ -119,6 +120,7 @@ export const CommunityStatus = Enum.with({
   CreateFailed: Text,
   Active: Null,
   Frozen: u64,
+  TokenIssued: Text,
 });
 
 export type AccountId = string;
@@ -143,8 +145,10 @@ export type LlmVendor = {
 export type CommunityStatus = {
   PendingCreation: null;
   WaitingTx: number;
+  CreateFailed: string;
   Active: null;
   Frozen: number;
+  TokenIssued: string;
 };
 
 export type Community = {
