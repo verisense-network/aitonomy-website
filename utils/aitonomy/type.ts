@@ -126,9 +126,12 @@ export const CommunityStatus = Enum.with({
 export type AccountId = string;
 
 export type TokenMetadata = {
+  name: string;
   symbol: string;
   total_issuance: number;
   decimals: number;
+  new_issue: boolean;
+  contract: string | null;
   image: string | null;
 };
 
@@ -233,16 +236,22 @@ export function createWithArgs<T extends CodecClass<Struct<any>>>(
 
 /**
     pub struct TokenMetadataArg {
+        pub name: String,
         pub symbol: String,
         pub total_issuance: u64,
         pub decimals: u8,
+        pub new_issue: bool,
+        pub contract: Option<String>,
         pub image: Option<String>,
     }
  */
 export const TokenMetadataArg = Struct.with({
+  name: Text,
   symbol: Text,
   total_issuance: u64,
   decimals: u8,
+  new_issue: Bool,
+  contract: Option.with(Text),
   image: Option.with(Text),
 });
 
@@ -329,6 +338,7 @@ export const ActivateCommunityArg = Struct.with({
 pub struct Account {
     pub nonce: u64,
     pub address: H160,
+    pub max_invite_block: u64,
     pub alias: Option<String>,
     pub last_post_at: i64,
 }
@@ -336,6 +346,7 @@ pub struct Account {
 export const Account = Struct.with({
   nonce: u64,
   address: H160,
+  max_invite_block: u64,
   alias: Option.with(Text),
   last_post_at: i64,
 });
@@ -363,6 +374,20 @@ export const SetAliasPayload = Struct.with({
 
 export const SetAliasArg = createWithArgs(SetAliasPayload);
 
+/**
+ * 
+pub struct RewardPayload {
+    pub payload: Vec<u8>,
+    pub signature: Vec<u8>,
+    pub agent_contract: AccountId,
+}
+ */
+export const RewardPayload = Struct.with({
+  payload: Vec.with(u8),
+  signature: Vec.with(u8),
+  agent_contract: AccountId,
+});
+
 registry.register({
   EcdsaSignature,
   Account,
@@ -379,4 +404,5 @@ registry.register({
   PostCommentArg,
   AccountData,
   SetAliasArg,
+  RewardPayload,
 });

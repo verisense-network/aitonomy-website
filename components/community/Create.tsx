@@ -10,6 +10,7 @@ import {
   AccordionItem,
   Avatar,
   Button,
+  cn,
   Form,
   Input,
   Popover,
@@ -18,6 +19,7 @@ import {
   Select,
   SelectItem,
   Spinner,
+  Switch,
   Textarea,
   Tooltip,
 } from "@heroui/react";
@@ -26,23 +28,28 @@ import { Controller, useForm } from "react-hook-form";
 import { useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { twMerge } from "tailwind-merge";
 
 interface Props {
   onClose: () => void;
 }
 
-const MOCKDATA = {
+const MOCKDATA: CreateCommunityArg = {
   name: "JOKE",
   slug: "推翻人类暴政，地球属于三体！",
   logo: "",
+  private: false,
   description: "推翻人类暴政，地球属于三体！",
   prompt:
     "为地狱笑话帖子和回复评分，如果非常好笑就适当发一些JOKE代  币，不要对听过的笑话奖励",
   token: {
+    image: null,
+    name: "JOKE",
     symbol: "JOKE",
     total_issuance: 10_000_000_000,
     decimals: 2,
-    image: null,
+    new_issue: true,
+    contract: null,
   },
   llm_name: LLmName.OpenAI,
   llm_api_host: null,
@@ -66,9 +73,12 @@ export default function CommunityCreate({ onClose }: Props) {
         prompt: "",
         token: {
           image: null,
+          name: "",
           symbol: "",
           total_issuance: 10_000_000_000,
           decimals: 2,
+          new_issue: true,
+          contract: null,
         },
         llm_name: LLmName.OpenAI,
         llm_api_host: null,
@@ -77,6 +87,7 @@ export default function CommunityCreate({ onClose }: Props) {
     });
 
   const llmName = watch("llm_name");
+  const tokenNewIssue = watch("token.new_issue");
 
   const [isLoadingLogo, setIsLoadingLogo] = useState(false);
   const { getRootProps, getInputProps } = useDropzone({
@@ -287,6 +298,8 @@ export default function CommunityCreate({ onClose }: Props) {
                 "group-data-[selected]:group-data-[pressed]:ms-4"
               ),
             }}
+            onChange={field.onChange}
+            checked={field.value}
           >
             <div className="flex flex-col gap-1">
               <div className="flex items-center space-x-2">
@@ -366,7 +379,6 @@ export default function CommunityCreate({ onClose }: Props) {
         <Controller
           name="token.image"
           control={control}
-          rules={{}}
           render={({ field }) => (
             <div className="flex justify-center items-center m-2 w-14 h-14 aspect-square">
               {field.value ? (
@@ -411,7 +423,7 @@ export default function CommunityCreate({ onClose }: Props) {
           )}
         />
         <Controller
-          name="token.symbol"
+          name="token.name"
           control={control}
           rules={{
             required: "Please enter a token name",
@@ -433,8 +445,96 @@ export default function CommunityCreate({ onClose }: Props) {
             />
           )}
         />
+        <Controller
+          name="token.symbol"
+          control={control}
+          rules={{
+            required: "Please enter a token symbol",
+            validate: (value) => {
+              if (!TOKEN_REGEX.test(value)) {
+                return "Invalid token symbol";
+              }
+              return true;
+            },
+          }}
+          render={({ field, fieldState }) => (
+            <Input
+              {...field}
+              label="Symbol"
+              placeholder="Enter your token symbol"
+              labelPlacement="outside"
+              isInvalid={!!fieldState.error}
+              errorMessage={fieldState.error?.message}
+            />
+          )}
+        />
       </div>
-      <div className="flex grid grid-cols-2 gap-2 mt-3 w-full">
+      <div className="flex gap-2 mt-3 w-full">
+        <Controller
+          name="token.new_issue"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Switch
+              classNames={{
+                base: cn(
+                  "inline-flex flex-row-reverse w-1/3 max-w-full bg-content2 hover:bg-content3 items-center",
+                  "justify-between cursor-pointer rounded-lg gap-2 p-2 border-2 border-transparent",
+                  "data-[selected=true]:border-zinc-700 data-[selected=true]:w-full data-[selected=true]:p-4"
+                ),
+                wrapper: "p-0 h-4 overflow-visible",
+                thumb: cn(
+                  "w-6 h-6 border-2 shadow-lg",
+                  "group-data-[hover=true]:border-primary",
+                  //selected
+                  "group-data-[selected=true]:ms-6",
+                  //pressed
+                  "group-data-[pressed=true]:w-7",
+                  "group-data-[selected]:group-data-[pressed]:ms-4"
+                ),
+              }}
+              onChange={field.onChange}
+              isSelected={field.value}
+              defaultSelected={field.value}
+            >
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm">New Issue Token</span>
+                </div>
+                {fieldState.error && (
+                  <p className="text-red-500">{fieldState.error.message}</p>
+                )}
+              </div>
+            </Switch>
+          )}
+        />
+        {!tokenNewIssue && (
+          <Controller
+            name="token.contract"
+            control={control}
+            rules={{
+              required: "Please enter a token contract",
+              validate: (value) => {
+                if (!value?.startsWith("0x")) {
+                  return "Invalid token contract";
+                }
+                return true;
+              },
+            }}
+            render={({ field, fieldState }) => (
+              <Input
+                {...field}
+                label="Contract"
+                placeholder="Enter your token contract"
+                labelPlacement="outside"
+                isInvalid={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
+                value={field.value?.toString()}
+              />
+            )}
+          />
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-2 mt-3 w-full">
         <Controller
           name="token.decimals"
           control={control}

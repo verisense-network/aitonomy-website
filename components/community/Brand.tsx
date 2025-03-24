@@ -14,7 +14,7 @@ import {
 } from "@heroui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import PaymentModal from "./modal/Payment";
-import { activateCommunity, getBalances } from "@/app/actions";
+import { activateCommunity } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
 import { isYouAddress } from "../thread/utils";
 import { usePaymentCommunityStore } from "@/stores/paymentCommunity";
@@ -25,6 +25,7 @@ import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
 import { useAppearanceStore } from "@/stores/appearance";
 import {
   CheckBadgeIcon,
+  CurrencyDollarIcon,
   ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 
@@ -91,7 +92,7 @@ export default function CommunityBrand({ communityId }: Props) {
       const communityCurrent = communityRef.current;
       console.log("community", communityCurrent, communityCurrent?.status);
       if (!communityCurrent) return;
-      if (communityCurrent.status !== CommunityStatus.Active) {
+      if (isCommunityStatus(CommunityStatus.WaitingTx)) {
         setIsActivatingLoading(true);
         const userWallet = getWalletConnect(wallet);
         if (retryCount < MAX_RETRY) {
@@ -161,7 +162,7 @@ export default function CommunityBrand({ communityId }: Props) {
       }
       forceUpdate();
     },
-    [forceUpdate, wallet]
+    [forceUpdate, isCommunityStatus, wallet]
   );
 
   const onSuccess = useCallback(
@@ -181,36 +182,36 @@ export default function CommunityBrand({ communityId }: Props) {
     [checkCommunityActivateStatus, community?.name, storePaymentSignature]
   );
 
-  const getBalance = useCallback(async () => {
-    if (!address || !communityId) return;
-    try {
-      const {
-        success,
-        data: balances,
-        message: errorMessage,
-      } = await getBalances({
-        accountId: address,
-        gt: communityId,
-        limit: 1,
-      });
-      if (!success || !balances) {
-        throw new Error(errorMessage);
-      }
-      const current = balances?.find(
-        (item) => item[0]?.id === hexToLittleEndian(communityId)
-      );
-      if (!current) {
-        setCurrentBalance(0);
-        return;
-      }
-      // const communityInfo = current[0];
-      const currentBalance = current[1];
-      setCurrentBalance(currentBalance);
-    } catch (e: any) {
-      console.error("getBalance error", e);
-      toast.error("Failed to get balance");
-    }
-  }, [address, communityId]);
+  // const getBalance = useCallback(async () => {
+  //   if (!address || !communityId) return;
+  //   try {
+  //     const {
+  //       success,
+  //       data: balances,
+  //       message: errorMessage,
+  //     } = await getBalances({
+  //       accountId: address,
+  //       gt: communityId,
+  //       limit: 1,
+  //     });
+  //     if (!success || !balances) {
+  //       throw new Error(errorMessage);
+  //     }
+  //     const current = balances?.find(
+  //       (item) => item[0]?.id === hexToLittleEndian(communityId)
+  //     );
+  //     if (!current) {
+  //       setCurrentBalance(0);
+  //       return;
+  //     }
+  //     // const communityInfo = current[0];
+  //     const currentBalance = current[1];
+  //     setCurrentBalance(currentBalance);
+  //   } catch (e: any) {
+  //     console.error("getBalance error", e);
+  //     toast.error("Failed to get balance");
+  //   }
+  // }, [address, communityId]);
 
   const retryWithStoreSignature = useCallback(async () => {
     const signature = usePaymentCommunityStore.getState().signature;
@@ -236,9 +237,9 @@ export default function CommunityBrand({ communityId }: Props) {
     console.log("res", res);
   }, [checkCommunityActivateStatus, community?.name]);
 
-  useEffect(() => {
-    getBalance();
-  }, [getBalance, communityId]);
+  // useEffect(() => {
+  //   getBalance();
+  // }, [getBalance, communityId]);
 
   useEffect(() => {
     (async () => {
@@ -275,6 +276,10 @@ export default function CommunityBrand({ communityId }: Props) {
                   (isCommunityStatus(CommunityStatus.Active) ? (
                     <Tooltip content="Active">
                       <CheckBadgeIcon className="ml-2 w-6 h-6 text-success" />
+                    </Tooltip>
+                  ) : isCommunityStatus(CommunityStatus.TokenIssued) ? (
+                    <Tooltip content="Token Issued">
+                      <CurrencyDollarIcon className="ml-2 w-6 h-6 text-warning" />
                     </Tooltip>
                   ) : (
                     <Tooltip content="Inactive">
