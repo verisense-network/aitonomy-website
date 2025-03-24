@@ -15,6 +15,7 @@ import {
   registry,
   PostCommentArg,
   SetAliasArg,
+  RewardPayload,
 } from "./type";
 import {
   Result,
@@ -41,9 +42,12 @@ export interface CreateCommunityArg {
   description: string;
   prompt: string;
   token: {
+    name: string;
     symbol: string;
     total_issuance: number;
     decimals: number;
+    new_issue: boolean;
+    contract: string | null;
     image: string | null;
   };
   llm_name: LLmName;
@@ -326,6 +330,57 @@ export async function getBalancesRpc(
   }
 }
 
+export interface GetRewardsArg {
+  account_id: Uint8Array;
+}
+
+export type GetRewardsResponse = {
+  payload: Uint8Array;
+  signature: Uint8Array;
+  agent_contract: AccountId;
+};
+
+export async function getRewardsRpc(
+  nucleusId: string,
+  args: GetRewardsArg
+): Promise<GetRewardsResponse[]> {
+  console.log("args", args);
+  /**
+    account_id: AccountId,
+   */
+  const payload = new AccountId(registry, args.account_id).toHex();
+
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_get", [
+      nucleusId,
+      "get_reward_payloads",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * Vec<RewardPayload>
+     */
+    const ResultStruct = Vec.with(RewardPayload);
+
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    console.log("decoded", decoded);
+
+    if (!decoded) {
+      throw new Error("Failed to decode rewards");
+    }
+    const result = decoded.toJSON() as unknown as GetRewardsResponse[];
+    return result;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+}
+
 export interface GetAccountInfoArg {
   account_id: Uint8Array;
 }
@@ -334,6 +389,7 @@ export interface GetAccountInfoResponse {
   nonce: number;
   address: string;
   alias?: string;
+  max_invite_block: number;
   last_post_at: number;
 }
 

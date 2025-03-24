@@ -15,6 +15,8 @@ import {
   GetBalancesResponse,
   getBalancesRpc,
   getCommunityRpc,
+  GetRewardsResponse,
+  getRewardsRpc,
   SetAliasArg,
   setAliasRpc,
 } from "@/utils/aitonomy";
@@ -244,6 +246,43 @@ export async function getBalances(data: GetBalancesParams) {
     };
   } catch (e: any) {
     console.error("getBalances error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+interface GetRewardsParams {
+  accountId: string;
+}
+
+export async function getRewards(data: GetRewardsParams) {
+  try {
+    let accountId: Uint8Array = new Uint8Array();
+    if (!data.accountId) {
+      return {
+        success: true,
+        data: [] as GetRewardsResponse[],
+      };
+    }
+    if (CHAIN === "BSC") {
+      accountId = ethers.toBeArray(data.accountId);
+    } else if (CHAIN === "SOL") {
+      accountId = bs58.decode(data.accountId);
+    }
+    const threadArgs = {
+      account_id: accountId,
+    };
+
+    const res = await getRewardsRpc(NUCLEUS_ID, threadArgs);
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("getRewards error", e);
     return {
       success: false,
       message: e.message,
