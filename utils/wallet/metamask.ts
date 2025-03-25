@@ -8,6 +8,8 @@ import { MetaMaskSDK, SDKProvider } from "@metamask/sdk";
 import { WalletId } from "./id";
 import { useUserStore } from "@/stores/user";
 import { isDev } from "../tools";
+import { useAppearanceStore } from "@/stores/appearance";
+import { toast } from "react-toastify";
 
 const bscNetworkId = "0x38";
 export class MetamaskConnect {
@@ -53,9 +55,8 @@ export class MetamaskConnect {
     if (!provider) {
       throw new Error("MetaMask provider not found");
     }
-    const signer = await provider.getSigner();
 
-    this.address = await signer.getAddress();
+    this.address = address;
     this.publicKey = ethers.toBeArray(this.address);
 
     const chainId = MetamaskConnect.wallet!.getChainId();
@@ -100,7 +101,10 @@ export class MetamaskConnect {
       return false;
     }
 
+    let toastId;
     if (!MetamaskConnect.sdk?.isInitialized()) {
+      toastId = toast.loading("🦊Metamask connect init");
+      const isMobile = useAppearanceStore.getState().isMobile;
       MetamaskConnect.connecting = true;
       MetamaskConnect.sdk = new MetaMaskSDK({
         dappMetadata: {
@@ -112,6 +116,7 @@ export class MetamaskConnect {
         useDeeplink: true,
         checkInstallationImmediately: true,
         checkInstallationOnAllCalls: true,
+        preferDesktop: !isMobile,
         i18nOptions: {
           enabled: true,
         },
@@ -123,11 +128,25 @@ export class MetamaskConnect {
         },
       });
       await MetamaskConnect.sdk.init();
+      toast.done(toastId);
     }
 
     if (!MetamaskConnect.wallet?.isConnected()) {
+      const connectMsg = "🦊Metamask wallet connect";
+      if (toastId) {
+        toast.update(toastId, {
+          render: connectMsg,
+        });
+      } else {
+        toastId = toast.loading(connectMsg);
+      }
       this.accounts = await MetamaskConnect.sdk!.connect();
       MetamaskConnect.wallet = MetamaskConnect.sdk!.getProvider();
+      toast.update(toastId, {
+        render: "🦊Metamask connected",
+        isLoading: false,
+        autoClose: 1000,
+      });
     }
 
     await this.switchChain();

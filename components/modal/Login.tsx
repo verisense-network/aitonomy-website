@@ -1,6 +1,7 @@
 import { Key, useCallback, useState } from "react";
 import {
   Alert,
+  Button,
   Card,
   CardBody,
   CardFooter,
@@ -15,10 +16,9 @@ import { connectToWallet } from "@/utils/wallet/connect";
 import { WalletId } from "@/utils/wallet/id";
 import { useUserStore } from "@/stores/user";
 import { CHAIN } from "@/utils/chain";
-import MetamaskLogo from "./icons/metamask-icon.svg";
-import OKXLogo from "./icons/OKX_logo.svg";
-import Image from "next/image";
+import WalletIcon from "@/components/icons/WalletIcon";
 import { useAppearanceStore } from "@/stores/appearance";
+import Link from "next/link";
 
 const isSolChain = CHAIN === "SOL";
 
@@ -29,6 +29,7 @@ const SOL_WALLETS = [
     id: WalletId.PHANTOM,
     title: "Phantom",
     icon: null,
+    downloadUrl: "https://phantom.com/download",
   },
 ];
 
@@ -36,7 +37,8 @@ const BSC_WALLETS = [
   {
     id: WalletId.METAMASK,
     title: "MetaMask",
-    icon: MetamaskLogo,
+    icon: "metamask",
+    downloadUrl: "https://metamask.io/download",
   },
 ];
 
@@ -47,14 +49,16 @@ const WALLETS = [
         {
           id: WalletId.OKX_APP,
           title: "OKX App",
-          icon: OKXLogo,
+          icon: "okx",
+          downloadUrl: "https://www.okx.com/download",
         },
       ]
     : [
         {
           id: WalletId.OKX,
           title: "OKX",
-          icon: OKXLogo,
+          icon: "okx",
+          downloadUrl: "https://www.okx.com/download",
         },
       ]),
 ];
@@ -116,10 +120,11 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                   <CardBody className="p-5">
                     <div className="flex space-x-2 items-center">
                       {wallet?.icon && (
-                        <Image
-                          className="w-6 h-6"
-                          src={wallet.icon}
+                        <WalletIcon
+                          name={wallet.icon}
                           alt={wallet.title}
+                          width={24}
+                          height={24}
                         />
                       )}
                       <span className="ml-2">{wallet.title}</span>
@@ -130,14 +135,22 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                   </CardBody>
                   {walletError?.walletId === wallet.id && (
                     <CardFooter>
-                      <Alert color="danger">{walletError.errorMessage}</Alert>
+                      <Alert color="danger">
+                        {walletError.errorMessage}{" "}
+                        {walletError.errorMessage?.includes("not found") && (
+                          <Link
+                            className="text-sky-200"
+                            href={wallet.downloadUrl}
+                            target="_blank"
+                          >
+                            Download
+                          </Link>
+                        )}
+                      </Alert>
                     </CardFooter>
                   )}
                 </Card>
               ))}
-              <Alert color="default" className="text-sm" variant="flat">
-                Please disable other EVM chain wallets before connecting.
-              </Alert>
             </ModalBody>
             <ModalFooter />
           </>
