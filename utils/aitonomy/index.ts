@@ -62,8 +62,15 @@ export async function createCommunityRpc(
 ): Promise<string> {
   const rpcArgs = {
     ...signature,
-    payload: args,
+    payload: {
+      ...args,
+      token: {
+        ...args.token,
+        contract: args.token.contract ? ` ${args.token.contract}` : null,
+      },
+    },
   };
+
   console.log("rpcArgs", rpcArgs);
 
   const payload = new CreateCommunityArg(registry, rpcArgs).toHex();
