@@ -388,6 +388,22 @@ export const RewardPayload = Struct.with({
   agent_contract: AccountId,
 });
 
+/**
+ * 
+    pub struct InviteUserArgs {
+        pub community: String,
+        pub tx: String,
+        pub invitee: AccountId,
+    }
+ */
+export const InviteUserPayload = Struct.with({
+  community: Text,
+  tx: Text,
+  invitee: AccountId,
+});
+
+export const InviteUserArg = createWithArgs(InviteUserPayload);
+
 registry.register({
   EcdsaSignature,
   Account,
@@ -405,4 +421,6 @@ registry.register({
   AccountData,
   SetAliasArg,
   RewardPayload,
+  InviteUserPayload,
+  InviteUserArg,
 });

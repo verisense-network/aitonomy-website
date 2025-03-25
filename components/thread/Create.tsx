@@ -57,7 +57,6 @@ export default function ThreadCreate({
     },
   });
 
-  const searchCommunityRef = useRef(null);
   const [searchCommunity, setSearchCommunity] = useState("");
 
   const { data: communitiesData, isLoading } = useMeilisearch(
@@ -151,7 +150,6 @@ export default function ThreadCreate({
         render={({ field, fieldState }) => (
           <Autocomplete
             {...field}
-            ref={searchCommunityRef}
             label="Community Name"
             labelPlacement="outside"
             placeholder="Enter your community name"

@@ -4,6 +4,7 @@ import uploadImageWithPostImages from "@/lib/uploadImage";
 import {
   ActivateCommunityArg,
   activateCommunityRpc,
+  checkInviteRpc,
   CreateCommentArg,
   createCommentRpc,
   CreateCommunityArg,
@@ -15,8 +16,11 @@ import {
   GetBalancesResponse,
   getBalancesRpc,
   getCommunityRpc,
+  getInviteFeeRpc,
   GetRewardsResponse,
   getRewardsRpc,
+  InviteUserArg,
+  inviteUserRpc,
   SetAliasArg,
   setAliasRpc,
 } from "@/utils/aitonomy";
@@ -292,9 +296,8 @@ export async function getRewards(data: GetRewardsParams) {
 
 export async function setAlias(data: SetAliasArg, signature: Signature) {
   try {
-    const threadArgs = data;
-
-    const res = await setAliasRpc(NUCLEUS_ID, threadArgs, signature);
+    const args = data;
+    const res = await setAliasRpc(NUCLEUS_ID, args, signature);
 
     return {
       success: true,
@@ -319,6 +322,74 @@ export async function getCommunity(id: string) {
     };
   } catch (e: any) {
     console.error("getCommunity error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+export async function inviteUser(data: InviteUserArg, signature: Signature) {
+  try {
+    const args = data;
+    const res = await inviteUserRpc(NUCLEUS_ID, args, signature);
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("getCommunity error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+export async function getInviteFee() {
+  try {
+    const args = "";
+    const res = await getInviteFeeRpc(NUCLEUS_ID, args);
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("getCommunity error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+interface CheckInviteParams {
+  accountId: string;
+  communityId: string;
+}
+
+export async function checkInvite(data: CheckInviteParams) {
+  try {
+    let accountId: Uint8Array = new Uint8Array();
+    if (CHAIN === "BSC") {
+      accountId = ethers.toBeArray(data.accountId);
+    } else if (CHAIN === "SOL") {
+      accountId = bs58.decode(data.accountId);
+    }
+    const args = {
+      account_id: accountId,
+      community_id: hexToBytes(data.communityId),
+    };
+
+    const res = await checkInviteRpc(NUCLEUS_ID, args);
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("getBalances error", e);
     return {
       success: false,
       message: e.message,
