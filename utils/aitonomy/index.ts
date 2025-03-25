@@ -16,6 +16,7 @@ import {
   PostCommentArg,
   SetAliasArg,
   RewardPayload,
+  InviteUserArg,
 } from "./type";
 import {
   Result,
@@ -26,6 +27,7 @@ import {
   Null,
   Vec,
   u64,
+  u128,
 } from "@polkadot/types-codec";
 
 interface Signature {
@@ -564,5 +566,134 @@ export async function getCommunityRpc(
   } catch (e) {
     console.error(e);
     throw e;
+  }
+}
+
+export interface InviteUserArg {
+  community: string;
+  tx: string;
+  invitee: string;
+}
+
+export async function inviteUserRpc(
+  nucleusId: string,
+  args: InviteUserArg,
+  signature: Signature
+): Promise<string> {
+  console.log("args", args);
+  const rpcArgs = {
+    ...signature,
+    payload: args,
+  };
+  const payload = new InviteUserArg(registry, rpcArgs).toHex();
+
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_post", [
+      nucleusId,
+      "invite_user",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * Result<(), String>
+     */
+    const ResultStruct = Result.with({
+      Ok: Null,
+      Err: Text,
+    });
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    if (decoded.isErr) {
+      throw new Error(decoded.toString());
+    }
+    const result = decoded.asOk.toHuman() as any;
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export async function getInviteFeeRpc(
+  nucleusId: string,
+  args: string
+): Promise<bigint> {
+  const payload = new Text(registry, args).toHex();
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_get", [
+      nucleusId,
+      "get_invite_fee",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * u128
+     */
+    const ResultStruct = u128;
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    const result = decoded.toBigInt();
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export interface checkInviteArg {
+  community_id: Uint8Array;
+  account_id: Uint8Array;
+}
+export async function checkInviteRpc(
+  nucleusId: string,
+  args: checkInviteArg
+): Promise<string> {
+  console.log("args", args);
+  /**
+   * (community_id: CommunityId, user: AccountId)
+   */
+  const tuple = new Tuple(
+    registry,
+    [CommunityId, AccountId],
+    [args.community_id, args.account_id]
+  );
+  const payload = tuple.toHex();
+
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_get", [
+      nucleusId,
+      "check_invite",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * Result<(), String>
+     */
+    const ResultStruct = Result.with({
+      Ok: Null,
+      Err: Text,
+    });
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    if (decoded.isErr) {
+      throw new Error(decoded.toString());
+    }
+    const result = decoded.asOk.toHuman() as any;
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
   }
 }

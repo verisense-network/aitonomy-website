@@ -13,7 +13,7 @@ import {
   Tooltip,
 } from "@heroui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import PaymentModal from "./modal/Payment";
+import PaymentModal from "../modal/Payment";
 import { activateCommunity } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
 import { isYouAddress } from "../thread/utils";
@@ -27,7 +27,9 @@ import {
   CheckBadgeIcon,
   CurrencyDollarIcon,
   ExclamationCircleIcon,
+  UserPlusIcon,
 } from "@heroicons/react/24/outline";
+import InviteUser from "../user/InviteUser";
 
 interface Props {
   communityId: string;
@@ -38,8 +40,8 @@ const MAX_RETRY = 15;
 export default function CommunityBrand({ communityId }: Props) {
   const [isOpenPaymentModal, setIsOpenPaymentModal] = useState(false);
   const [isActivatingLoading, setIsActivatingLoading] = useState(false);
-  const [currentBalance, setCurrentBalance] = useState<number | null>(null);
-  const { isLogin, address, wallet } = useUserStore();
+  const [isOpenInviteModal, setIsOpenInviteModal] = useState(false);
+  const { isLogin, wallet } = useUserStore();
   const { isMobile } = useAppearanceStore();
   const {
     setSignature: storePaymentSignature,
@@ -57,9 +59,13 @@ export default function CommunityBrand({ communityId }: Props) {
   );
 
   const community = data?.hits[0];
+  const communityRef = useRef(community);
 
   const amount = community?.status?.WaitingTx;
   const viewAmount = amount ? formatReadableAmount(amount) : "";
+
+  const isLoaded = !isLoading && communityRef.current;
+  const isPrivateCommunity = community?.private;
 
   const isCommunityStatus = useCallback(
     (status: CommunityStatus) =>
@@ -78,8 +84,6 @@ export default function CommunityBrand({ communityId }: Props) {
   const toPayment = useCallback(() => {
     setIsOpenPaymentModal(true);
   }, []);
-
-  const communityRef = useRef(community);
 
   useEffect(() => {
     communityRef.current = community;
@@ -144,17 +148,18 @@ export default function CommunityBrand({ communityId }: Props) {
             autoClose: 2000,
           });
         }
-      } else if (isCommunityStatus(CommunityStatus.Active)) {
+      } else if (isCommunityStatus(CommunityStatus.TokenIssued)) {
         forceUpdate();
         setTimeout(() => {
           setIsActivatingLoading(false);
-          console.log("Community is now active!");
+          console.log("Token is issued!");
           toast.update(toastId, {
-            render: "Community is now active!",
+            render: "Token is now issued, community is activating...",
             type: "success",
             isLoading: false,
             autoClose: 2000,
           });
+          forceUpdate();
         }, 2000);
       }
       forceUpdate();
@@ -162,7 +167,7 @@ export default function CommunityBrand({ communityId }: Props) {
     [forceUpdate, isCommunityStatus, wallet]
   );
 
-  const onSuccess = useCallback(
+  const onActivateSuccess = useCallback(
     async (txHash: string, toastId: Id) => {
       console.log("onSuccess", txHash);
       const payload = { community: community?.name, signature: txHash };
@@ -225,6 +230,11 @@ export default function CommunityBrand({ communityId }: Props) {
     })();
   }, [communityId, data, forceUpdate, isLoading, isValidating]);
 
+  const onInviteSuccess = useCallback(() => {
+    setIsOpenInviteModal(false);
+    toast.success("Invite successful");
+  }, []);
+
   return (
     <>
       <Card className="m-2 p-2 md:p-4 min-h-40">
@@ -236,10 +246,9 @@ export default function CommunityBrand({ communityId }: Props) {
                 <div className="flex flex-wrap space-x-4 items-center">
                   <h1 className="flex items-center text-2xl font-bold">
                     {community?.name}
-                    {!isLoading &&
-                      communityRef.current &&
+                    {isLoaded &&
                       (isCommunityStatus(CommunityStatus.Active) ? (
-                        <Tooltip content="Active">
+                        <Tooltip content="Activated">
                           <CheckBadgeIcon className="ml-2 w-6 h-6 text-success" />
                         </Tooltip>
                       ) : isCommunityStatus(CommunityStatus.TokenIssued) ? (
@@ -251,6 +260,14 @@ export default function CommunityBrand({ communityId }: Props) {
                           <ExclamationCircleIcon className="ml-2 w-6 h-6 text-danger" />
                         </Tooltip>
                       ))}
+                    {isLoaded && isPrivateCommunity && (
+                      <Tooltip content="Invite User">
+                        <UserPlusIcon
+                          className="ml-2 w-6 h-6 text-sky-200"
+                          onClick={() => setIsOpenInviteModal(true)}
+                        />
+                      </Tooltip>
+                    )}
                   </h1>
                   {shouldShowActivateCommunity && Number(viewAmount) > 0 && (
                     <div className="flex">
@@ -327,7 +344,6 @@ export default function CommunityBrand({ communityId }: Props) {
                     name={community?.token_info?.symbol}
                   />
                   <div className="flex items-center mt-1 space-x-1 text-md">
-                    <span>{currentBalance}</span>
                     <span className="text-sm">
                       {community?.token_info?.symbol}
                     </span>
@@ -347,8 +363,17 @@ export default function CommunityBrand({ communityId }: Props) {
         onClose={() => setIsOpenPaymentModal(false)}
         toAddress={community?.agent_pubkey}
         amount={amount}
-        onSuccess={onSuccess}
+        onSuccess={onActivateSuccess}
       />
+      {isOpenInviteModal && (
+        <InviteUser
+          isOpen={isOpenInviteModal}
+          defaultCommunity={community?.name}
+          agentPubkey={community?.agent_pubkey}
+          onClose={() => setIsOpenInviteModal(false)}
+          onSuccess={() => onInviteSuccess()}
+        />
+      )}
     </>
   );
 }
