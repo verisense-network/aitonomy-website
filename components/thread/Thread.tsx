@@ -10,6 +10,7 @@ import {
   CardFooter,
   CardHeader,
   Spinner,
+  Tooltip,
   User,
 } from "@heroui/react";
 import { useEffect, useState } from "react";
@@ -20,6 +21,7 @@ import Link from "next/link";
 import ShareButtons from "../share/ShareButtons";
 import { getAccountInfo } from "@/app/actions";
 import { GetAccountInfoResponse } from "@/utils/aitonomy";
+import TooltipTime from "../formatTime/TooltipTime";
 
 export default function ThreadView({ threadId }: { threadId: string }) {
   const { data, isLoading, isValidating, forceUpdate } = useMeilisearch(
@@ -127,7 +129,7 @@ export default function ThreadView({ threadId }: { threadId: string }) {
                 </Link>
               </div>
               <div className="flex space-x-2 items-center">
-                <div>{formatTimestamp(threadData.created_time)}</div>
+                <TooltipTime time={threadData.created_time} />
               </div>
             </CardFooter>
           </>

@@ -33,13 +33,14 @@ export function hexToLittleEndian(hex: string): string {
 
 export function formatTimestamp(
   timestamp: number,
+  relative: boolean = true,
   format: string = "YYYY-MM-DD HH:mm"
 ) {
   const date = dayjs.unix(timestamp);
   const now = dayjs();
   const diff = now.diff(date, "day");
 
-  if (diff < 7) {
+  if (diff < 7 && relative) {
     return date.fromNow();
   }
 

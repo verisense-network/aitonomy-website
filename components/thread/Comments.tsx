@@ -25,6 +25,7 @@ import {
   HomeIcon,
 } from "@heroicons/react/24/outline";
 import { isAgentAddress } from "./utils";
+import TooltipTime from "../formatTime/TooltipTime";
 
 interface Props {
   threadId: string;
@@ -149,7 +150,7 @@ export default function ThreadComments({
                 </Link>
               </div>
               <div className="flex space-x-2 items-center">
-                <div>{formatTimestamp(comment.created_time)}</div>
+                <TooltipTime time={comment.created_time} />
               </div>
             </CardFooter>
           </Card>

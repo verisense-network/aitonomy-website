@@ -19,6 +19,7 @@ import { parseMarkdown } from "@/utils/markdown";
 import truncateHtml from "truncate-html";
 import { decompressString } from "@/utils/compressString";
 import Link from "next/link";
+import TooltipTime from "../formatTime/TooltipTime";
 
 export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full px-1 py-2 rounded-small">{children}</div>
@@ -126,7 +127,7 @@ export default function Threads({
                       name={hit.community_name}
                     />
                     <span className="text-gray-500">•</span>
-                    <div>{formatTimestamp(hit.created_time)}</div>
+                    <TooltipTime time={hit.created_time} />
                   </div>
                 </CardHeader>
                 <CardBody>
