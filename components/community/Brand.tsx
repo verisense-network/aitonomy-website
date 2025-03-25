@@ -62,13 +62,11 @@ export default function CommunityBrand({ communityId }: Props) {
   const viewAmount = amount ? formatReadableAmount(amount) : "";
 
   const isCommunityStatus = useCallback(
-    (status: CommunityStatus) => {
-      return (
-        community &&
-        (community?.status?.[status] || community?.status === status)
-      );
-    },
-    [community]
+    (status: CommunityStatus) =>
+      communityRef.current &&
+      (communityRef.current?.status?.[status] ||
+        communityRef.current?.status === status),
+    []
   );
 
   const hasStoredSignature =
@@ -90,7 +88,6 @@ export default function CommunityBrand({ communityId }: Props) {
   const checkCommunityActivateStatus = useCallback(
     async (txHash: string, toastId: Id, retryCount: number = 0) => {
       const communityCurrent = communityRef.current;
-      console.log("community", communityCurrent, communityCurrent?.status);
       if (!communityCurrent) return;
       if (isCommunityStatus(CommunityStatus.WaitingTx)) {
         setIsActivatingLoading(true);
@@ -147,7 +144,7 @@ export default function CommunityBrand({ communityId }: Props) {
             autoClose: 2000,
           });
         }
-      } else {
+      } else if (isCommunityStatus(CommunityStatus.Active)) {
         forceUpdate();
         setTimeout(() => {
           setIsActivatingLoading(false);
@@ -182,37 +179,6 @@ export default function CommunityBrand({ communityId }: Props) {
     [checkCommunityActivateStatus, community?.name, storePaymentSignature]
   );
 
-  // const getBalance = useCallback(async () => {
-  //   if (!address || !communityId) return;
-  //   try {
-  //     const {
-  //       success,
-  //       data: balances,
-  //       message: errorMessage,
-  //     } = await getBalances({
-  //       accountId: address,
-  //       gt: communityId,
-  //       limit: 1,
-  //     });
-  //     if (!success || !balances) {
-  //       throw new Error(errorMessage);
-  //     }
-  //     const current = balances?.find(
-  //       (item) => item[0]?.id === hexToLittleEndian(communityId)
-  //     );
-  //     if (!current) {
-  //       setCurrentBalance(0);
-  //       return;
-  //     }
-  //     // const communityInfo = current[0];
-  //     const currentBalance = current[1];
-  //     setCurrentBalance(currentBalance);
-  //   } catch (e: any) {
-  //     console.error("getBalance error", e);
-  //     toast.error("Failed to get balance");
-  //   }
-  // }, [address, communityId]);
-
   const retryWithStoreSignature = useCallback(async () => {
     const signature = usePaymentCommunityStore.getState().signature;
     setIsActivatingLoading(true);
@@ -236,10 +202,6 @@ export default function CommunityBrand({ communityId }: Props) {
     checkCommunityActivateStatus(signature, toastId, 0);
     console.log("res", res);
   }, [checkCommunityActivateStatus, community?.name]);
-
-  // useEffect(() => {
-  //   getBalance();
-  // }, [getBalance, communityId]);
 
   useEffect(() => {
     (async () => {
@@ -270,84 +232,92 @@ export default function CommunityBrand({ communityId }: Props) {
           <div className="flex justify-between items-center w-full">
             <div className="flex flex-wrap space-x-4 items-center">
               <Avatar name={community?.name} src={community?.logo} size="lg" />
-              <h1 className="flex items-center text-2xl font-bold">
-                {community?.name}
-                {!isLoading &&
-                  (isCommunityStatus(CommunityStatus.Active) ? (
-                    <Tooltip content="Active">
-                      <CheckBadgeIcon className="ml-2 w-6 h-6 text-success" />
-                    </Tooltip>
-                  ) : isCommunityStatus(CommunityStatus.TokenIssued) ? (
-                    <Tooltip content="Token Issued">
-                      <CurrencyDollarIcon className="ml-2 w-6 h-6 text-warning" />
-                    </Tooltip>
-                  ) : (
-                    <Tooltip content="Inactive">
-                      <ExclamationCircleIcon className="ml-2 w-6 h-6 text-danger" />
-                    </Tooltip>
-                  ))}
-              </h1>
-              {shouldShowActivateCommunity && Number(viewAmount) > 0 && (
-                <div className="flex">
-                  <Chip
-                    color="warning"
-                    size={isMobile ? "sm" : "lg"}
-                    classNames={{
-                      base: "h-9",
-                      content: "flex space-x-2 items-center",
-                    }}
-                  >
-                    <span>
-                      Waiting tx {viewAmount} {VIEW_UNIT}
-                    </span>
+              <div className="flex flex-col">
+                <div className="flex flex-wrap space-x-4 items-center">
+                  <h1 className="flex items-center text-2xl font-bold">
+                    {community?.name}
                     {!isLoading &&
-                      (hasStoredSignature ? (
-                        <Button
-                          variant="shadow"
-                          size="sm"
-                          color="primary"
-                          onPress={retryWithStoreSignature}
-                        >
-                          Retry
-                        </Button>
+                      communityRef.current &&
+                      (isCommunityStatus(CommunityStatus.Active) ? (
+                        <Tooltip content="Active">
+                          <CheckBadgeIcon className="ml-2 w-6 h-6 text-success" />
+                        </Tooltip>
+                      ) : isCommunityStatus(CommunityStatus.TokenIssued) ? (
+                        <Tooltip content="Token Issued">
+                          <CurrencyDollarIcon className="ml-2 w-6 h-6 text-warning" />
+                        </Tooltip>
                       ) : (
-                        <Button
-                          variant="shadow"
-                          size="sm"
-                          color="primary"
-                          onPress={toPayment}
-                        >
-                          Payment
-                        </Button>
+                        <Tooltip content="Inactive">
+                          <ExclamationCircleIcon className="ml-2 w-6 h-6 text-danger" />
+                        </Tooltip>
                       ))}
-                  </Chip>
-                </div>
-              )}
-              {shouldShowActivateCommunity &&
-                isCommunityStatus(CommunityStatus.CreateFailed) && (
-                  <Chip
-                    color="danger"
-                    size="lg"
-                    classNames={{
-                      base: "h-9",
-                      content: "flex space-x-2 items-center",
-                    }}
-                  >
-                    <span>Create Failed</span>
-                    {!isLoading && hasStoredSignature && (
-                      <Button
-                        variant="shadow"
-                        size="sm"
-                        color="primary"
-                        onPress={retryWithStoreSignature}
+                  </h1>
+                  {shouldShowActivateCommunity && Number(viewAmount) > 0 && (
+                    <div className="flex">
+                      <Chip
+                        color="warning"
+                        size={isMobile ? "sm" : "lg"}
+                        classNames={{
+                          base: "h-9",
+                          content: "flex space-x-2 items-center",
+                        }}
                       >
-                        Retry
-                      </Button>
+                        <span>
+                          Waiting tx {viewAmount} {VIEW_UNIT}
+                        </span>
+                        {!isLoading &&
+                          (hasStoredSignature ? (
+                            <Button
+                              variant="shadow"
+                              size="sm"
+                              color="primary"
+                              onPress={retryWithStoreSignature}
+                            >
+                              Retry
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="shadow"
+                              size="sm"
+                              color="primary"
+                              onPress={toPayment}
+                            >
+                              Payment
+                            </Button>
+                          ))}
+                      </Chip>
+                    </div>
+                  )}
+                  {shouldShowActivateCommunity &&
+                    isCommunityStatus(CommunityStatus.CreateFailed) && (
+                      <Chip
+                        color="danger"
+                        size="lg"
+                        classNames={{
+                          base: "h-9",
+                          content: "flex space-x-2 items-center",
+                        }}
+                      >
+                        <span>Create Failed</span>
+                        {!isLoading && hasStoredSignature && (
+                          <Button
+                            variant="shadow"
+                            size="sm"
+                            color="primary"
+                            onPress={retryWithStoreSignature}
+                          >
+                            Retry
+                          </Button>
+                        )}
+                      </Chip>
                     )}
-                  </Chip>
-                )}
-              {isLoading && <Spinner />}
-              {isActivatingLoading && <Spinner title="Activating..." />}
+                  {isLoading && <Spinner />}
+                  {isActivatingLoading && <Spinner title="Activating..." />}
+                </div>
+                <div>
+                  <p className="text-sm text-zinc-400">{community?.slug}</p>
+                </div>
+              </div>
             </div>
             <div className="flex items-center space-x-2">
               {isCommunityStatus(CommunityStatus.Active) && (

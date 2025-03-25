@@ -4,7 +4,11 @@ import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX, TOKEN_REGEX } from "@/utils/aitonomy/tools";
 import { CreateCommunityPayload, LLmName } from "@/utils/aitonomy/type";
 import { isDev } from "@/utils/tools";
-import { PhotoIcon, QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
+import {
+  PhotoIcon,
+  QuestionMarkCircleIcon,
+  ShieldCheckIcon,
+} from "@heroicons/react/24/outline";
 import {
   Accordion,
   AccordionItem,
@@ -282,8 +286,7 @@ export default function CommunityCreate({ onClose }: Props) {
           )}
         />
       </div>
-      {/*  TODO: enable private switch */}
-      {/* <Controller
+      <Controller
         name="private"
         control={control}
         render={({ field, fieldState }) => (
@@ -322,7 +325,7 @@ export default function CommunityCreate({ onClose }: Props) {
             </div>
           </Switch>
         )}
-      /> */}
+      />
       <Controller
         name="slug"
         control={control}
