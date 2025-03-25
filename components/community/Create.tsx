@@ -149,14 +149,21 @@ export default function CommunityCreate({ onClose }: Props) {
         setIsLoading(true);
         console.log("data", data);
 
-        const signature = await signPayload(data, CreateCommunityPayload);
+        const payload = {
+          ...data,
+          token: {
+            ...data.token,
+            contract: data.token.contract ? ` ${data.token.contract}` : null,
+          },
+        };
 
-        console.log("signature", signature);
+        const signature = await signPayload(payload, CreateCommunityPayload);
+
         const {
           success,
           data: communityId,
           message,
-        } = await createCommunity(data, signature);
+        } = await createCommunity(payload, signature);
         if (!success) {
           if (message?.includes("LLM key not found")) {
             setLlmAccordionSelectedKeys(["llm"]);
