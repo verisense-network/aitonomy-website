@@ -260,7 +260,7 @@ export default function CommunityBrand({ communityId }: Props) {
                           <ExclamationCircleIcon className="ml-2 w-6 h-6 text-danger" />
                         </Tooltip>
                       ))}
-                    {isLoaded && isPrivateCommunity && (
+                    {isLoaded && isPrivateCommunity && isLogin && (
                       <Tooltip content="Invite User">
                         <UserPlusIcon
                           className="ml-2 w-6 h-6 text-sky-200"
