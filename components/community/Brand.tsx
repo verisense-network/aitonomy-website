@@ -70,12 +70,10 @@ export default function CommunityBrand({ communityId }: Props) {
   const isLoaded = !isLoading && c;
   const isPrivateCommunity = c?.private;
 
-  const isCommunityStatus = useCallback(
-    (status: CommunityStatus) => {
-      return c && (c?.status?.[status] || c?.status === status);
-    },
-    [c]
-  );
+  const isCommunityStatus = useCallback((status: CommunityStatus) => {
+    const cRef = communityRef.current;
+    return cRef && (cRef?.status?.[status] || cRef?.status === status);
+  }, []);
 
   const hasStoredSignature = c?.name === storedCommunity && storedSignature;
 
@@ -83,8 +81,6 @@ export default function CommunityBrand({ communityId }: Props) {
 
   const shouldShowInviteUser =
     shouldShowActivateCommunity && isPrivateCommunity;
-
-  console.log("shouldShowInviteUser", shouldShowInviteUser);
 
   const toPayment = useCallback(() => {
     setIsOpenPaymentModal(true);
@@ -97,14 +93,10 @@ export default function CommunityBrand({ communityId }: Props) {
   const checkCommunityActivateStatus = useCallback(
     async (txHash: string, toastId: Id, retryCount: number = 0) => {
       if (!c) return;
-      console.log("c", c);
-      console.log(
-        "isCommunityStatus",
-        isCommunityStatus(CommunityStatus.WaitingTx),
-        isCommunityStatus(CommunityStatus.TokenIssued),
-        isCommunityStatus(CommunityStatus.Active)
-      );
-      if (isCommunityStatus(CommunityStatus.WaitingTx)) {
+      if (
+        isCommunityStatus(CommunityStatus.WaitingTx) ||
+        isCommunityStatus(CommunityStatus.TokenIssued)
+      ) {
         setIsActivatingLoading(true);
         const userWallet = getWalletConnect(wallet);
         if (retryCount < MAX_RETRY) {
@@ -159,10 +151,7 @@ export default function CommunityBrand({ communityId }: Props) {
             autoClose: 2000,
           });
         }
-      } else if (
-        isCommunityStatus(CommunityStatus.TokenIssued) ||
-        isCommunityStatus(CommunityStatus.Active)
-      ) {
+      } else if (isCommunityStatus(CommunityStatus.Active)) {
         forceUpdate();
         setTimeout(() => {
           setIsActivatingLoading(false);
