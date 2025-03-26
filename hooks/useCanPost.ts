@@ -7,10 +7,15 @@ export default function useCanPost(community?: any) {
   const [canPost, setCanPost] = useState(true);
 
   useEffect(() => {
-    if (!isLogin || !community?.private || !community?.id) {
+    const hasCommunityAndValid = !!(
+      community &&
+      (!community.private || !community.id)
+    );
+    if (!isLogin || !hasCommunityAndValid) {
       setCanPost(true);
       return;
     }
+
     (async () => {
       try {
         if (!address) return;
