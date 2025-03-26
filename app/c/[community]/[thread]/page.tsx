@@ -34,7 +34,6 @@ export default function ThreadPage({ params }: Props): React.ReactNode {
       <ThreadView threadId={computedThreadId} />
       <ThreadComments
         threadId={computedThreadId}
-        communityAgentPubkey={communityAgentPubkey}
         community={community as Community}
       />
     </div>

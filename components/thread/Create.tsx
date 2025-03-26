@@ -1,4 +1,4 @@
-import { createThread, CreateThreadForm } from "@/app/actions";
+import { checkInvite, createThread, CreateThreadForm } from "@/app/actions";
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { CreateThreadArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
@@ -26,9 +26,11 @@ import {
   mentionsToAccountId,
 } from "@/utils/markdown";
 import { compressString } from "@/utils/compressString";
-import { Lock } from "../Lock";
+import LockCountdown from "../lock/LockCountdown";
 import { useUserStore } from "@/stores/user";
 import { updateAccountInfo } from "@/utils/user";
+import LockNotAllowedToPost from "../lock/LockNotAllowedToPost";
+import useCanPost from "@/hooks/useCanPost";
 
 const ContentEditor = dynamic(() => import("../mdxEditor/ContentEditor"), {
   ssr: false,
@@ -47,7 +49,7 @@ export default function ThreadCreate({
 }: Props) {
   const router = useRouter();
   const { lastPostAt } = useUserStore();
-  const { control, handleSubmit } = useForm<CreateThreadForm>({
+  const { control, watch, handleSubmit } = useForm<CreateThreadForm>({
     defaultValues: {
       community: defaultCommunity || "",
       title: "",
@@ -67,7 +69,20 @@ export default function ThreadCreate({
     }
   );
 
+  const [communityId, setCommunityId] = useState("");
+  const community = watch("community");
+
+  useEffect(() => {
+    if (community) {
+      setCommunityId(
+        communitiesData?.hits?.find((c) => c.name === community)?.id || ""
+      );
+    }
+  }, [community, communitiesData]);
+
   const communities = communitiesData?.hits ?? [];
+
+  const canPost = useCanPost(communityId);
 
   const onSubmit = useCallback(
     async (data: CreateThreadForm) => {
@@ -204,7 +219,11 @@ export default function ThreadCreate({
               Content
             </span>
             <Suspense fallback={<Spinner />}>
-              <Lock countdownTime={lastPostAt || 0} />
+              {canPost ? (
+                <LockCountdown countdownTime={lastPostAt || 0} />
+              ) : (
+                <LockNotAllowedToPost />
+              )}
               <ContentEditor
                 className="mt-2 w-full rounded-xl"
                 {...field}

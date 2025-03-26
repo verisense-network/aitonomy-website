@@ -11,7 +11,7 @@ import {
   Spinner,
   User,
 } from "@heroui/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Community } from "@/utils/aitonomy/type";
 import CreateComment from "./comment/Create";
 import { UserAddressView } from "@/utils/format";
@@ -20,24 +20,16 @@ import { decompressString } from "@/utils/compressString";
 import Link from "next/link";
 import { GetAccountInfoResponse } from "@/utils/aitonomy";
 import { getAccounts } from "@/app/actions";
-import {
-  ChatBubbleLeftEllipsisIcon,
-  HomeIcon,
-} from "@heroicons/react/24/outline";
+import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/outline";
 import { isEqualAddress } from "./utils";
 import TooltipTime from "../formatTime/TooltipTime";
 
 interface Props {
   threadId: string;
   community: Community;
-  communityAgentPubkey: string;
 }
 
-export default function ThreadComments({
-  threadId,
-  community,
-  communityAgentPubkey,
-}: Props) {
+export default function ThreadComments({ threadId, community }: Props) {
   const { thread, community: communityId } = decodeId(threadId);
   const { data, isLoading, setParams, forceUpdate } = useMeilisearch(
     "comment",
@@ -50,7 +42,7 @@ export default function ThreadComments({
     }
   );
 
-  const comments = data?.hits ?? [];
+  const comments = useMemo(() => data?.hits || [], [data]);
 
   const pageChange = useCallback(
     (page: number) => {
@@ -71,7 +63,7 @@ export default function ThreadComments({
 
   useEffect(() => {
     (async () => {
-      if (isLoading || !comments?.length) return;
+      if (isLoading || !comments.length) return;
       const accounts = comments.map((comment: any) => comment.author);
       const { success, data: accountsData } = await getAccounts({
         accountIds: accounts,
@@ -84,6 +76,7 @@ export default function ThreadComments({
   const viewCommentAccount = useCallback(
     (address: string) => {
       if (!address || !commentAccounts?.length || isLoading) return "";
+
       const account = commentAccounts.find(
         (account) => account.address === address
       );
@@ -103,8 +96,8 @@ export default function ThreadComments({
       {!isLoading && (
         <CreateComment
           threadId={threadId}
-          communityAgentPubkey={communityAgentPubkey}
           onSuccess={onSuccessCreateCommunity}
+          community={community}
         />
       )}
       {!isLoading &&

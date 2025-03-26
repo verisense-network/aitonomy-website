@@ -62,26 +62,24 @@ export default function CommunityBrand({ communityId }: Props) {
 
   const community = data?.hits[0];
   const communityRef = useRef(community);
+  const c = communityRef.current || community;
 
-  const amount = community?.status?.WaitingTx;
+  const amount = c?.status?.WaitingTx;
   const viewAmount = amount ? formatReadableAmount(amount) : "";
 
-  const isLoaded = !isLoading && communityRef.current;
-  const isPrivateCommunity = community?.private;
+  const isLoaded = !isLoading && c;
+  const isPrivateCommunity = c?.private;
 
   const isCommunityStatus = useCallback(
     (status: CommunityStatus) => {
-      const c = communityRef.current || community;
       return c && (c?.status?.[status] || c?.status === status);
     },
-    [community]
+    [c]
   );
 
-  const hasStoredSignature =
-    community?.name === storedCommunity && storedSignature;
+  const hasStoredSignature = c?.name === storedCommunity && storedSignature;
 
-  const shouldShowActivateCommunity =
-    isLogin && isYouAddress(community?.creator);
+  const shouldShowActivateCommunity = isLogin && isYouAddress(c?.creator);
 
   const shouldShowInviteUser =
     shouldShowActivateCommunity && isPrivateCommunity;
@@ -98,14 +96,20 @@ export default function CommunityBrand({ communityId }: Props) {
 
   const checkCommunityActivateStatus = useCallback(
     async (txHash: string, toastId: Id, retryCount: number = 0) => {
-      const communityCurrent = communityRef.current;
-      if (!communityCurrent) return;
+      if (!c) return;
+      console.log("c", c);
+      console.log(
+        "isCommunityStatus",
+        isCommunityStatus(CommunityStatus.WaitingTx),
+        isCommunityStatus(CommunityStatus.TokenIssued),
+        isCommunityStatus(CommunityStatus.Active)
+      );
       if (isCommunityStatus(CommunityStatus.WaitingTx)) {
         setIsActivatingLoading(true);
         const userWallet = getWalletConnect(wallet);
         if (retryCount < MAX_RETRY) {
           if (!txHash) return;
-          const payload = { community: communityCurrent?.name, tx: txHash };
+          const payload = { community: c.name, tx: txHash };
           console.log("payload", payload);
           const tx = await userWallet.getFinalizedTransaction(txHash);
 
@@ -155,7 +159,10 @@ export default function CommunityBrand({ communityId }: Props) {
             autoClose: 2000,
           });
         }
-      } else if (isCommunityStatus(CommunityStatus.TokenIssued)) {
+      } else if (
+        isCommunityStatus(CommunityStatus.TokenIssued) ||
+        isCommunityStatus(CommunityStatus.Active)
+      ) {
         forceUpdate();
         setTimeout(() => {
           setIsActivatingLoading(false);
@@ -171,14 +178,14 @@ export default function CommunityBrand({ communityId }: Props) {
       }
       forceUpdate();
     },
-    [forceUpdate, isCommunityStatus, wallet]
+    [c, forceUpdate, isCommunityStatus, wallet]
   );
 
   const onActivateSuccess = useCallback(
     async (txHash: string, toastId: Id) => {
       console.log("onSuccess", txHash);
-      const payload = { community: community?.name, signature: txHash };
-      storePaymentSignature({ community: community?.name, signature: txHash });
+      const payload = { community: c?.name, signature: txHash };
+      storePaymentSignature({ community: c?.name, signature: txHash });
       console.log("storePaymentSignature", payload);
       toast.update(toastId, {
         render: "Checking community activation status...",
@@ -188,7 +195,7 @@ export default function CommunityBrand({ communityId }: Props) {
       await checkCommunityActivateStatus(txHash, toastId, 0);
       setIsOpenPaymentModal(false);
     },
-    [checkCommunityActivateStatus, community?.name, storePaymentSignature]
+    [checkCommunityActivateStatus, c?.name, storePaymentSignature]
   );
 
   const retryWithStoreSignature = useCallback(async () => {
@@ -203,7 +210,7 @@ export default function CommunityBrand({ communityId }: Props) {
       data: res,
       message: errorMessage,
     } = await activateCommunity({
-      community: community?.name,
+      community: c?.name,
       tx: signature,
     });
     if (!success) {
@@ -213,7 +220,7 @@ export default function CommunityBrand({ communityId }: Props) {
     const toastId = toast.loading("checking activation status");
     checkCommunityActivateStatus(signature, toastId, 0);
     console.log("res", res);
-  }, [checkCommunityActivateStatus, community?.name]);
+  }, [checkCommunityActivateStatus, c?.name]);
 
   useEffect(() => {
     (async () => {
@@ -255,17 +262,14 @@ export default function CommunityBrand({ communityId }: Props) {
                 showOutline={false}
                 isInvisible={!isPrivateCommunity}
                 placement="bottom-right"
+                title="Private Community"
               >
-                <Avatar
-                  name={community?.name}
-                  src={community?.logo}
-                  size="lg"
-                />
+                <Avatar name={c?.name} src={c?.logo} size="lg" />
               </Badge>
               <div className="flex flex-col">
                 <div className="flex flex-wrap space-x-4 items-center">
                   <h1 className="flex items-center text-2xl font-bold">
-                    {community?.name}
+                    {c?.name}
                     {isLoaded &&
                       (isCommunityStatus(CommunityStatus.Active) ? (
                         <Tooltip content="Activated">
@@ -354,7 +358,7 @@ export default function CommunityBrand({ communityId }: Props) {
                   {isActivatingLoading && <Spinner title="Activating..." />}
                 </div>
                 <div>
-                  <p className="text-sm text-zinc-400">{community?.slug}</p>
+                  <p className="text-sm text-zinc-400">{c?.slug}</p>
                 </div>
               </div>
             </div>
@@ -362,13 +366,11 @@ export default function CommunityBrand({ communityId }: Props) {
               {isCommunityStatus(CommunityStatus.Active) && (
                 <div className="flex flex-col items-center">
                   <Avatar
-                    src={community?.token_info?.image}
-                    name={community?.token_info?.symbol}
+                    src={c?.token_info?.image}
+                    name={c?.token_info?.symbol}
                   />
                   <div className="flex items-center mt-1 space-x-1 text-md">
-                    <span className="text-sm">
-                      {community?.token_info?.symbol}
-                    </span>
+                    <span className="text-sm">{c?.token_info?.symbol}</span>
                   </div>
                 </div>
               )}
@@ -377,21 +379,21 @@ export default function CommunityBrand({ communityId }: Props) {
         </CardHeader>
         <CardBody>
           {isLoading && <Spinner />}
-          {community?.description}
+          {c?.description}
         </CardBody>
       </Card>
       <PaymentModal
         isOpen={isOpenPaymentModal}
         onClose={() => setIsOpenPaymentModal(false)}
-        toAddress={community?.agent_pubkey}
+        toAddress={c?.agent_pubkey}
         amount={amount}
         onSuccess={onActivateSuccess}
       />
       {isOpenInviteModal && (
         <InviteUser
           isOpen={isOpenInviteModal}
-          defaultCommunity={community?.name}
-          agentPubkey={community?.agent_pubkey}
+          defaultCommunity={c?.name}
+          agentPubkey={c?.agent_pubkey}
           onClose={() => setIsOpenInviteModal(false)}
           onSuccess={() => onInviteSuccess()}
         />
