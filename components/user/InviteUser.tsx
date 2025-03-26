@@ -1,4 +1,4 @@
-import { getInviteFee, inviteUser } from "@/app/actions";
+import { checkInvite, getInviteFee, inviteUser } from "@/app/actions";
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { InviteUserArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
@@ -18,7 +18,7 @@ import {
   ModalFooter,
   Input,
 } from "@heroui/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Id, toast } from "react-toastify";
 import PaymentModal from "../modal/Payment";
@@ -27,25 +27,23 @@ import { twMerge } from "tailwind-merge";
 
 interface InviteUserProps {
   isOpen: boolean;
-  agentPubkey?: string;
-  defaultCommunity?: string;
+  community?: any;
   onSuccess: () => void;
   onClose: () => void;
 }
 export default function InviteUser({
   isOpen,
-  agentPubkey,
-  defaultCommunity,
+  community,
   onSuccess,
   onClose,
 }: InviteUserProps) {
   const [isOpenPaymentModal, setIsOpenPaymentModal] = useState(false);
-  const [toAddress, setToAddress] = useState(agentPubkey || "");
+  const [toAddress, setToAddress] = useState(community?.agent_pubkey || "");
   const [paymentAmount, setPaymentAmount] = useState("");
   const { control, setValue, watch, handleSubmit, reset } =
     useForm<InviteUserArg>({
       defaultValues: {
-        community: defaultCommunity || "",
+        community: community?.name || "",
         tx: "",
         invitee: "",
       },
@@ -63,16 +61,16 @@ export default function InviteUser({
   const currentCommunity = watch("community");
 
   useEffect(() => {
-    if (!currentCommunity && defaultCommunity) {
-      setValue("community", defaultCommunity);
+    if (!currentCommunity && community?.name) {
+      setValue("community", community.name);
     }
-  }, [currentCommunity, defaultCommunity, setValue]);
+  }, [currentCommunity, community, setValue]);
 
   useEffect(() => {
-    if (!toAddress && agentPubkey) {
-      setToAddress(agentPubkey);
+    if (!toAddress && community?.agent_pubkey) {
+      setToAddress(community.agent_pubkey);
     }
-  }, [agentPubkey, toAddress]);
+  }, [community, toAddress]);
 
   useEffect(() => {
     (async () => {
@@ -81,13 +79,54 @@ export default function InviteUser({
         if (!success || !fee) {
           throw new Error("Failed: get fee error");
         }
-        console.log("fee", fee);
         setPaymentAmount(fee.toString());
       }
     })();
   }, [paymentAmount, toAddress]);
 
-  const communities = communitiesData?.hits ?? [];
+  const communities = useMemo(
+    () => communitiesData?.hits ?? [],
+    [communitiesData]
+  );
+
+  const [communityId, setCommunityId] = useState(community?.id || "");
+
+  useEffect(() => {
+    if (currentCommunity) {
+      const c = communities.find((c) => c.name === currentCommunity);
+      if (!c) {
+        return;
+      }
+      setCommunityId(c.id);
+    }
+  }, [currentCommunity, communities, setCommunityId]);
+
+  const checkIsInvited = useCallback(
+    async (address: string) => {
+      if (!communityId) {
+        toast.error("Failed: community id is not found");
+        return;
+      }
+      if (!address) {
+        toast.error("address is empty");
+        return;
+      }
+      const { data: isInvited, success } = await checkInvite({
+        communityId,
+        accountId: address,
+      });
+      if (!success) {
+        toast.error("Failed: check is invited error");
+        return;
+      }
+      if (isInvited) {
+        toast.success("User is already invited");
+        return;
+      }
+      toast.success("User is not invited");
+    },
+    [communityId]
+  );
 
   const onSubmit = useCallback(
     async (data: any) => {
@@ -157,7 +196,8 @@ export default function InviteUser({
                     errorMessage={fieldState.error?.message}
                     isLoading={isLoading}
                     value={field.value}
-                    defaultInputValue={defaultCommunity}
+                    defaultInputValue={community?.name || ""}
+                    isDisabled={!!field.value}
                     onValueChange={(value) => {
                       field.onChange(value);
                     }}
@@ -190,14 +230,25 @@ export default function InviteUser({
                   },
                 }}
                 render={({ field, fieldState }) => (
-                  <Input
-                    {...field}
-                    label="User Address"
-                    labelPlacement="outside"
-                    placeholder="Enter a user address"
-                    isInvalid={!!fieldState.error}
-                    errorMessage={fieldState.error?.message}
-                  />
+                  <div
+                    className={twMerge(
+                      "flex space-x-2 w-full",
+                      !!fieldState.error ? "items-center" : "items-end"
+                    )}
+                  >
+                    <Input
+                      {...field}
+                      className="w-3/4"
+                      label="User Address"
+                      labelPlacement="outside"
+                      placeholder="Enter a user address"
+                      isInvalid={!!fieldState.error}
+                      errorMessage={fieldState.error?.message}
+                    />
+                    <Button onPress={() => checkIsInvited(field.value)}>
+                      Check invited
+                    </Button>
+                  </div>
                 )}
               />
               <Controller

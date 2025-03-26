@@ -392,8 +392,7 @@ export default function CommunityBrand({ communityId }: Props) {
       {isOpenInviteModal && (
         <InviteUser
           isOpen={isOpenInviteModal}
-          defaultCommunity={c?.name}
-          agentPubkey={c?.agent_pubkey}
+          community={c}
           onClose={() => setIsOpenInviteModal(false)}
           onSuccess={() => onInviteSuccess()}
         />

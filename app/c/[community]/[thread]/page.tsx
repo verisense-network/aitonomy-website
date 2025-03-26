@@ -22,8 +22,6 @@ export default function ThreadPage({ params }: Props): React.ReactNode {
 
   const community = data?.hits[0];
 
-  const communityAgentPubkey = community?.agent_pubkey;
-
   const computedThreadId = encodeId({
     community: communityId,
     thread: threadId,
