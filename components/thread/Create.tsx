@@ -1,4 +1,4 @@
-import { checkInvite, createThread, CreateThreadForm } from "@/app/actions";
+import { createThread, CreateThreadForm } from "@/app/actions";
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { CreateThreadArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
@@ -15,7 +15,7 @@ import {
   Spinner,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
@@ -37,21 +37,17 @@ const ContentEditor = dynamic(() => import("../mdxEditor/ContentEditor"), {
 });
 
 interface Props {
-  defaultCommunity?: string;
+  community?: any;
   replyTo?: string;
   onClose: () => void;
 }
 
-export default function ThreadCreate({
-  defaultCommunity,
-  replyTo,
-  onClose,
-}: Props) {
+export default function ThreadCreate({ community, replyTo, onClose }: Props) {
   const router = useRouter();
   const { lastPostAt } = useUserStore();
   const { control, watch, handleSubmit } = useForm<CreateThreadForm>({
     defaultValues: {
-      community: defaultCommunity || "",
+      community: community?.name || "",
       title: "",
       content: "",
       images: [],
@@ -69,20 +65,21 @@ export default function ThreadCreate({
     }
   );
 
-  const [communityId, setCommunityId] = useState("");
-  const community = watch("community");
+  const communities = useMemo(
+    () => communitiesData?.hits ?? [],
+    [communitiesData]
+  );
+
+  const [selectedCommunity, setSelectedCommunity] = useState(community);
+  const communityName = watch("community");
 
   useEffect(() => {
-    if (community) {
-      setCommunityId(
-        communitiesData?.hits?.find((c) => c.name === community)?.id || ""
-      );
+    if (communityName) {
+      setSelectedCommunity(communities?.find((c) => c.name === communityName));
     }
-  }, [community, communitiesData]);
+  }, [communityName, communities]);
 
-  const communities = communitiesData?.hits ?? [];
-
-  const canPost = useCanPost(communityId);
+  const canPost = useCanPost(selectedCommunity);
 
   const onSubmit = useCallback(
     async (data: CreateThreadForm) => {
@@ -170,7 +167,7 @@ export default function ThreadCreate({
             placeholder="Enter your community name"
             isInvalid={!!fieldState.error}
             errorMessage={fieldState.error?.message}
-            defaultInputValue={defaultCommunity}
+            defaultInputValue={community?.name}
             isLoading={isLoading}
             value={field.value}
             onValueChange={(value) => {

@@ -49,5 +49,6 @@ export async function updateAccountInfo() {
     wallet.addListeners();
   } catch (e: any) {
     console.error("updateAccountInfo error", e);
+    toast.error(`updateAccountInfo failed: ${e}`);
   }
 }

@@ -2,12 +2,12 @@ import { useUserStore } from "@/stores/user";
 import { useState, useEffect } from "react";
 import { checkInvite } from "@/app/actions";
 
-export default function useCanPost(communityId?: string) {
+export default function useCanPost(community?: any) {
   const { isLogin, address } = useUserStore();
   const [canPost, setCanPost] = useState(true);
 
   useEffect(() => {
-    if (!isLogin || !communityId) {
+    if (!isLogin || !community?.private || !community?.id) {
       setCanPost(true);
       return;
     }
@@ -16,7 +16,7 @@ export default function useCanPost(communityId?: string) {
         if (!address) return;
 
         const { data: permission, success } = await checkInvite({
-          communityId,
+          communityId: community.id,
           accountId: address,
         });
 
@@ -31,7 +31,7 @@ export default function useCanPost(communityId?: string) {
         setCanPost(false);
       }
     })();
-  }, [communityId, address, isLogin]);
+  }, [community, address, isLogin]);
 
   return canPost;
 }
