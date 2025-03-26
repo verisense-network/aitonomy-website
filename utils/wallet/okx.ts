@@ -295,4 +295,31 @@ export class OkxConnect {
       return res;
     }
   }
+
+  async callWithdraw(
+    contractAddress: string,
+    messageBytes: string,
+    signature: string
+  ) {
+    try {
+      console.log("call");
+      await this.checkConnected();
+
+      const abi = ["function withdraw(bytes _messageBytes, bytes _signature)"];
+      const signer = await this.ethersProvider?.getSigner();
+
+      const contract = new ethers.Contract(contractAddress, abi, signer);
+
+      const tx = await contract.withdraw(messageBytes, signature);
+      console.log("Transaction sent:", tx);
+
+      const receipt = await tx.wait(); // 等待交易完成
+      console.log("Transaction receipt:", receipt);
+
+      return receipt;
+    } catch (error: any) {
+      console.error("Error sending contract transaction:", error);
+      throw new Error(error);
+    }
+  }
 }

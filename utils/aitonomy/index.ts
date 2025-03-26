@@ -240,9 +240,6 @@ export async function activateCommunityRpc(
 
   console.log("payload", payload);
 
-  const decoded = new ActivateCommunityArg(registry, payload).toHuman();
-  console.log("decoded", decoded);
-
   try {
     const provider = await getRpcClient();
     const response = await provider.send<any>("nucleus_post", [
@@ -371,8 +368,6 @@ export async function getRewardsRpc(
     const ResultStruct = Vec.with(RewardPayload);
 
     const decoded = new ResultStruct(registry, responseBytes);
-
-    console.log("decoded", decoded);
 
     if (!decoded) {
       throw new Error("Failed to decode rewards");
