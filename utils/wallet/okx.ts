@@ -11,6 +11,7 @@ import nacl from "tweetnacl";
 import { useUserStore } from "@/stores/user";
 import { CHAIN } from "../chain";
 import { BrowserProvider, ethers, TransactionRequest } from "ethers";
+import { updateAccountInfo } from "./connect";
 
 export class OkxConnect {
   id = WalletId.OKX;
@@ -129,9 +130,34 @@ export class OkxConnect {
     if (!this.wallet.isConnected()) {
       await this.wallet.handleConnect();
     }
+    await this.checkAccount();
     if (!this.ethersProvider) {
       this.ethersProvider = new ethers.BrowserProvider(window.ethereum);
     }
+  }
+
+  async checkAccount() {
+    const account = this.wallet!.selectedAddress;
+    console.log("account", account);
+    if (!account) {
+      throw new Error("account not found");
+    }
+    this.address = account;
+    this.publicKey = ethers.toBeArray(this.address);
+  }
+
+  async addListeners() {
+    await this.checkConnected();
+
+    this.wallet!.on("accountsChanged", (accounts: string[]) => {
+      this.address = accounts[0];
+      this.publicKey = ethers.toBeArray(this.address);
+
+      updateAccountInfo({
+        address: this.address,
+        publicKey: this.publicKey,
+      });
+    });
   }
 
   async signMessage(message: string): Promise<Uint8Array> {

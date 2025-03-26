@@ -6,6 +6,7 @@ import {
   OKXUniversalProvider,
   SessionTypes,
 } from "@okxconnect/universal-provider";
+import { updateAccountInfo } from "./connect";
 
 const bscNetworkId = "eip155:56";
 export class OkxAppConnect {
@@ -107,7 +108,6 @@ export class OkxAppConnect {
         },
       });
       OkxAppConnect.wallet = provider;
-      provider.on("session_update", (session: any) => {});
       provider.on("session_delete", ({ topic }: { topic: string }) => {
         console.log("topic", topic);
       });
@@ -126,6 +126,25 @@ export class OkxAppConnect {
     }
     OkxAppConnect.connecting = false;
     return true;
+  }
+
+  async addListeners() {
+    await this.checkConnected();
+
+    OkxAppConnect.wallet!.on(
+      "session_update",
+      (session: SessionTypes.Struct) => {
+        this.session = session;
+        console.log("session_update", session);
+        this.address = session.namespaces.eip155.accounts[0].split(":").pop()!;
+        this.publicKey = ethers.toBeArray(this.address);
+
+        updateAccountInfo({
+          address: this.address,
+          publicKey: this.publicKey,
+        });
+      }
+    );
   }
 
   async getSession(provider?: OKXUniversalProvider) {
