@@ -122,6 +122,7 @@ export default function InviteUser({
         render: "successful, hash has been set",
         type: "success",
         isLoading: false,
+        autoClose: 2000,
       });
     },
     [setValue]

@@ -28,6 +28,7 @@ import {
   Vec,
   u64,
   u128,
+  Bool,
 } from "@polkadot/types-codec";
 
 interface Signature {
@@ -655,7 +656,7 @@ export interface checkInviteArg {
 export async function checkInviteRpc(
   nucleusId: string,
   args: checkInviteArg
-): Promise<string> {
+): Promise<boolean> {
   console.log("args", args);
   /**
    * (community_id: CommunityId, user: AccountId)
@@ -679,18 +680,12 @@ export async function checkInviteRpc(
     const responseBytes = Buffer.from(response, "hex");
 
     /**
-     * Result<(), String>
+     * bool
      */
-    const ResultStruct = Result.with({
-      Ok: Null,
-      Err: Text,
-    });
+    const ResultStruct = Bool;
     const decoded = new ResultStruct(registry, responseBytes);
 
-    if (decoded.isErr) {
-      throw new Error(decoded.toString());
-    }
-    const result = decoded.asOk.toHuman() as any;
+    const result = decoded.toHuman() as boolean;
     return result;
   } catch (err: any) {
     console.error(err);

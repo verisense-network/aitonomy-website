@@ -1,6 +1,7 @@
 import ThreadCreate from "@/components/thread/Create";
 import { useUserStore } from "@/stores/user";
 import {
+  Alert,
   Card,
   Modal,
   ModalBody,
@@ -11,9 +12,12 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Lock } from "@/components/Lock";
 import { updateAccountInfo } from "@/utils/user";
+import { checkInvite } from "@/app/actions";
+import { hexToLittleEndian } from "@/utils/tools";
 
 interface Props {
   communityName?: string;
+  communityId?: string;
   replyTo?: string;
   onSuccess: (id: string) => void;
   reloadCommunity?: () => void;
@@ -21,12 +25,14 @@ interface Props {
 
 export default function CreateThread({
   communityName,
+  communityId,
   replyTo,
   onSuccess,
   reloadCommunity,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
-  const { isLogin, lastPostAt } = useUserStore();
+  const { isLogin, lastPostAt, address } = useUserStore();
+  const [canPost, setCanPost] = useState(true);
 
   const openCreateModal = useCallback(async () => {
     if (!isLogin) {
@@ -39,14 +45,40 @@ export default function CreateThread({
     setIsOpen(true);
   }, [communityName, isLogin, reloadCommunity]);
 
+  const checkCanPost = useCallback(async () => {
+    try {
+      if (!communityId || !isLogin) return;
+      console.log("checkCanPost", communityId);
+
+      const { data: permission, success } = await checkInvite({
+        communityId: hexToLittleEndian(communityId),
+        accountId: address,
+      });
+
+      if (!success) {
+        setCanPost(false);
+        return;
+      }
+
+      console.log("permission", permission);
+
+      setCanPost(!!permission);
+    } catch (e: any) {
+      console.error("checkCanPost error", e);
+      setCanPost(false);
+    }
+  }, [communityId, address, isLogin]);
+
   useEffect(() => {
     updateAccountInfo();
-  }, []);
+    checkCanPost();
+  }, [checkCanPost]);
 
   return (
     <>
       <div className="relative">
-        <Lock countdownTime={lastPostAt || 0} />
+        {!canPost && <Alert title="You are not allowed to post" />}
+        {canPost && <Lock countdownTime={lastPostAt || 0} />}
         <Card
           className="flex w-full text-right px-6 py-6 hover:bg-gray-200 dark:hover:bg-zinc-800"
           isPressable

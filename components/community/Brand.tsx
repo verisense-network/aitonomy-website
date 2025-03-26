@@ -4,6 +4,7 @@ import useMeilisearch from "@/hooks/useMeilisearch";
 import { hexToLittleEndian, sleep } from "@/utils/tools";
 import {
   Avatar,
+  Badge,
   Button,
   Card,
   CardBody,
@@ -27,6 +28,7 @@ import {
   CheckBadgeIcon,
   CurrencyDollarIcon,
   ExclamationCircleIcon,
+  LockClosedIcon,
   UserPlusIcon,
 } from "@heroicons/react/24/outline";
 import InviteUser from "../user/InviteUser";
@@ -85,6 +87,8 @@ export default function CommunityBrand({ communityId }: Props) {
     shouldShowActivateCommunity &&
     isPrivateCommunity &&
     isCommunityStatus(CommunityStatus.Active);
+
+  console.log("shouldShowInviteUser", shouldShowInviteUser);
 
   const toPayment = useCallback(() => {
     setIsOpenPaymentModal(true);
@@ -246,7 +250,20 @@ export default function CommunityBrand({ communityId }: Props) {
         <CardHeader>
           <div className="flex justify-between items-center w-full">
             <div className="flex flex-wrap space-x-4 items-center">
-              <Avatar name={community?.name} src={community?.logo} size="lg" />
+              <Badge
+                color="default"
+                isOneChar
+                content={<LockClosedIcon className="w-3 h-3" />}
+                showOutline={false}
+                isInvisible={!isPrivateCommunity}
+                placement="bottom-right"
+              >
+                <Avatar
+                  name={community?.name}
+                  src={community?.logo}
+                  size="lg"
+                />
+              </Badge>
               <div className="flex flex-col">
                 <div className="flex flex-wrap space-x-4 items-center">
                   <h1 className="flex items-center text-2xl font-bold">
