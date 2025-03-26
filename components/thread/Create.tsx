@@ -55,7 +55,7 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
     },
   });
 
-  const [searchCommunity, setSearchCommunity] = useState("");
+  const [searchCommunity, setSearchCommunity] = useState(community?.name || "");
 
   const { data: communitiesData, isLoading } = useMeilisearch(
     "community",

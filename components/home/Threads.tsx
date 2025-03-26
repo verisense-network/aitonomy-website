@@ -95,8 +95,7 @@ export default function Threads({
         {isLoading && <Spinner />}
         {isShowPostButton && !isLoading && (
           <CreateThread
-            communityName={community?.name}
-            communityId={community?.id}
+            community={community}
             reloadCommunity={forceUpdate}
             onSuccess={() => {}}
           />

@@ -151,7 +151,6 @@ export class MetamaskConnect {
 
   async checkAccount() {
     const account = MetamaskConnect.wallet!.getSelectedAddress();
-    console.log("account", account);
     if (!account) {
       throw new Error("account not found");
     }

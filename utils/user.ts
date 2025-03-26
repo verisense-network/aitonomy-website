@@ -39,7 +39,6 @@ export async function updateAccountInfo() {
       address: currentAddress,
     });
     setLastPostAt(account.last_post_at);
-    console.log("call addListeners");
     wallet.addListeners();
   } catch (e: any) {
     console.error("updateAccountInfo error", e);
