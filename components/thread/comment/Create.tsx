@@ -48,7 +48,7 @@ export default function CreateComment({
   // accounts for mention
   const [accounts, setAccounts] = useState<Mention[]>([]);
 
-  const canPost = useCanPost(community?.id);
+  const canPost = useCanPost(community);
 
   const { control, handleSubmit, reset } = useForm<CreateCommentParams>({
     defaultValues: {

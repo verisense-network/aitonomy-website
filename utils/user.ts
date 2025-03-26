@@ -1,6 +1,7 @@
 import { getAccountInfo } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
 import { getWalletConnect } from "./wallet";
+import { toast } from "react-toastify";
 
 export const NAME_NOT_SET = "Name not set";
 
@@ -42,5 +43,6 @@ export async function updateAccountInfo() {
     wallet.addListeners();
   } catch (e: any) {
     console.error("updateAccountInfo error", e);
+    toast.error(`updateAccountInfo failed: ${e}`);
   }
 }

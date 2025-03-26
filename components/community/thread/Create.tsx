@@ -16,14 +16,14 @@ import useCanPost from "@/hooks/useCanPost";
 interface Props {
   communityName?: string;
   communityId?: string;
+  community?: any;
   replyTo?: string;
   onSuccess: (id: string) => void;
   reloadCommunity?: () => void;
 }
 
 export default function CreateThread({
-  communityName,
-  communityId,
+  community,
   replyTo,
   onSuccess,
   reloadCommunity,
@@ -31,18 +31,18 @@ export default function CreateThread({
   const [isOpen, setIsOpen] = useState(false);
   const { isLogin, lastPostAt } = useUserStore();
 
-  const canPost = useCanPost(communityId);
+  const canPost = useCanPost(community);
 
   const openCreateModal = useCallback(async () => {
     if (!isLogin) {
       toast.info("Please login first");
       return;
     }
-    if (!communityName) {
+    if (!community?.name) {
       await reloadCommunity?.();
     }
     setIsOpen(true);
-  }, [communityName, isLogin, reloadCommunity]);
+  }, [community, isLogin, reloadCommunity]);
 
   return (
     <>
@@ -77,7 +77,7 @@ export default function CreateThread({
                   {isOpen && (
                     <ThreadCreate
                       onClose={onClose}
-                      defaultCommunity={communityName}
+                      community={community}
                       replyTo={replyTo}
                     />
                   )}

@@ -67,7 +67,7 @@ export default function CommunityBrand({ communityId }: Props) {
   const amount = c?.status?.WaitingTx;
   const viewAmount = amount ? formatReadableAmount(amount) : "";
 
-  const isLoaded = !isLoading && c;
+  const isLoaded = !isLoading && communityRef.current;
   const isPrivateCommunity = c?.private;
 
   const isCommunityStatus = useCallback((status: CommunityStatus) => {
