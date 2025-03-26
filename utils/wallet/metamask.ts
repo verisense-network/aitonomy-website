@@ -9,7 +9,7 @@ import { WalletId } from "./id";
 import { useUserStore } from "@/stores/user";
 import { isDev } from "../tools";
 import { useAppearanceStore } from "@/stores/appearance";
-import { toast } from "react-toastify";
+import { updateAccountInfo } from "./connect";
 
 const bscNetworkId = "0x38";
 export class MetamaskConnect {
@@ -101,9 +101,7 @@ export class MetamaskConnect {
       return false;
     }
 
-    let toastId;
     if (!MetamaskConnect.sdk?.isInitialized()) {
-      toastId = toast.loading("🦊Metamask connect init");
       const isMobile = useAppearanceStore.getState().isMobile;
       MetamaskConnect.connecting = true;
       MetamaskConnect.sdk = new MetaMaskSDK({
@@ -128,27 +126,14 @@ export class MetamaskConnect {
         },
       });
       await MetamaskConnect.sdk.init();
-      toast.done(toastId);
     }
 
     if (!MetamaskConnect.wallet?.isConnected()) {
-      const connectMsg = "🦊Metamask wallet connect";
-      if (toastId) {
-        toast.update(toastId, {
-          render: connectMsg,
-        });
-      } else {
-        toastId = toast.loading(connectMsg);
-      }
       this.accounts = await MetamaskConnect.sdk!.connect();
       MetamaskConnect.wallet = MetamaskConnect.sdk!.getProvider();
-      toast.update(toastId, {
-        render: "🦊Metamask connected",
-        isLoading: false,
-        autoClose: 1000,
-      });
     }
 
+    await this.checkAccount();
     await this.switchChain();
 
     if (window.ethereum && window.ethereum?.isPhantom) {
@@ -162,6 +147,31 @@ export class MetamaskConnect {
     MetamaskConnect.connecting = false;
 
     return true;
+  }
+
+  async checkAccount() {
+    const account = MetamaskConnect.wallet!.getSelectedAddress();
+    console.log("account", account);
+    if (!account) {
+      throw new Error("account not found");
+    }
+    this.address = account;
+    this.publicKey = ethers.toBeArray(this.address);
+  }
+
+  async addListeners() {
+    await this.checkConnected();
+
+    MetamaskConnect.wallet?.on("accountsChanged", (accounts: any) => {
+      console.log("accountsChanged", accounts);
+      this.address = accounts[0];
+      this.publicKey = ethers.toBeArray(this.address);
+
+      updateAccountInfo({
+        address: this.address,
+        publicKey: this.publicKey,
+      });
+    });
   }
 
   getProvider() {
