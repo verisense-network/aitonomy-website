@@ -257,4 +257,33 @@ export class MetamaskConnect {
     const receipt = await this.jsonRpcProvider.waitForTransaction(txHash);
     return receipt;
   }
+
+  async callWithdraw(
+    contractAddress: string,
+    messageBytes: string,
+    signature: string
+  ) {
+    try {
+      console.log("call");
+      const abi = ["function withdraw(bytes _messageBytes, bytes _signature)"];
+      const signer = await this.getProvider()?.getSigner();
+
+      console.log("contractAddress", contractAddress);
+      const contract = new ethers.Contract(contractAddress, abi, signer);
+
+      console.log("messageBytes", messageBytes);
+      console.log("signature", signature);
+
+      const tx = await contract.withdraw(messageBytes, signature);
+      console.log("Transaction sent:", tx);
+
+      const receipt = await tx.wait(); // 等待交易完成
+      console.log("Transaction receipt:", receipt);
+
+      return receipt;
+    } catch (error: any) {
+      console.error("Error sending contract transaction:", error);
+      throw new Error(error);
+    }
+  }
 }

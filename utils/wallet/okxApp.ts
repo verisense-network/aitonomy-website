@@ -1,6 +1,11 @@
 import { WalletId } from "./id";
 import { useUserStore } from "@/stores/user";
-import { ethers, JsonRpcProvider, TransactionRequest } from "ethers";
+import {
+  BrowserProvider,
+  ethers,
+  JsonRpcProvider,
+  TransactionRequest,
+} from "ethers";
 import { CHAIN } from "../chain";
 import {
   OKXUniversalProvider,
@@ -18,6 +23,7 @@ export class OkxAppConnect {
   ethersProvider: JsonRpcProvider = new ethers.JsonRpcProvider(
     "https://bsc-dataseed1.binance.org/"
   );
+  browserProvider: BrowserProvider | null = null;
   session: SessionTypes.Struct | null = null;
 
   constructor() {
@@ -123,6 +129,10 @@ export class OkxAppConnect {
         throw new Error("get address failed");
       }
       this.session = session;
+    }
+
+    if (!this.browserProvider) {
+      this.browserProvider = new ethers.BrowserProvider(provider!);
     }
     OkxAppConnect.connecting = false;
     return true;
@@ -251,6 +261,32 @@ export class OkxAppConnect {
       }
       const res = await this.ethersProvider.waitForTransaction(txHash);
       return res;
+    }
+  }
+
+  async callWithdraw(
+    contractAddress: string,
+    messageBytes: string,
+    signature: string
+  ) {
+    try {
+      await this.checkConnected();
+
+      const abi = ["function withdraw(bytes _messageBytes, bytes _signature)"];
+      const signer = await this.browserProvider?.getSigner();
+
+      const contract = new ethers.Contract(contractAddress, abi, signer);
+
+      const tx = await contract.withdraw(messageBytes, signature);
+      console.log("Transaction sent:", tx);
+
+      const receipt = await tx.wait(); // 等待交易完成
+      console.log("Transaction receipt:", receipt);
+
+      return receipt;
+    } catch (error: any) {
+      console.error("Error sending contract transaction:", error);
+      throw new Error(error);
     }
   }
 }
