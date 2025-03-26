@@ -32,7 +32,6 @@ import { Controller, useForm } from "react-hook-form";
 import { useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { twMerge } from "tailwind-merge";
 
 interface Props {
   onClose: () => void;
@@ -66,6 +65,7 @@ export default function CommunityCreate({ onClose }: Props) {
   const [llmAccordionSelectedKeys, setLlmAccordionSelectedKeys] = useState<
     string[]
   >([]);
+
   const { watch, control, setValue, handleSubmit, reset } =
     useForm<CreateCommunityArg>({
       defaultValues: {

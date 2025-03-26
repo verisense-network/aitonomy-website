@@ -377,6 +377,7 @@ export async function checkInvite(data: CheckInviteParams) {
     } else if (CHAIN === "SOL") {
       accountId = bs58.decode(data.accountId);
     }
+
     const args = {
       account_id: accountId,
       community_id: hexToBytes(data.communityId),
