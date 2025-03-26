@@ -1,6 +1,6 @@
 import { Tooltip } from "@heroui/react";
 import { formatAddress } from "./tools";
-import { isAgentAddress, isYouAddress } from "@/components/thread/utils";
+import { isEqualAddress, isYouAddress } from "@/components/thread/utils";
 import { ethers } from "ethers";
 import { CHAIN } from "./chain";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
@@ -50,7 +50,7 @@ export function UserAddressView({
   address,
   name,
 }: UserAddressViewProps) {
-  return isAgentAddress(agentPubkey, address) ? (
+  return isEqualAddress(agentPubkey, address) ? (
     <NamedAddressView address={address} name="Agent" />
   ) : isYouAddress(address) ? (
     <NamedAddressView address={address} name="You" />

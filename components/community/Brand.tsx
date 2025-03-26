@@ -81,6 +81,11 @@ export default function CommunityBrand({ communityId }: Props) {
   const shouldShowActivateCommunity =
     isLogin && isYouAddress(community?.creator);
 
+  const shouldShowInviteUser =
+    shouldShowActivateCommunity &&
+    isPrivateCommunity &&
+    isCommunityStatus(CommunityStatus.Active);
+
   const toPayment = useCallback(() => {
     setIsOpenPaymentModal(true);
   }, []);
@@ -260,7 +265,7 @@ export default function CommunityBrand({ communityId }: Props) {
                           <ExclamationCircleIcon className="ml-2 w-6 h-6 text-danger" />
                         </Tooltip>
                       ))}
-                    {isLoaded && isPrivateCommunity && isLogin && (
+                    {isLoaded && shouldShowInviteUser && (
                       <Tooltip content="Invite User">
                         <UserPlusIcon
                           className="ml-2 w-6 h-6 text-sky-200"
