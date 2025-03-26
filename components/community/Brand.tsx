@@ -70,11 +70,11 @@ export default function CommunityBrand({ communityId }: Props) {
   const isPrivateCommunity = community?.private;
 
   const isCommunityStatus = useCallback(
-    (status: CommunityStatus) =>
-      communityRef.current &&
-      (communityRef.current?.status?.[status] ||
-        communityRef.current?.status === status),
-    []
+    (status: CommunityStatus) => {
+      const c = communityRef.current || community;
+      return c && (c?.status?.[status] || c?.status === status);
+    },
+    [community]
   );
 
   const hasStoredSignature =
@@ -84,9 +84,7 @@ export default function CommunityBrand({ communityId }: Props) {
     isLogin && isYouAddress(community?.creator);
 
   const shouldShowInviteUser =
-    shouldShowActivateCommunity &&
-    isPrivateCommunity &&
-    isCommunityStatus(CommunityStatus.Active);
+    shouldShowActivateCommunity && isPrivateCommunity;
 
   console.log("shouldShowInviteUser", shouldShowInviteUser);
 
@@ -282,14 +280,16 @@ export default function CommunityBrand({ communityId }: Props) {
                           <ExclamationCircleIcon className="ml-2 w-6 h-6 text-danger" />
                         </Tooltip>
                       ))}
-                    {isLoaded && shouldShowInviteUser && (
-                      <Tooltip content="Invite User">
-                        <UserPlusIcon
-                          className="ml-2 w-6 h-6 text-sky-200"
-                          onClick={() => setIsOpenInviteModal(true)}
-                        />
-                      </Tooltip>
-                    )}
+                    {isLoaded &&
+                      shouldShowInviteUser &&
+                      isCommunityStatus(CommunityStatus.Active) && (
+                        <Tooltip content="Invite User">
+                          <UserPlusIcon
+                            className="ml-2 w-6 h-6 text-sky-200"
+                            onClick={() => setIsOpenInviteModal(true)}
+                          />
+                        </Tooltip>
+                      )}
                   </h1>
                   {shouldShowActivateCommunity && Number(viewAmount) > 0 && (
                     <div className="flex">
