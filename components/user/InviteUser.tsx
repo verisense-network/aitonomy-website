@@ -5,7 +5,7 @@ import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
 import { InviteUserPayload } from "@/utils/aitonomy/type";
 import { debounce } from "@/utils/tools";
-import { CurrencyDollarIcon, WalletIcon } from "@heroicons/react/24/outline";
+import { WalletIcon } from "@heroicons/react/24/outline";
 import {
   Modal,
   ModalBody,
@@ -158,7 +158,7 @@ export default function InviteUser({
       console.log("data", tx);
       setValue("tx", tx);
       toast.update(toastId, {
-        render: "successful, hash has been set",
+        render: "successful, transaction has been set",
         type: "success",
         isLoading: false,
         autoClose: 2000,
