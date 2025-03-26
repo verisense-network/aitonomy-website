@@ -24,7 +24,7 @@ import {
   ChatBubbleLeftEllipsisIcon,
   HomeIcon,
 } from "@heroicons/react/24/outline";
-import { isAgentAddress } from "./utils";
+import { isEqualAddress } from "./utils";
 import TooltipTime from "../formatTime/TooltipTime";
 
 interface Props {
@@ -126,7 +126,7 @@ export default function ThreadComments({
                   <User
                     className="cursor-pointer"
                     avatarProps={{
-                      ...(isAgentAddress(
+                      ...(isEqualAddress(
                         comment?.author,
                         community?.agent_pubkey
                       )
