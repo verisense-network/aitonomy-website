@@ -79,7 +79,7 @@ export default function UserMenu() {
               )}
             </DropdownItem>
             <DropdownItem key="profile">Profile</DropdownItem>
-            <DropdownItem key="disconnect">Logout</DropdownItem>
+            <DropdownItem key="disconnect">Disconnect</DropdownItem>
           </>
         ) : null}
       </DropdownMenu>
