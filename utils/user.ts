@@ -1,6 +1,7 @@
 import { getAccountInfo } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
 import { getWalletConnect } from "./wallet";
+import { toast } from "react-toastify";
 
 export const NAME_NOT_SET = "Name not set";
 
@@ -11,10 +12,17 @@ export async function updateAccountInfo() {
       address,
       setUserName,
       setLastPostAt,
+      logout,
     } = useUserStore.getState();
 
     if (!address) {
       return;
+    }
+
+    // sol address check
+    if (!address.startsWith("0x")) {
+      logout();
+      toast.info("Please login");
     }
 
     const {
