@@ -1,102 +1,88 @@
-import { UserCircleIcon } from "@heroicons/react/24/outline";
 import {
   Dropdown,
   DropdownTrigger,
   Button,
   DropdownMenu,
   DropdownItem,
-  Avatar,
   Spinner,
+  Tooltip,
 } from "@heroui/react";
-import { Key, useCallback, useEffect, useState } from "react";
-import LoginModal from "../modal/Login";
-import { useUserStore } from "@/stores/user";
-import { toast } from "react-toastify";
+import { Key, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { updateAccountInfo } from "@/utils/user";
+import { useUser } from "@/hooks/useUser";
+import { useAccount } from "wagmi";
+import Image from "next/image";
+import { formatAddress } from "@/utils/tools";
+import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
 
 export default function UserMenu() {
-  const [isOpenOption, setIsOpenOption] = useState<string | null>(null);
-  const { name, address, isLogin, logout } = useUserStore();
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { user, disconnect, isLoading } = useUser();
+  const { openConnectModal } = useConnectModal();
+  const { openAccountModal } = useAccountModal();
+  const { connector, isConnecting, isReconnecting } = useAccount();
+  const { alias, isLogin, address } = user;
 
-  const getUserProfile = useCallback(async () => {
-    try {
-      if (!address) return;
-      setIsLoading(true);
-      await updateAccountInfo();
-      setIsLoading(false);
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to get user profile");
-      setIsLoading(false);
-    }
-  }, [address]);
+  const isShowSpinner = isLoading || isConnecting || isReconnecting;
 
   const openMenu = useCallback(
     (key: Key) => {
-      setIsOpenOption(key as string);
-      if (key === "profile") {
+      if ("connect" === key) {
+        openConnectModal?.();
+      } else if ("wallet" === key) {
+        openAccountModal?.();
+      } else if (key === "profile") {
         router.push("/u/" + address);
-      }
-      if (key === "logout") {
-        logout();
+      } else if (key === "disconnect") {
+        disconnect();
       }
     },
-    [address, logout, router]
+    [address, router, disconnect, openConnectModal, openAccountModal]
   );
 
-  useEffect(() => {
-    if (!address) return;
-    getUserProfile();
-  }, [address, getUserProfile]);
-
   return (
-    <>
-      <Dropdown
-        onOpenChange={() => {
-          if (!isLogin) {
-            openMenu("login");
-          }
-        }}
+    <Dropdown
+      onOpenChange={() => {
+        if (!isLogin) {
+          openMenu("connect");
+        }
+      }}
+    >
+      <DropdownTrigger>
+        <Button>
+          {isShowSpinner ? <Spinner /> : isLogin ? alias : "Connect"}
+        </Button>
+      </DropdownTrigger>
+      <DropdownMenu
+        aria-label={`Dropdown menu`}
+        variant="faded"
+        onAction={openMenu}
       >
-        <DropdownTrigger>
-          <Button isIconOnly className="bg-transparent">
-            {isLogin ? (
-              isLoading ? (
-                <Spinner />
-              ) : (
-                <Avatar name={name} />
-              )
-            ) : (
-              <UserCircleIcon
-                width={32}
-                height={32}
-                className="h-full w-full object-cover"
-              />
-            )}
-          </Button>
-        </DropdownTrigger>
-        <DropdownMenu
-          aria-label={`Dropdown menu`}
-          variant="faded"
-          onAction={openMenu}
-        >
-          {isLogin ? (
-            <>
-              <DropdownItem key="profile">Profile</DropdownItem>
-              <DropdownItem key="logout">Logout</DropdownItem>
-            </>
-          ) : (
-            <DropdownItem key="login">Login</DropdownItem>
-          )}
-        </DropdownMenu>
-      </Dropdown>
-      <LoginModal
-        isOpen={isOpenOption === "login"}
-        onClose={() => setIsOpenOption(null)}
-      />
-    </>
+        {isLogin ? (
+          <>
+            <DropdownItem key="wallet">
+              {connector && (
+                <div className="flex flex-col space-y-2">
+                  <div className="flex space-x-2 items-center">
+                    {connector.icon && (
+                      <Image
+                        src={connector.icon}
+                        width={18}
+                        height={18}
+                        alt={connector.name}
+                      />
+                    )}
+                    <span>{connector.name}</span>
+                  </div>
+                  <span>{formatAddress(address)}</span>
+                </div>
+              )}
+            </DropdownItem>
+            <DropdownItem key="profile">Profile</DropdownItem>
+            <DropdownItem key="disconnect">Logout</DropdownItem>
+          </>
+        ) : null}
+      </DropdownMenu>
+    </Dropdown>
   );
 }

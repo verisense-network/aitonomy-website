@@ -1,9 +1,11 @@
 import { useUserStore } from "@/stores/user";
-import { getWalletConnect } from "../wallet";
 import { registry } from "./type";
-import { Struct, u64, u8, Vec } from "@polkadot/types-codec";
+import { Struct, u64 } from "@polkadot/types-codec";
 import { CodecClass } from "@polkadot/types-codec/types";
 import { getAccountInfo } from "@/app/actions";
+import { signMessage, verifyMessage } from "@wagmi/core";
+import { wagmiConfig } from "@/config/wagmi";
+import { hexToBytes } from "../tools";
 
 export interface Signature {
   signature: Uint8Array;
@@ -16,8 +18,6 @@ export async function signPayload(
   Struct: CodecClass<Struct<any>>
 ): Promise<Signature> {
   const user = useUserStore.getState();
-
-  const wallet = getWalletConnect(user.wallet!);
 
   const {
     success,
@@ -50,18 +50,23 @@ export async function signPayload(
   const message = Buffer.from(messageBuf).toString("hex");
 
   console.log("call sign");
-  const signature = await wallet.signMessage(message);
+
+  const signature = await signMessage(wagmiConfig, { message });
   console.log("signature", signature);
   console.log("sig hex", Buffer.from(signature).toString("hex"));
   const signer = new Uint8Array(Object.values(user.publicKey));
   console.log("signer", signer);
 
-  const verify = await wallet.verifySignature(message, signature, signer);
+  const verify = await verifyMessage(wagmiConfig, {
+    address: `0x${Buffer.from(signer).toString("hex")}`,
+    message: message,
+    signature,
+  });
 
   console.log("verify", verify);
 
   return {
-    signature,
+    signature: hexToBytes(signature),
     signer,
     nonce,
   };

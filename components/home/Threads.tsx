@@ -12,7 +12,7 @@ import {
 } from "@heroui/react";
 import { useCallback, useMemo } from "react";
 import { decodeId } from "@/utils/thread";
-import { formatTimestamp, hexToLittleEndian } from "@/utils/tools";
+import { hexToLittleEndian } from "@/utils/tools";
 import { twMerge } from "tailwind-merge";
 import CreateThread from "../community/thread/Create";
 import { parseMarkdown } from "@/utils/markdown";
