@@ -49,8 +49,12 @@ export default function UserMenu() {
       }}
     >
       <DropdownTrigger>
-        <Button>
-          {isShowSpinner ? <Spinner /> : isLogin ? alias : "Connect"}
+        <Button
+          color={!isLogin ? "primary" : "default"}
+          isLoading={isShowSpinner}
+          variant={isLogin ? "faded" : "shadow"}
+        >
+          {isLogin ? alias : "Connect"}
         </Button>
       </DropdownTrigger>
       <DropdownMenu
