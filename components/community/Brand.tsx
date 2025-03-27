@@ -17,10 +17,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import PaymentModal from "../modal/Payment";
 import { activateCommunity } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
-import { isYouAddress } from "../thread/utils";
 import { usePaymentCommunityStore } from "@/stores/paymentCommunity";
 import { CommunityStatus } from "./utils";
-import { getWalletConnect } from "@/utils/wallet";
+import { waitForTransactionReceipt } from "@wagmi/core";
 import { Id, toast } from "react-toastify";
 import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
 import { useAppearanceStore } from "@/stores/appearance";
@@ -32,6 +31,8 @@ import {
   UserPlusIcon,
 } from "@heroicons/react/24/outline";
 import InviteUser from "../user/InviteUser";
+import { wagmiConfig } from "@/config/wagmi";
+import { useUser } from "@/hooks/useUser";
 
 interface Props {
   communityId: string;
@@ -43,7 +44,8 @@ export default function CommunityBrand({ communityId }: Props) {
   const [isOpenPaymentModal, setIsOpenPaymentModal] = useState(false);
   const [isActivatingLoading, setIsActivatingLoading] = useState(false);
   const [isOpenInviteModal, setIsOpenInviteModal] = useState(false);
-  const { isLogin, wallet } = useUserStore();
+  const { isLogin } = useUserStore();
+  const { isYouAddress } = useUser();
   const { isMobile } = useAppearanceStore();
   const {
     setSignature: storePaymentSignature,
@@ -67,13 +69,16 @@ export default function CommunityBrand({ communityId }: Props) {
   const amount = c?.status?.WaitingTx;
   const viewAmount = amount ? formatReadableAmount(amount) : "";
 
-  const isLoaded = !isLoading && communityRef.current;
+  const isLoaded = !isLoading && c;
   const isPrivateCommunity = c?.private;
 
-  const isCommunityStatus = useCallback((status: CommunityStatus) => {
-    const cRef = communityRef.current;
-    return cRef && (cRef?.status?.[status] || cRef?.status === status);
-  }, []);
+  const isCommunityStatus = useCallback(
+    (status: CommunityStatus) => {
+      const cRef = communityRef.current || community;
+      return cRef && (cRef?.status?.[status] || cRef?.status === status);
+    },
+    [community]
+  );
 
   const hasStoredSignature = c?.name === storedCommunity && storedSignature;
 
@@ -98,14 +103,13 @@ export default function CommunityBrand({ communityId }: Props) {
         isCommunityStatus(CommunityStatus.TokenIssued)
       ) {
         setIsActivatingLoading(true);
-        const userWallet = getWalletConnect(wallet);
         if (retryCount < MAX_RETRY) {
           if (!txHash) return;
           const payload = { community: c.name, tx: txHash };
-          console.log("payload", payload);
-          const tx = await userWallet.getFinalizedTransaction(txHash);
 
-          console.log("tx", tx);
+          const tx = await waitForTransactionReceipt(wagmiConfig, {
+            hash: txHash as `0x${string}`,
+          });
 
           const renderCount = `${retryCount + 1}/${MAX_RETRY}`;
           if (!tx || (tx as any)?.meta?.err) {
@@ -167,7 +171,7 @@ export default function CommunityBrand({ communityId }: Props) {
       }
       forceUpdate();
     },
-    [c, forceUpdate, isCommunityStatus, wallet]
+    [c, forceUpdate, isCommunityStatus]
   );
 
   const onActivateSuccess = useCallback(

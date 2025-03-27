@@ -5,6 +5,7 @@ import { HeroUIProvider } from "@heroui/react";
 import { ToastContainer } from "react-toastify";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { useRouter } from "next/navigation";
+import RainbowProvider from "@/lib/rainbow";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -19,7 +20,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
               fetch(resource, init).then((res) => res.json()),
           }}
         >
-          {children}
+          <RainbowProvider>{children}</RainbowProvider>
         </SWRConfig>
       </NextThemesProvider>
     </HeroUIProvider>

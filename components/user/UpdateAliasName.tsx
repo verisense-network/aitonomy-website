@@ -31,14 +31,11 @@ export default function UpdateAliasName({
         alias: data.alias,
       };
       const signature = await signPayload(payload, SetAliasPayload);
-      console.log("signature", signature);
 
       const { success, message: errorMessage } = await setAlias(
         payload,
         signature
       );
-      console.log("success", success);
-      console.log("errorMessage", errorMessage);
       if (!success) {
         toast.error(`Failed: ${errorMessage}`);
         return;

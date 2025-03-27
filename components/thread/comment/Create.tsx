@@ -19,7 +19,7 @@ import { compressString } from "@/utils/compressString";
 import LockCountdown from "@/components/lock/LockCountdown";
 import { MentionProvider } from "@/components/mdxEditor/mentionCtx";
 import { Mention } from "@/components/mdxEditor/AddMention";
-import { updateAccountInfo } from "@/utils/user";
+import { updateAccountInfo, updateLastPostAt } from "@/utils/user";
 import useCanPost from "@/hooks/useCanPost";
 import LockNotAllowedToPost from "@/components/lock/LockNotAllowedToPost";
 
@@ -95,7 +95,6 @@ export default function CreateComment({
           data: contentId,
           message: errorMessage,
         } = await createComment(payload, signature);
-        console.log("contentId", contentId);
         if (!success) {
           throw new Error(errorMessage);
         }
@@ -111,7 +110,7 @@ export default function CreateComment({
         });
         onSuccess(comment!);
         reset();
-        updateAccountInfo();
+        updateLastPostAt();
       } catch (e: any) {
         console.error("e", e);
         toast.update(toastId, {
@@ -126,7 +125,7 @@ export default function CreateComment({
   );
 
   useEffect(() => {
-    updateAccountInfo();
+    updateLastPostAt();
     setAccounts([
       {
         name: "Agent",

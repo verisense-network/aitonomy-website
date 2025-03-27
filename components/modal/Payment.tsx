@@ -1,5 +1,4 @@
 import { useUserStore } from "@/stores/user";
-import { getWalletConnect } from "@/utils/wallet";
 import {
   Button,
   Card,
@@ -10,11 +9,12 @@ import {
   ModalHeader,
 } from "@heroui/react";
 import { useCallback, useMemo, useState } from "react";
-import bs58 from "bs58";
 import { Id, toast } from "react-toastify";
 import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
 import { CHAIN } from "@/utils/chain";
 import { isDev } from "@/utils/tools";
+import { sendTransaction } from "@wagmi/core";
+import { wagmiConfig } from "@/config/wagmi";
 
 interface Props {
   isOpen: boolean;
@@ -31,7 +31,7 @@ export default function PaymentModal({
   amount,
   onSuccess,
 }: Props) {
-  const { address, wallet } = useUserStore();
+  const { address } = useUserStore();
   const fromAddress = address;
   const [isLoading, setIsLoading] = useState(false);
 
@@ -41,23 +41,23 @@ export default function PaymentModal({
     );
     try {
       setIsLoading(true);
-      const walletConnect = getWalletConnect(wallet);
       const readableAmount = formatReadableAmount(amount);
       console.log("toAddress", toAddress);
       console.log("readableAmount", readableAmount);
-      const tx = await walletConnect.createTransaction(
-        toAddress,
-        readableAmount
-      );
-      console.log("tx", tx);
-      const signTx = await walletConnect.signTransaction(tx as any);
+      // const tx = await walletConnect.createTransaction(
+      //   toAddress,
+      //   readableAmount
+      // );
+      const signTx = await sendTransaction(wagmiConfig, {
+        to: toAddress as `0x${string}`,
+        value: BigInt(amount),
+      });
 
       console.log("signTx", signTx);
 
-      await walletConnect.broadcastTransaction(signTx);
+      // await walletConnect.broadcastTransaction(signTx);
 
-      const signatureHex =
-        CHAIN === "SOL" ? bs58.encode(signTx.signature) : signTx;
+      const signatureHex = CHAIN === "SOL" ? "" : signTx;
       onSuccess(signatureHex, toastId);
       setIsLoading(false);
     } catch (e: any) {
@@ -70,7 +70,7 @@ export default function PaymentModal({
         autoClose: 3000,
       });
     }
-  }, [wallet, toAddress, amount, onSuccess]);
+  }, [toAddress, amount, onSuccess]);
 
   const mockPayment = useCallback(() => {
     const signatureHex = `0xc712feacbd7672e3d8f4b2ff4d8c4484747e9fa2730614ddc97dc2ce9870538a`;

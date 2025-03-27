@@ -28,7 +28,7 @@ import {
 import { compressString } from "@/utils/compressString";
 import LockCountdown from "../lock/LockCountdown";
 import { useUserStore } from "@/stores/user";
-import { updateAccountInfo } from "@/utils/user";
+import { updateAccountInfo, updateLastPostAt } from "@/utils/user";
 import LockNotAllowedToPost from "../lock/LockNotAllowedToPost";
 import useCanPost from "@/hooks/useCanPost";
 
@@ -106,7 +106,6 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
           data: contentId,
           message: errorMessage,
         } = await createThread(payload, signature);
-        console.log("contentId", contentId);
         if (!success) {
           throw new Error(errorMessage);
         }
@@ -124,7 +123,7 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
           router.push(`/c/${community}/${thread}`);
         }, 1500);
         onClose();
-        updateAccountInfo();
+        updateLastPostAt();
       } catch (e: any) {
         console.error("e", e);
         toast.update(toastId, {
@@ -139,7 +138,7 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
   );
 
   useEffect(() => {
-    updateAccountInfo();
+    updateLastPostAt();
   }, []);
 
   return (

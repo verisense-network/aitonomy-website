@@ -1,28 +1,28 @@
 import { getAccountInfo } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
-import { getWalletConnect } from "./wallet";
 import { toast } from "react-toastify";
+import { ethers } from "ethers";
+import { formatAddress } from "./tools";
 
 export const NAME_NOT_SET = "Name not set";
 
-export async function updateAccountInfo() {
+export async function updateAccountInfo(address: string) {
   try {
-    const walletId = useUserStore.getState().wallet;
+    const chain = useUserStore.getState().chain;
 
-    const wallet = getWalletConnect(walletId);
-    await wallet.checkConnected();
+    let publicKey: Uint8Array = new Uint8Array();
+    if (chain === "evm") {
+      publicKey = ethers.toBeArray(address);
+    }
 
-    const currentAddress = wallet.address;
-    const publicKey = wallet.publicKey;
+    const { setUser, logout } = useUserStore.getState();
 
-    const { setUser, setLastPostAt, logout } = useUserStore.getState();
-
-    if (!currentAddress || !publicKey) {
+    if (!address || !publicKey) {
       return;
     }
 
     // sol address check
-    if (!currentAddress.startsWith("0x")) {
+    if (!address.startsWith("0x")) {
       logout();
       toast.info("Please login");
     }
@@ -32,22 +32,46 @@ export async function updateAccountInfo() {
       data: account,
       message: errorMessage,
     } = await getAccountInfo({
-      accountId: currentAddress,
+      accountId: address,
     });
 
     if (!success || !account) {
       throw new Error(errorMessage);
     }
-    const aliasName = account.alias || currentAddress.slice(0, 4);
+
     setUser({
-      name: aliasName,
+      alias: account.alias || formatAddress(address),
+      address: address,
       publicKey: publicKey,
-      address: currentAddress,
+      lastPostAt: account.last_post_at,
     });
-    setLastPostAt(account.last_post_at);
-    wallet.addListeners();
   } catch (e: any) {
     console.error("updateAccountInfo error", e);
     toast.error(`updateAccountInfo failed: ${e}`);
+  }
+}
+
+export async function updateLastPostAt() {
+  try {
+    const { setUser, address } = useUserStore.getState();
+    if (!address) {
+      return;
+    }
+    const {
+      success,
+      data: account,
+      message: errorMessage,
+    } = await getAccountInfo({
+      accountId: address,
+    });
+    if (!success || !account) {
+      throw new Error(errorMessage);
+    }
+    setUser({
+      lastPostAt: account.last_post_at,
+    });
+  } catch (e: any) {
+    console.error("updateLastPostAt error", e);
+    toast.error(`updateLastPostAt failed: ${e}`);
   }
 }

@@ -15,10 +15,12 @@ import { useCallback, useEffect, useState } from "react";
 import { GetRewardsResponse } from "@/utils/aitonomy";
 import { getRewards } from "@/app/actions";
 import { decodeRewards, Reward } from "@/utils/reward";
-import { formatAddress } from "@/utils/tools";
-import { getWalletConnect } from "@/utils/wallet";
+import { extractWagmiErrorDetailMessage, formatAddress } from "@/utils/tools";
 import { toast } from "react-toastify";
 import { ethers } from "ethers";
+import { writeContract } from "@wagmi/core";
+import { wagmiConfig } from "@/config/wagmi";
+import { useUser } from "@/hooks/useUser";
 
 const TABLE_COLUMNS = [
   {
@@ -43,15 +45,30 @@ const TABLE_COLUMNS = [
   },
 ];
 
+const RewardABI = [
+  {
+    inputs: [
+      { internalType: "bytes", name: "_messageBytes", type: "bytes" },
+      { internalType: "bytes", name: "_signature", type: "bytes" },
+    ],
+    name: "withdraw",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+];
+
 export default function Rewards() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isTableLoading, setIsTableLoading] = useState(false);
   const [rewards, setRewards] = useState<GetRewardsResponse[]>([]);
 
-  const { address, wallet: walletId } = useUserStore();
+  const {
+    user: { address },
+  } = useUser();
 
   const getUserRewards = useCallback(async () => {
     if (!address) return;
-    setIsLoading(true);
+    setIsTableLoading(true);
     try {
       const { data, success } = await getRewards({ accountId: address });
       if (!success || !data) return;
@@ -59,38 +76,31 @@ export default function Rewards() {
     } catch (error) {
       console.error(error);
     } finally {
-      setIsLoading(false);
+      setIsTableLoading(false);
     }
   }, [address]);
 
-  const receiveReward = useCallback(
-    async (reward: Reward) => {
-      try {
-        const wallet = getWalletConnect(walletId);
+  const receiveReward = useCallback(async (reward: Reward) => {
+    try {
+      const _messageBytes = ethers.hexlify(new Uint8Array(reward.payload));
+      console.log("_messageBytes", _messageBytes);
+      const _signature = ethers.hexlify(new Uint8Array(reward.signature));
+      console.log("_signature", _signature);
 
-        console.log("reward", reward);
-        console.log("wallet", wallet);
-
-        const _messageBytes = ethers.hexlify(new Uint8Array(reward.payload));
-        console.log("_messageBytes", _messageBytes);
-        const _signature = ethers.hexlify(new Uint8Array(reward.signature));
-        console.log("_signature", _signature);
-
-        const receipt = await wallet.callWithdraw(
-          reward.contract,
-          _messageBytes,
-          _signature
-        );
-        console.log("receipt", receipt);
-        console.log("reward", reward);
-        toast.success("receive success");
-      } catch (err: any) {
-        console.error("receiveReward err", err);
-        toast.error(`Failed: ${err}`);
-      }
-    },
-    [walletId]
-  );
+      const receipt = await writeContract(wagmiConfig, {
+        abi: RewardABI,
+        address: reward.contract as `0x${string}`,
+        functionName: "withdraw",
+        args: [_messageBytes, _signature],
+      });
+      console.log("receipt", receipt);
+      console.log("reward", reward);
+      toast.success("receive success");
+    } catch (err: any) {
+      console.error("receiveReward err", err);
+      toast.error(`Failed: ${extractWagmiErrorDetailMessage(err)}`);
+    }
+  }, []);
 
   useEffect(() => {
     getUserRewards();
@@ -108,7 +118,7 @@ export default function Rewards() {
         <TableBody
           items={decodeRewards(rewards)}
           emptyContent="No rewards"
-          isLoading={isLoading}
+          isLoading={isTableLoading}
           loadingContent={<Spinner />}
         >
           {(item) => (

@@ -4,9 +4,9 @@ import { Button, Card, CardBody, Spinner, Tooltip } from "@heroui/react";
 import { useCallback, useEffect, useState } from "react";
 import UpdateAliasName from "./UpdateAliasName";
 import { toast } from "react-toastify";
-import { isYouAddress } from "../thread/utils";
-import { NAME_NOT_SET } from "@/utils/user";
+import { NAME_NOT_SET, updateAccountInfo } from "@/utils/user";
 import Rewards from "./Rewards";
+import { useUser } from "@/hooks/useUser";
 
 interface Props {
   address: string;
@@ -16,6 +16,7 @@ export default function UserProfile({ address }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [isShowUpdateName, setIsShowUpdateName] = useState(false);
   const [userName, setUserName] = useState("");
+  const { isYouAddress } = useUser();
 
   const getUserProfile = useCallback(async () => {
     try {
@@ -45,7 +46,8 @@ export default function UserProfile({ address }: Props) {
   const updateAliasNameOnSuccess = useCallback(() => {
     setIsShowUpdateName(false);
     getUserProfile();
-  }, [getUserProfile]);
+    updateAccountInfo(address);
+  }, [getUserProfile, address]);
 
   useEffect(() => {
     if (!address) return;
@@ -63,7 +65,7 @@ export default function UserProfile({ address }: Props) {
               {isLoading && <Spinner />}
               {isShowUpdateName ? (
                 <UpdateAliasName
-                  defaultName={userName}
+                  defaultName={userName !== NAME_NOT_SET ? userName : ""}
                   onSuccess={updateAliasNameOnSuccess}
                   onClose={() => setIsShowUpdateName(false)}
                 />

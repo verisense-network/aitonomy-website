@@ -80,3 +80,17 @@ export function debounce<T extends (...args: any[]) => any>(
 export async function sleep(timeout: number) {
   return new Promise((resolve) => setTimeout(resolve, timeout));
 }
+
+export function convertStoredPublicKeyToHex(publicKey: Uint8Array) {
+  return `0x${Buffer.from(Object.values(publicKey)).toString("hex")}`;
+}
+
+export function extractWagmiErrorDetailMessage(err: any) {
+  const regex = /Details: (.+)/;
+  const match = err?.message.match(regex);
+  if (match && match[1]) {
+    return match[1].trim();
+  } else {
+    return err?.message || err;
+  }
+}

@@ -1,25 +1,25 @@
 import { create } from "zustand";
 import { createComputed } from "zustand-computed";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { WalletId } from "@/utils/wallet/id";
+
+type Chain = "evm" | "sol";
 
 type SetUser = {
-  name: string;
-  publicKey: Uint8Array;
-  address: string;
+  chain?: Chain;
+  alias?: string;
+  address?: string;
+  publicKey?: Uint8Array;
+  lastPostAt?: number | null;
 };
 
 type Store = {
-  name: string;
-  wallet: WalletId;
+  chain: Chain;
+  alias: string;
   address: string;
   publicKey: Uint8Array;
   lastPostAt: number | null;
-  setWallet: (wallet: WalletId) => void;
   setUser: (data: SetUser) => void;
-  setUserName: (name: string) => void;
   logout: () => void;
-  setLastPostAt: (lastPostAt: number | null) => void;
 };
 
 type ComputedStore = {
@@ -35,24 +35,33 @@ const computed = createComputed(
 export const useUserStore = create<Store>()(
   persist(
     computed((set) => ({
-      name: "",
-      wallet: WalletId.METAMASK,
+      chain: "evm",
+      alias: "",
       address: "",
       publicKey: new Uint8Array(0),
       lastPostAt: null,
-      setWallet: (wallet) => set({ wallet }),
       setUser: (data) => set(data),
-      setUserName: (name: string) => set({ name }),
       logout: () =>
         set({
-          wallet: undefined,
-          name: "",
+          alias: "",
           publicKey: new Uint8Array(0),
           address: "",
           lastPostAt: null,
         }),
-      setLastPostAt: (lastPostAt: number | null) => set({ lastPostAt }),
     })),
-    { name: "user", storage: createJSONStorage(() => localStorage) }
+    {
+      name: "user",
+      storage: createJSONStorage(() => localStorage),
+      version: 2,
+      migrate: (persistedState: any, version) => {
+        if (version === 1) {
+          return {
+            ...persistedState,
+            wallet: "MetaMask",
+          };
+        }
+        return persistedState;
+      },
+    }
   )
 );
