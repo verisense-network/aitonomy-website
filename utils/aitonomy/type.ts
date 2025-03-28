@@ -380,12 +380,18 @@ pub struct RewardPayload {
     pub payload: Vec<u8>,
     pub signature: Vec<u8>,
     pub agent_contract: AccountId,
+    pub token_symbol: String,
+    pub token_contract: AccountId,
+    pub withdrawed: bool,
 }
  */
 export const RewardPayload = Struct.with({
   payload: Vec.with(u8),
   signature: Vec.with(u8),
   agent_contract: AccountId,
+  token_symbol: Text,
+  token_contract: AccountId,
+  withdrawed: Bool,
 });
 
 /**

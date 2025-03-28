@@ -332,6 +332,7 @@ export async function getBalancesRpc(
 }
 
 export interface GetRewardsArg {
+  community_id: Uint8Array;
   account_id: Uint8Array;
 }
 
@@ -339,6 +340,9 @@ export type GetRewardsResponse = {
   payload: Uint8Array;
   signature: Uint8Array;
   agent_contract: AccountId;
+  token_contract: AccountId;
+  token_symbol: string;
+  withdrawed: boolean;
 };
 
 export async function getRewardsRpc(
@@ -347,9 +351,15 @@ export async function getRewardsRpc(
 ): Promise<GetRewardsResponse[]> {
   console.log("args", args);
   /**
-    account_id: AccountId,
+    community_id: CommunityId, account_id: AccountId
    */
-  const payload = new AccountId(registry, args.account_id).toHex();
+
+  const tuple = new Tuple(
+    registry,
+    [CommunityId, AccountId],
+    [args.community_id, args.account_id]
+  );
+  const payload = tuple.toHex();
 
   try {
     const provider = await getRpcClient();

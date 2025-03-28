@@ -33,6 +33,7 @@ import {
   ShieldEllipsisIcon,
   UserPlusIcon,
 } from "lucide-react";
+import TokenPanel from "./token/TokenPanel";
 
 interface Props {
   communityId: string;
@@ -246,7 +247,7 @@ export default function CommunityBrand({ communityId }: Props) {
     <>
       <Card className="m-2 p-2 md:p-4 min-h-40">
         <CardHeader>
-          <div className="flex justify-between items-center w-full">
+          <div className="flex flex-wrap md:flex-nowrap justify-between items-center w-full space-y-2">
             <div className="flex flex-wrap space-x-4 items-center">
               <Badge
                 color="default"
@@ -357,17 +358,9 @@ export default function CommunityBrand({ communityId }: Props) {
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="hidden md:flex items-center space-x-2">
               {isCommunityStatus(CommunityStatus.Active) && (
-                <div className="flex flex-col items-center">
-                  <Avatar
-                    src={c?.token_info?.image}
-                    name={c?.token_info?.symbol}
-                  />
-                  <div className="flex items-center mt-1 space-x-1 text-md">
-                    <span className="text-sm">{c?.token_info?.symbol}</span>
-                  </div>
-                </div>
+                <TokenPanel community={c} />
               )}
             </div>
           </div>
@@ -375,6 +368,11 @@ export default function CommunityBrand({ communityId }: Props) {
         <CardBody>
           {isLoading && <Spinner />}
           {c?.description}
+          <div className="flex md:hidden items-center space-x-2 w-full justify-center mt-4">
+            {isCommunityStatus(CommunityStatus.Active) && (
+              <TokenPanel community={c} />
+            )}
+          </div>
         </CardBody>
       </Card>
       <PaymentModal
