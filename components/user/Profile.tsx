@@ -90,7 +90,7 @@ export default function UserProfile({ address }: Props) {
                 <span>{formatAddress(address)}</span>
               </Tooltip>
             </div>
-            {isYouAddress(address) && <Rewards />}
+            {/* {isYouAddress(address) && <Rewards />} */}
           </div>
         </CardBody>
       </Card>

@@ -4,6 +4,7 @@ import useMeilisearch from "@/hooks/useMeilisearch";
 import { decodeId } from "@/utils/thread";
 import { formatTimestamp, hexToLittleEndian } from "@/utils/tools";
 import {
+  Button,
   Card,
   CardBody,
   CardFooter,
@@ -22,7 +23,7 @@ import { GetAccountInfoResponse } from "@/utils/aitonomy";
 import { getAccounts } from "@/app/actions";
 import { isEqualAddress } from "./utils";
 import TooltipTime from "../formatTime/TooltipTime";
-import { BotIcon } from "lucide-react";
+import { BotIcon, RotateCwIcon } from "lucide-react";
 
 interface Props {
   threadId: string;
@@ -87,18 +88,20 @@ export default function ThreadComments({ threadId, community }: Props) {
 
   return (
     <div className="mx-2 space-y-3">
-      <h1 className="text-lg font-bold">Comments</h1>
-      {isLoading && (
-        <Card>
-          <Spinner />
-        </Card>
-      )}
+      <div className="flex items-center space-x-2">
+        <h1 className="text-lg font-bold">Comments</h1>
+      </div>
       {!isLoading && (
         <CreateComment
           threadId={threadId}
           onSuccess={onSuccessCreateCommunity}
           community={community}
         />
+      )}
+      {isLoading && (
+        <Card>
+          <Spinner />
+        </Card>
       )}
       {!isLoading &&
         comments.map((comment: any) => (

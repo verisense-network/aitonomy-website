@@ -258,13 +258,14 @@ export async function getBalances(data: GetBalancesParams) {
 }
 
 interface GetRewardsParams {
+  communityId: string;
   accountId: string;
 }
 
 export async function getRewards(data: GetRewardsParams) {
   try {
     let accountId: Uint8Array = new Uint8Array();
-    if (!data.accountId) {
+    if (!data.accountId || !data.communityId) {
       return {
         success: true,
         data: [] as GetRewardsResponse[],
@@ -277,6 +278,7 @@ export async function getRewards(data: GetRewardsParams) {
     }
     const threadArgs = {
       account_id: accountId,
+      community_id: hexToBytes(data.communityId),
     };
 
     const res = await getRewardsRpc(NUCLEUS_ID, threadArgs);

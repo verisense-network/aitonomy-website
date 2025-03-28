@@ -1,12 +1,11 @@
 import { AbiCoder } from "ethers";
 import { GetRewardsResponse } from "./aitonomy";
 
-export interface Reward {
+export interface Reward extends GetRewardsResponse {
   payload: Uint8Array;
   sequence: bigint;
   address: string;
   amount: bigint;
-  contract: string;
   signature: Uint8Array;
 }
 
@@ -24,7 +23,6 @@ export function decodeRewards(rewards: GetRewardsResponse[]): Reward[] {
       sequence,
       address,
       amount,
-      contract: reward.agent_contract,
     };
   });
 

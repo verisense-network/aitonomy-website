@@ -18,9 +18,10 @@ import { decodeRewards, Reward } from "@/utils/reward";
 import { extractWagmiErrorDetailMessage, formatAddress } from "@/utils/tools";
 import { toast } from "react-toastify";
 import { ethers } from "ethers";
-import { writeContract } from "@wagmi/core";
+import { readContract, writeContract } from "@wagmi/core";
 import { wagmiConfig } from "@/config/wagmi";
 import { useUser } from "@/hooks/useUser";
+import { ArrowRight } from "lucide-react";
 
 const TABLE_COLUMNS = [
   {
@@ -28,15 +29,15 @@ const TABLE_COLUMNS = [
     label: "Seq",
   },
   {
-    key: "address",
-    label: "Receive Address",
+    key: "transfer",
+    label: "Transfer",
   },
   {
     key: "amount",
     label: "Amount",
   },
   {
-    key: "contract",
+    key: "token_contract",
     label: "Contract",
   },
   {
@@ -58,7 +59,39 @@ const RewardABI = [
   },
 ];
 
-export default function Rewards() {
+const UserTicketsABI = [
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "user",
+        type: "address",
+      },
+    ],
+    name: "user_withdraws",
+    outputs: [
+      {
+        internalType: "uint256[]",
+        name: "",
+        type: "uint256[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+];
+
+interface RewardsProps {
+  communityId: string;
+  agentContract: string;
+  tokenContract: string;
+}
+
+export default function Rewards({
+  communityId,
+  agentContract,
+  tokenContract,
+}: RewardsProps) {
   const [isTableLoading, setIsTableLoading] = useState(false);
   const [rewards, setRewards] = useState<GetRewardsResponse[]>([]);
 
@@ -70,15 +103,28 @@ export default function Rewards() {
     if (!address) return;
     setIsTableLoading(true);
     try {
-      const { data, success } = await getRewards({ accountId: address });
+      const { data, success } = await getRewards({
+        accountId: address,
+        communityId,
+      });
       if (!success || !data) return;
       setRewards(data);
+
+      console.log("agentContract", agentContract);
+
+      const tickets = await readContract(wagmiConfig, {
+        abi: UserTicketsABI,
+        address: agentContract as `0x${string}`,
+        functionName: "user_withdraws",
+        args: [address],
+      });
+      console.log("tickets", tickets);
     } catch (error) {
       console.error(error);
     } finally {
       setIsTableLoading(false);
     }
-  }, [address]);
+  }, [address, communityId, agentContract]);
 
   const receiveReward = useCallback(async (reward: Reward) => {
     try {
@@ -89,7 +135,7 @@ export default function Rewards() {
 
       const receipt = await writeContract(wagmiConfig, {
         abi: RewardABI,
-        address: reward.contract as `0x${string}`,
+        address: reward.agent_contract as `0x${string}`,
         functionName: "withdraw",
         args: [_messageBytes, _signature],
       });
@@ -101,6 +147,8 @@ export default function Rewards() {
       toast.error(`Failed: ${extractWagmiErrorDetailMessage(err)}`);
     }
   }, []);
+
+  console.log("rewards", rewards);
 
   useEffect(() => {
     getUserRewards();
@@ -125,13 +173,31 @@ export default function Rewards() {
             <TableRow key={item.sequence}>
               {(columnKey) => {
                 let cell: any = getKeyValue(item, columnKey);
-                if (["address", "contract"].includes(columnKey as any)) {
+                if (columnKey === "transfer") {
+                  cell = (
+                    <div className="flex space-x-2 items-center">
+                      <Tooltip content={item.agent_contract}>
+                        {formatAddress(item.agent_contract)}
+                      </Tooltip>
+                      <ArrowRight className="w-4 h-4" />
+                      <Tooltip content={item.address}>
+                        {formatAddress(item.address)}
+                      </Tooltip>
+                    </div>
+                  );
+                } else if (columnKey === "token_contract") {
                   cell = (
                     <Tooltip content={cell}>{formatAddress(cell)}</Tooltip>
                   );
+                } else if (columnKey === "amount") {
+                  cell = `${cell} ${item.token_symbol}`;
                 } else if (columnKey === "actions") {
                   cell = (
-                    <Button size="sm" onPress={() => receiveReward(item)}>
+                    <Button
+                      size="sm"
+                      onPress={() => receiveReward(item)}
+                      isDisabled={item.withdrawed}
+                    >
                       Receive
                     </Button>
                   );
