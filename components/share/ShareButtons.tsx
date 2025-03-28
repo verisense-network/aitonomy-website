@@ -1,4 +1,4 @@
-import { ShareIcon } from "@heroicons/react/24/outline";
+import { Share2Icon } from "lucide-react";
 import {
   FacebookIcon,
   FacebookShareButton,
@@ -16,7 +16,7 @@ ${title}
 Aitonomy link: ${url}`;
   return (
     <div className="flex items-center space-x-2">
-      <ShareIcon className="w-4 h-4" />
+      <Share2Icon className="w-4 h-4" />
       <div className="flex items-center space-x-4 p-2 rounded-lg bg-zinc-800">
         <TwitterShareButton className="w-5 h-5" url={shareContent}>
           <XIcon className="w-5 h-5" round />

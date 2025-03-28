@@ -1,4 +1,3 @@
-import { PhotoIcon } from "@heroicons/react/24/outline";
 import {
   Button,
   Form,
@@ -21,6 +20,7 @@ import { toast } from "react-toastify";
 import Dropzone from "react-dropzone";
 import { uploadImage } from "@/app/actions";
 import { Controller, useForm } from "react-hook-form";
+import { ImageUpIcon } from "lucide-react";
 
 export default function AddImage() {
   const insertImage = usePublisher(insertImage$);
@@ -92,7 +92,7 @@ export default function AddImage() {
         onClick={() => seOpenImageDialog(true)}
         title="Add image"
       >
-        <PhotoIcon width={20} height={20} />
+        <ImageUpIcon width={20} height={20} />
       </ButtonWithTooltip>
 
       <Modal
@@ -112,7 +112,7 @@ export default function AddImage() {
                       >
                         <input {...getInputProps()} />
                         <div className="my-2 flex flex-col justify-center items-center w-full">
-                          <PhotoIcon width={40} height={40} />
+                          <ImageUpIcon width={40} height={40} />
                         </div>
                         <p>
                           Drag & drop some files here, or click to select files

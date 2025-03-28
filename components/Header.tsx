@@ -1,12 +1,12 @@
 "use client";
 
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useCallback } from "react";
 import CreateMenu from "./header/CreateMenu";
 import UserMenu from "./header/UserMenu";
 import { Badge, Image, Input } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { SearchIcon } from "lucide-react";
 
 export default function Header() {
   const router = useRouter();
@@ -45,9 +45,7 @@ export default function Header() {
         </div>
         <div className="max-w-xl w-full mx-4">
           <Input
-            startContent={
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-            }
+            startContent={<SearchIcon className="h-5 w-5 text-gray-400" />}
             type="text"
             placeholder="Search"
           />
