@@ -5,13 +5,22 @@ import {
   ArrowLeftCircleIcon,
   Bars3Icon,
   CurrencyDollarIcon,
-  HomeIcon,
   PlusIcon,
   QuestionMarkCircleIcon,
-  ShieldCheckIcon,
   UserGroupIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
+import { SiGithub, SiX } from "@icons-pack/react-simple-icons";
+import {
+  CircleDollarSignIcon,
+  CircleHelpIcon,
+  HeartHandshakeIcon,
+  HomeIcon,
+  PanelLeftOpenIcon,
+  PanelRightOpenIcon,
+  ShieldCheckIcon,
+  TelescopeIcon,
+} from "lucide-react";
 import {
   Accordion,
   AccordionItem,
@@ -41,7 +50,7 @@ const TopMenus = [
   {
     name: "Explore",
     href: "/explore",
-    icon: <UserGroupIcon className="w-5 h-5" />,
+    icon: <TelescopeIcon className="w-5 h-5" />,
   },
 ];
 
@@ -54,12 +63,12 @@ const Legals = [
   {
     name: "Terms of Service",
     href: "/legals/terms-of-service",
-    icon: <UsersIcon className="w-5 h-5" />,
+    icon: <HeartHandshakeIcon className="w-5 h-5" />,
   },
   {
     name: "Fees",
     href: "/legals/fees",
-    icon: <CurrencyDollarIcon className="w-5 h-5" />,
+    icon: <CircleDollarSignIcon className="w-5 h-5" />,
   },
 ];
 
@@ -99,9 +108,9 @@ export default function SideMenu() {
           className="absolute top-20 -right-5 shadow-0 text-zinc-300"
         >
           {sideBarIsOpen ? (
-            <ArrowLeftCircleIcon className="w-8 h-8 bg-black" />
+            <PanelRightOpenIcon className="w-8 h-8 bg-black" />
           ) : (
-            <Bars3Icon className="w-8 h-8 bg-black" />
+            <PanelLeftOpenIcon className="w-8 h-8 bg-black" />
           )}
         </Button>
         <div className={twMerge(sideBarIsOpen ? "" : "hidden", "", "p-2 pr-4")}>
@@ -180,7 +189,7 @@ export default function SideMenu() {
           >
             <ListboxItem
               key="how-to-works"
-              startContent={<QuestionMarkCircleIcon className="w-5 h-5" />}
+              startContent={<CircleHelpIcon className="w-5 h-5" />}
               onPress={() => setWelcomeModalIsOpen(true)}
             >
               How it works
@@ -201,6 +210,24 @@ export default function SideMenu() {
           </Listbox>
           <div className="px-3 mt-2 text-zinc-400 hover:text-zinc-300">
             <span className="text-xs">AItonomy.world 2025</span>
+          </div>
+          <div className="flex space-x-2 items-center px-3 mt-2 text-zinc-400 ">
+            <p className="text-xs">
+              Powered by{" "}
+              <Link
+                className="text-zinc-400 font-semibold"
+                href="https://verisense.network/"
+                target="_blank"
+              >
+                Verisense
+              </Link>
+            </p>
+            <Link href="https://x.com/veri_sense" target="_blank">
+              <SiX className="w-3 h-3" />
+            </Link>
+            <Link href="https://github.com/verisense-network" target="_blank">
+              <SiGithub className="w-3 h-3" />
+            </Link>
           </div>
         </div>
         <Modal
