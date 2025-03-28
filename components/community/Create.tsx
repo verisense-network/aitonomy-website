@@ -4,11 +4,7 @@ import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX, TOKEN_REGEX } from "@/utils/aitonomy/tools";
 import { CreateCommunityPayload, LLmName } from "@/utils/aitonomy/type";
 import { isDev } from "@/utils/tools";
-import {
-  PhotoIcon,
-  QuestionMarkCircleIcon,
-  ShieldCheckIcon,
-} from "@heroicons/react/24/outline";
+import { CircleHelpIcon, ImageIcon, ShieldCheckIcon } from "lucide-react";
 import {
   Accordion,
   AccordionItem,
@@ -254,7 +250,7 @@ export default function CommunityCreate({ onClose }: Props) {
                     {isLoadingLogo ? (
                       <Spinner />
                     ) : (
-                      <PhotoIcon className="w-8 h-8" />
+                      <ImageIcon className="w-8 h-8" />
                     )}
                   </div>
                 </div>
@@ -424,7 +420,7 @@ export default function CommunityCreate({ onClose }: Props) {
                     {isLoadingTokenLogo ? (
                       <Spinner />
                     ) : (
-                      <PhotoIcon className="w-8 h-8" />
+                      <ImageIcon className="w-8 h-8" />
                     )}
                   </div>
                 </div>
@@ -624,7 +620,7 @@ export default function CommunityCreate({ onClose }: Props) {
                   selectedKeys={[field.value]}
                   endContent={
                     <Tooltip content="currently only supports OpenAI">
-                      <QuestionMarkCircleIcon className="h-6 w-6" />
+                      <CircleHelpIcon className="h-6 w-6" />
                     </Tooltip>
                   }
                   disabledKeys={[LLmName.DeepSeek]}

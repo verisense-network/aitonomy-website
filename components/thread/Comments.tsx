@@ -20,9 +20,9 @@ import { decompressString } from "@/utils/compressString";
 import Link from "next/link";
 import { GetAccountInfoResponse } from "@/utils/aitonomy";
 import { getAccounts } from "@/app/actions";
-import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/outline";
 import { isEqualAddress } from "./utils";
 import TooltipTime from "../formatTime/TooltipTime";
+import { BotIcon } from "lucide-react";
 
 interface Props {
   threadId: string;
@@ -124,9 +124,7 @@ export default function ThreadComments({ threadId, community }: Props) {
                         community?.agent_pubkey
                       )
                         ? {
-                            icon: (
-                              <ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
-                            ),
+                            icon: <BotIcon className="w-5 h-5" />,
                           }
                         : {
                             name: viewCommentAccount(comment?.author),

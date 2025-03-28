@@ -1,15 +1,6 @@
 "use client";
 
 import useMeilisearch from "@/hooks/useMeilisearch";
-import {
-  ArrowLeftCircleIcon,
-  Bars3Icon,
-  CurrencyDollarIcon,
-  PlusIcon,
-  QuestionMarkCircleIcon,
-  UserGroupIcon,
-  UsersIcon,
-} from "@heroicons/react/24/outline";
 import { SiGithub, SiX } from "@icons-pack/react-simple-icons";
 import {
   CircleDollarSignIcon,
@@ -18,6 +9,7 @@ import {
   HomeIcon,
   PanelLeftOpenIcon,
   PanelRightOpenIcon,
+  PlusIcon,
   ShieldCheckIcon,
   TelescopeIcon,
 } from "lucide-react";

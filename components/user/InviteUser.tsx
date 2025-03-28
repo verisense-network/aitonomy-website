@@ -5,7 +5,6 @@ import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
 import { InviteUserPayload } from "@/utils/aitonomy/type";
 import { debounce } from "@/utils/tools";
-import { WalletIcon } from "@heroicons/react/24/outline";
 import {
   Modal,
   ModalBody,
@@ -24,6 +23,7 @@ import { Id, toast } from "react-toastify";
 import PaymentModal from "../modal/Payment";
 import { ethers } from "ethers";
 import { twMerge } from "tailwind-merge";
+import { WalletIcon } from "lucide-react";
 
 interface InviteUserProps {
   isOpen: boolean;

@@ -23,16 +23,16 @@ import { waitForTransactionReceipt } from "@wagmi/core";
 import { Id, toast } from "react-toastify";
 import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
 import { useAppearanceStore } from "@/stores/appearance";
-import {
-  CheckBadgeIcon,
-  CurrencyDollarIcon,
-  ExclamationCircleIcon,
-  LockClosedIcon,
-  UserPlusIcon,
-} from "@heroicons/react/24/outline";
 import InviteUser from "../user/InviteUser";
 import { wagmiConfig } from "@/config/wagmi";
 import { useUser } from "@/hooks/useUser";
+import {
+  BadgeCheckIcon,
+  CircleAlertIcon,
+  CircleDollarSignIcon,
+  ShieldEllipsisIcon,
+  UserPlusIcon,
+} from "lucide-react";
 
 interface Props {
   communityId: string;
@@ -251,7 +251,7 @@ export default function CommunityBrand({ communityId }: Props) {
               <Badge
                 color="default"
                 isOneChar
-                content={<LockClosedIcon className="w-3 h-3" />}
+                content={<ShieldEllipsisIcon className="w-3 h-3" />}
                 showOutline={false}
                 isInvisible={!isPrivateCommunity}
                 placement="bottom-right"
@@ -266,15 +266,15 @@ export default function CommunityBrand({ communityId }: Props) {
                     {isLoaded &&
                       (isCommunityStatus(CommunityStatus.Active) ? (
                         <Tooltip content="Activated">
-                          <CheckBadgeIcon className="ml-2 w-6 h-6 text-success" />
+                          <BadgeCheckIcon className="ml-2 w-6 h-6 text-success" />
                         </Tooltip>
                       ) : isCommunityStatus(CommunityStatus.TokenIssued) ? (
                         <Tooltip content="Token Issued">
-                          <CurrencyDollarIcon className="ml-2 w-6 h-6 text-warning" />
+                          <CircleDollarSignIcon className="ml-2 w-6 h-6 text-warning" />
                         </Tooltip>
                       ) : (
                         <Tooltip content="Inactive">
-                          <ExclamationCircleIcon className="ml-2 w-6 h-6 text-danger" />
+                          <CircleAlertIcon className="ml-2 w-6 h-6 text-danger" />
                         </Tooltip>
                       ))}
                     {isLoaded &&
@@ -301,17 +301,18 @@ export default function CommunityBrand({ communityId }: Props) {
                         <span>
                           Waiting tx {viewAmount} {VIEW_UNIT}
                         </span>
-                        {!isLoading &&
-                          (hasStoredSignature ? (
-                            <Button
-                              variant="shadow"
-                              size="sm"
-                              color="primary"
-                              onPress={retryWithStoreSignature}
-                            >
-                              Retry
-                            </Button>
-                          ) : (
+                        {!isLoading && (
+                          <>
+                            {hasStoredSignature && (
+                              <Button
+                                variant="shadow"
+                                size="sm"
+                                color="primary"
+                                onPress={retryWithStoreSignature}
+                              >
+                                Retry
+                              </Button>
+                            )}
                             <Button
                               variant="shadow"
                               size="sm"
@@ -320,7 +321,8 @@ export default function CommunityBrand({ communityId }: Props) {
                             >
                               Payment
                             </Button>
-                          ))}
+                          </>
+                        )}
                       </Chip>
                     </div>
                   )}

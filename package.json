@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@heroicons/react": "^2.2.0",
     "@heroui/react": "2.7.6-beta.2",
     "@heroui/system": "2.4.13-beta.2",
     "@heroui/theme": "2.4.13-beta.2",
