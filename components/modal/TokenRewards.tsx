@@ -41,7 +41,7 @@ export default function TokenRewardsModal({
         {(onClose) => (
           <>
             <ModalHeader className="text-lg font-semibold">
-              {community.name} Rewards
+              {community.token_info?.name} Rewards
             </ModalHeader>
             <ModalBody>
               <Rewards
