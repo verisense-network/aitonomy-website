@@ -26,7 +26,7 @@ export default function TokenPanel({ community }: { community: any }) {
           size="sm"
           onPress={() => setIsOpenTokenModal(true)}
         >
-          Show More
+          More
         </Button>
         <Button
           variant="ghost"
