@@ -14,8 +14,6 @@
     "@heroui/theme": "2.4.13-beta.2",
     "@icons-pack/react-simple-icons": "^12.3.0",
     "@mdxeditor/editor": "^3.25.0",
-    "@metamask/sdk": "^0.32.1",
-    "@okxconnect/universal-provider": "^1.8.0",
     "@polkadot/rpc-provider": "^15.7.1",
     "@polkadot/types": "^15.7.1",
     "@polkadot/types-codec": "^15.7.1",
