@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -8,9 +8,9 @@ import RightMenu from "@/components/RightMenu";
 import WelcomeModal from "@/components/modal/Welcome";
 import "highlight.js/styles/atom-one-dark.min.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+const montserrat = Montserrat({
+  subsets: ["vietnamese"],
+  variable: "--font-montserrat",
 });
 
 export const metadata: Metadata = {
@@ -25,7 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} font-sans antialiased min-h-full`}>
+      <body
+        className={`${montserrat.variable} font-montserrat font-medium antialiased min-h-full`}
+      >
         <main>
           <Providers>
             <Header />

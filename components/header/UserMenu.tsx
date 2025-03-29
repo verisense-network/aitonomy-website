@@ -4,8 +4,6 @@ import {
   Button,
   DropdownMenu,
   DropdownItem,
-  Spinner,
-  Tooltip,
 } from "@heroui/react";
 import { Key, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -14,12 +12,14 @@ import { useAccount } from "wagmi";
 import Image from "next/image";
 import { formatAddress } from "@/utils/tools";
 import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
+import { useAppearanceStore } from "@/stores/appearance";
 
 export default function UserMenu() {
   const router = useRouter();
   const { user, disconnect, isLoading } = useUser();
   const { openConnectModal } = useConnectModal();
   const { openAccountModal } = useAccountModal();
+  const { isMobile } = useAppearanceStore();
   const { connector, isConnecting, isReconnecting } = useAccount();
   const { alias, isLogin, address } = user;
 
@@ -53,6 +53,7 @@ export default function UserMenu() {
           color={!isLogin ? "primary" : "default"}
           isLoading={isShowSpinner}
           variant={isLogin ? "faded" : "shadow"}
+          size={isMobile ? "sm" : "md"}
         >
           {isLogin ? alias : "Connect"}
         </Button>

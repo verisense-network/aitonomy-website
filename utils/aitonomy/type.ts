@@ -398,17 +398,29 @@ export const RewardPayload = Struct.with({
  * 
     pub struct InviteUserArgs {
         pub community: String,
-        pub tx: String,
-        pub invitee: AccountId,
+        pub invitee: AccountId
     }
  */
 export const InviteUserPayload = Struct.with({
   community: Text,
-  tx: Text,
   invitee: AccountId,
 });
 
 export const InviteUserArg = createWithArgs(InviteUserPayload);
+
+/**
+ * 
+    pub struct GenerateInviteCodeArgs {
+        pub community: String,
+        pub tx: String,
+    }
+ */
+export const GenerateInviteCodePayload = Struct.with({
+  community: Text,
+  tx: Text,
+});
+
+export const GenerateInviteCodeArgs = createWithArgs(GenerateInviteCodePayload);
 
 registry.register({
   EcdsaSignature,
@@ -429,4 +441,6 @@ registry.register({
   RewardPayload,
   InviteUserPayload,
   InviteUserArg,
+  GenerateInviteCodePayload,
+  GenerateInviteCodeArgs,
 });
