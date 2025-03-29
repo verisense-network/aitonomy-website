@@ -27,10 +27,10 @@ export default function Header() {
               badge: "bg-transparent",
             }}
             content={
-              <p className="text-[8px] text-wrap leading-2.5 md:text-xs mt-2">
+              <p className="text-[8px] md:text-[10px] text-center text-wrap leading-2.5 -ml-5">
                 Powered by
                 <Link
-                  className="ml-1 text-zinc-400"
+                  className="ml-1 text-verisense"
                   href="https://x.com/veri_sense"
                   target="_blank"
                 >
@@ -42,7 +42,7 @@ export default function Header() {
             <Image
               src="/logo.svg"
               alt="AItonomy.world Logo"
-              className="w-5 h-10 md:w-7 md:h-11 object-contain bg-top text-gray-400"
+              className="w-5 h-10 md:w-7 md:h-11 object-contain bg-top mb-2 text-gray-400"
             />
           </Badge>
         </div>
