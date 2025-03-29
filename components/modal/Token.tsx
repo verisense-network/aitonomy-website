@@ -29,8 +29,13 @@ export default function TokenModal({
 
   const tokenInfo = [
     {
-      label: "Contract",
+      label: "Token Contract",
       value: community.token_info?.contract,
+      type: "address",
+    },
+    {
+      label: "Agent Contract",
+      value: community.agent_contract,
       type: "address",
     },
     {

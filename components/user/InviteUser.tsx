@@ -177,7 +177,7 @@ export default function InviteUser({
             <div className="w-full text-zinc-400">
               <p className="text-small">Payment Address</p>
               <div className="flex space-x-2 w-full">
-                <div className="px-3 py-2 mt-2 bg-zinc-800 rounded-xl w-full">
+                <div className="px-3 py-2 mt-2 text-sm bg-zinc-800 rounded-xl w-full">
                   {toAddress}
                 </div>
               </div>
