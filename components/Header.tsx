@@ -53,7 +53,7 @@ export default function Header() {
             placeholder="Search"
           />
         </div>
-        <div className="flex-shrink-0 flex items-center space-x-1 md:space-x-5">
+        <div className="flex-shrink-0 flex space-x-1 md:space-x-5 items-center">
           <CreateMenu />
           <UserMenu />
         </div>

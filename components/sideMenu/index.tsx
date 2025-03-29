@@ -90,14 +90,14 @@ export default function SideMenu() {
       <div
         className={twMerge(
           sideBarIsOpen ? "md:w-[240px]" : "w-1 md:w-12",
-          "fixed top-16 left-0 h-[calc(100vh-4rem)] z-40 bg-black border-r-1 border-zinc-800"
+          "group fixed top-16 left-0 h-[calc(100vh-4rem)] z-40 bg-black border-r border-zinc-800 transition-colors duration-200"
         )}
       >
         <Button
           onPress={() => setSideBarIsOpen(!sideBarIsOpen)}
           isIconOnly
           variant="light"
-          className="absolute top-20 -right-5 shadow-0 text-zinc-300"
+          className="absolute top-20 -right-5 shadow-0 text-zinc-300 hover:text-white group-hover:border-zinc-700"
         >
           {sideBarIsOpen ? (
             <PanelRightOpenIcon className="w-8 h-8 bg-black" />
