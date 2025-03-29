@@ -207,7 +207,7 @@ export default function SideMenu() {
             <p className="text-xs">
               Powered by{" "}
               <Link
-                className="text-zinc-400 font-semibold"
+                className="text-verisense"
                 href="https://verisense.network/"
                 target="_blank"
               >

@@ -20,6 +20,7 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        verisense: "#ff847c",
       },
     },
   },
