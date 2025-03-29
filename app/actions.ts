@@ -11,6 +11,8 @@ import {
   createCommunityRpc,
   CreateThreadArg,
   createThreadRpc,
+  GenerateInviteCodeArg,
+  generateInvitesCodesRpc,
   getAccountInfoRpc,
   getAccountsRpc,
   GetBalancesResponse,
@@ -19,6 +21,7 @@ import {
   getInviteFeeRpc,
   GetRewardsResponse,
   getRewardsRpc,
+  invitecodeAmountRpc,
   InviteUserArg,
   inviteUserRpc,
   SetAliasArg,
@@ -386,6 +389,61 @@ export async function checkInvite(data: CheckInviteParams) {
     };
 
     const res = await checkInviteRpc(NUCLEUS_ID, args);
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("getBalances error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+export async function generateInviteCodes(
+  data: GenerateInviteCodeArg,
+  signature: Signature
+) {
+  try {
+    const args = data;
+    const res = await generateInvitesCodesRpc(NUCLEUS_ID, args, signature);
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("getCommunity error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+interface InvitecodeAmountParams {
+  accountId: string;
+  communityId: string;
+}
+
+export async function invitecodeAmount(data: InvitecodeAmountParams) {
+  try {
+    let accountId: Uint8Array = new Uint8Array();
+    if (CHAIN === "BSC") {
+      accountId = ethers.toBeArray(data.accountId);
+    } else if (CHAIN === "SOL") {
+      accountId = bs58.decode(data.accountId);
+    }
+
+    const args = {
+      account_id: accountId,
+      community_id: hexToBytes(data.communityId),
+    };
+
+    const res = await invitecodeAmountRpc(NUCLEUS_ID, args);
 
     return {
       success: true,

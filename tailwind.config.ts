@@ -15,6 +15,7 @@ export default {
       fontFamily: {
         sans: ["var(--font-inter)"],
         mono: ["var(--font-roboto-mono)"],
+        montserrat: ["var(--font-montserrat)"],
       },
       colors: {
         background: "var(--background)",

@@ -6,7 +6,7 @@ import UserMenu from "./header/UserMenu";
 import { Badge, Image, Input } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { SearchIcon } from "lucide-react";
+import { Power, SearchIcon } from "lucide-react";
 
 export default function Header() {
   const router = useRouter();
@@ -23,11 +23,14 @@ export default function Header() {
             placement="bottom-right"
             showOutline={false}
             variant="flat"
+            classNames={{
+              badge: "bg-transparent",
+            }}
             content={
-              <p className="text-xs">
-                Powered by{" "}
+              <p className="text-[8px] text-wrap leading-2.5 md:text-xs mt-2">
+                Powered by
                 <Link
-                  className="text-zinc-400 font-semibold"
+                  className="ml-1 text-zinc-400"
                   href="https://x.com/veri_sense"
                   target="_blank"
                 >
@@ -39,7 +42,7 @@ export default function Header() {
             <Image
               src="/logo.svg"
               alt="AItonomy.world Logo"
-              className="w-7 h-12 md:w-8 md:h-14 object-contain text-gray-400"
+              className="w-5 h-10 md:w-7 md:h-11 object-contain bg-top text-gray-400"
             />
           </Badge>
         </div>
@@ -50,7 +53,7 @@ export default function Header() {
             placeholder="Search"
           />
         </div>
-        <div className="flex-shrink-0 flex space-x-5">
+        <div className="flex-shrink-0 flex items-center space-x-1 md:space-x-5">
           <CreateMenu />
           <UserMenu />
         </div>

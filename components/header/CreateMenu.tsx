@@ -14,13 +14,13 @@ import CommunityCreate from "../community/Create";
 import ThreadCreate from "../thread/Create";
 import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
-import { BlendIcon, CirclePlusIcon, PenIcon } from "lucide-react";
+import { CirclePlusIcon, PenIcon, PlusIcon } from "lucide-react";
 
 const menuList = [
   {
     name: "community",
     title: "New community",
-    icon: <BlendIcon className="w-5 h-5" />,
+    icon: <PlusIcon className="w-5 h-5" />,
   },
   {
     name: "thread",
@@ -53,7 +53,7 @@ export default function CreateMenu() {
       <Dropdown>
         <DropdownTrigger>
           <Button isIconOnly variant="light">
-            <CirclePlusIcon className="w-8 h-8" />
+            <CirclePlusIcon className="w-6 h-6 md:w-8 md:h-8" />
           </Button>
         </DropdownTrigger>
         <DropdownMenu
