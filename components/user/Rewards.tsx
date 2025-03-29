@@ -1,4 +1,3 @@
-import { useUserStore } from "@/stores/user";
 import {
   Button,
   getKeyValue,
@@ -12,7 +11,6 @@ import {
   Tooltip,
 } from "@heroui/react";
 import { useCallback, useEffect, useState } from "react";
-import { GetRewardsResponse } from "@/utils/aitonomy";
 import { getRewards } from "@/app/actions";
 import { decodeRewards, Reward } from "@/utils/reward";
 import { extractWagmiErrorDetailMessage, formatAddress } from "@/utils/tools";
@@ -84,16 +82,11 @@ const UserTicketsABI = [
 interface RewardsProps {
   communityId: string;
   agentContract: string;
-  tokenContract: string;
 }
 
-export default function Rewards({
-  communityId,
-  agentContract,
-  tokenContract,
-}: RewardsProps) {
+export default function Rewards({ communityId, agentContract }: RewardsProps) {
   const [isTableLoading, setIsTableLoading] = useState(false);
-  const [rewards, setRewards] = useState<GetRewardsResponse[]>([]);
+  const [rewards, setRewards] = useState<Reward[]>([]);
 
   const {
     user: { address },
@@ -108,17 +101,29 @@ export default function Rewards({
         communityId,
       });
       if (!success || !data) return;
-      setRewards(data);
+      const list = decodeRewards(data);
 
-      console.log("agentContract", agentContract);
-
-      const tickets = await readContract(wagmiConfig, {
+      const tickets: bigint[] = (await readContract(wagmiConfig, {
         abi: UserTicketsABI,
         address: agentContract as `0x${string}`,
         functionName: "user_withdraws",
         args: [address],
-      });
-      console.log("tickets", tickets);
+      })) as unknown as bigint[];
+
+      setRewards(
+        list.map((reward) => {
+          if (
+            reward.sequence ===
+            tickets.find((ticket) => ticket === reward.sequence)
+          ) {
+            return {
+              ...reward,
+              withdrawed: true,
+            };
+          }
+          return reward;
+        })
+      );
     } catch (error) {
       console.error(error);
     } finally {
@@ -147,8 +152,6 @@ export default function Rewards({
       toast.error(`Failed: ${extractWagmiErrorDetailMessage(err)}`);
     }
   }, []);
-
-  console.log("rewards", rewards);
 
   useEffect(() => {
     getUserRewards();
@@ -192,15 +195,13 @@ export default function Rewards({
                 } else if (columnKey === "amount") {
                   cell = `${cell} ${item.token_symbol}`;
                 } else if (columnKey === "actions") {
-                  cell = (
-                    <Button
-                      size="sm"
-                      onPress={() => receiveReward(item)}
-                      isDisabled={item.withdrawed}
-                    >
-                      Receive
-                    </Button>
-                  );
+                  if (!item.withdrawed) {
+                    cell = (
+                      <Button size="sm" onPress={() => receiveReward(item)}>
+                        Receive
+                      </Button>
+                    );
+                  }
                 }
                 return <TableCell>{cell}</TableCell>;
               }}
