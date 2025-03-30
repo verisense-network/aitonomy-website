@@ -46,7 +46,10 @@ export default function BuyInviteCodeForm({
   const amount = watch("amount");
 
   useEffect(() => {
-    setPaymentAmount(`${amount * Number(paymentFee)}`);
+    if (!amount || Number.isNaN(Number(amount))) {
+      return;
+    }
+    setPaymentAmount(`${BigInt(amount) * BigInt(paymentFee)}`);
   }, [amount, paymentFee, setPaymentAmount]);
 
   useEffect(() => {
@@ -78,6 +81,16 @@ export default function BuyInviteCodeForm({
     [refreshInvitecodeAmount]
   );
 
+  const openPaymentModal = useCallback(() => {
+    if (!amount || Number.isNaN(Number(amount))) {
+      handleSubmit(onSubmit)();
+      toast.error("Invalid amount");
+      return;
+    }
+
+    setIsOpenPaymentModal(true);
+  }, [amount, setIsOpenPaymentModal, handleSubmit, onSubmit]);
+
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
       <div className="w-full pb-2">
@@ -89,11 +102,14 @@ export default function BuyInviteCodeForm({
         rules={{
           required: "Amount is required",
           validate: (value) => {
-            if (!Number.isInteger(value)) {
+            if (!Number.isInteger(Number(value))) {
               return "Invalid amount";
             }
-            if (value < 1) {
+            if (Number(value) < 1) {
               return `Amount cannot be less than 1`;
+            }
+            if (Number(value) > 1000000) {
+              return `Amount cannot be greater than 1000000`;
             }
             return true;
           },
@@ -106,13 +122,17 @@ export default function BuyInviteCodeForm({
             )}
           >
             <NumberInput
-              {...field}
               label="Buy Number"
               labelPlacement="outside"
               placeholder="amount"
               isInvalid={!!fieldState.error}
               errorMessage={fieldState.error?.message}
+              value={field.value}
+              defaultValue={field.value}
+              onValueChange={field.onChange}
+              maxValue={1000000}
               minValue={1}
+              isRequired
             />
           </div>
         )}
@@ -145,7 +165,7 @@ export default function BuyInviteCodeForm({
               isInvalid={!!fieldState.error}
               errorMessage={fieldState.error?.message}
             />
-            <Button onPress={() => setIsOpenPaymentModal(true)}>
+            <Button onPress={openPaymentModal}>
               <WalletIcon className="w-6 h-6" />
               Send
             </Button>

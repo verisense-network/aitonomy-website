@@ -36,6 +36,11 @@ export default function PaymentModal({
   const [isLoading, setIsLoading] = useState(false);
 
   const toPay = useCallback(async () => {
+    if (!amount || Number.isNaN(Number(amount))) {
+      toast.error("Invalid amount");
+      return;
+    }
+
     const toastId = toast.loading(
       "Posting continue to complete in your wallet"
     );
@@ -76,6 +81,8 @@ export default function PaymentModal({
     const signatureHex = `0xc712feacbd7672e3d8f4b2ff4d8c4484747e9fa2730614ddc97dc2ce9870538a`;
     onSuccess(signatureHex, 1);
   }, [onSuccess]);
+
+  console.log("amount", amount);
 
   const listData = useMemo(() => {
     return [

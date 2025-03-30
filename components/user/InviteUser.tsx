@@ -105,6 +105,9 @@ export default function InviteUser({
 
   useEffect(() => {
     (async () => {
+      if (paymentAmount) {
+        return;
+      }
       if (!paymentAmount && toAddress) {
         const { data: fee, success } = await getInviteFee();
         if (!success || !fee) {

@@ -62,6 +62,8 @@ export function UserAddressView({
 export const VIEW_UNIT = CHAIN === "SOL" ? "SOL" : CHAIN === "BSC" ? "BNB" : "";
 
 export function formatReadableAmount(amount: string): string {
+  if (!amount || Number.isNaN(Number(amount))) return "";
+
   if (CHAIN === "SOL") {
     return (Number(amount) / LAMPORTS_PER_SOL).toString();
   } else {
