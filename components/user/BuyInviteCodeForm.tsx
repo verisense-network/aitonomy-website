@@ -112,6 +112,7 @@ export default function BuyInviteCodeForm({
               placeholder="amount"
               isInvalid={!!fieldState.error}
               errorMessage={fieldState.error?.message}
+              minValue={1}
             />
           </div>
         )}
