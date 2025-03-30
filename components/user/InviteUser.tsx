@@ -198,7 +198,7 @@ export default function InviteUser({
                   onSuccess={onSuccess}
                 />
               </Tab>
-              <Tab key="buy" title="Buy invite code">
+              <Tab key="buy" title="Buy code">
                 <BuyInviteCodeForm
                   community={currentCommunity}
                   invitecodeAmount={invitecodeAmount}

@@ -139,8 +139,9 @@ export default function InviteUserForm({
             onPress={() => {
               setTab("buy");
             }}
+            className="w-1/3"
           >
-            Buy invite code
+            Buy More
           </Button>
         </div>
       </div>

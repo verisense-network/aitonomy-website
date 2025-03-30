@@ -122,7 +122,7 @@ export default function BuyInviteCodeForm({
             )}
           >
             <NumberInput
-              label="Buy Number"
+              label="Number"
               labelPlacement="outside"
               placeholder="amount"
               isInvalid={!!fieldState.error}
@@ -167,7 +167,7 @@ export default function BuyInviteCodeForm({
             />
             <Button onPress={openPaymentModal}>
               <WalletIcon className="w-6 h-6" />
-              Send
+              Payment
             </Button>
           </div>
         )}
