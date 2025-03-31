@@ -1,4 +1,4 @@
-import { u128 } from "@polkadot/types-codec";
+import { u128 } from "@verisense-network/vemodel-types/dist/codec";
 import { registry } from "@verisense-network/vemodel-types";
 
 type ThreadId = {

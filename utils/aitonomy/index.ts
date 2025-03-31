@@ -30,7 +30,7 @@ import {
   u64,
   u128,
   Bool,
-} from "@polkadot/types-codec";
+} from "@verisense-network/vemodel-types/dist/codec";
 
 interface Signature {
   signature: Uint8Array;

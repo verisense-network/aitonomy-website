@@ -1,6 +1,6 @@
 import { useUserStore } from "@/stores/user";
 import { registry } from "@verisense-network/vemodel-types";
-import { Struct, u64 } from "@polkadot/types-codec";
+import { Struct, u64 } from "@verisense-network/vemodel-types/dist/codec";
 import { CodecClass } from "@polkadot/types-codec/types";
 import { getAccountInfo } from "@/app/actions";
 import { signMessage, verifyMessage } from "@wagmi/core";
@@ -39,7 +39,7 @@ export async function signPayload(
   const nonceEncoded = new u64(registry, nonce).toU8a();
   console.log("nonceEncoded", nonceEncoded);
   console.log("payload", payload);
-  const payloadEncoded = new Struct(registry, payload).toU8a();
+  const payloadEncoded = new Struct(registry as any, payload).toU8a();
 
   const messageBuf = new Uint8Array(
     nonceEncoded.length + payloadEncoded.length
