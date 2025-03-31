@@ -1,5 +1,5 @@
 import { u128 } from "@polkadot/types-codec";
-import { registry } from "./aitonomy/type";
+import { registry } from "@verisense-network/vemodel-types";
 
 type ThreadId = {
   community: string;

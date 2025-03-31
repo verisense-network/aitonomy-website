@@ -2,7 +2,10 @@ import { createCommunity, uploadImage } from "@/app/actions";
 import { CreateCommunityArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX, TOKEN_REGEX } from "@/utils/aitonomy/tools";
-import { CreateCommunityPayload, LLmName } from "@/utils/aitonomy/type";
+import {
+  CreateCommunityPayload,
+  LLmName,
+} from "@verisense-network/vemodel-types";
 import { isDev } from "@/utils/tools";
 import { CircleHelpIcon, ImageIcon, ShieldCheckIcon } from "lucide-react";
 import {

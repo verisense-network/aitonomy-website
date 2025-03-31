@@ -1,7 +1,7 @@
 import { getBalances } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
 import { GetBalancesResponse } from "@/utils/aitonomy";
-import { Community } from "@/utils/aitonomy/type";
+import { Community } from "@verisense-network/vemodel-types";
 import {
   getKeyValue,
   Spinner,

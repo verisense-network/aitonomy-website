@@ -2,7 +2,7 @@ import { setAlias } from "@/app/actions";
 import { SetAliasArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { NAME_REGEX } from "@/utils/aitonomy/tools";
-import { SetAliasPayload } from "@/utils/aitonomy/type";
+import { SetAliasPayload } from "@verisense-network/vemodel-types";
 import { Button, Form, Input } from "@heroui/react";
 import { useCallback } from "react";
 import { Controller, useForm } from "react-hook-form";

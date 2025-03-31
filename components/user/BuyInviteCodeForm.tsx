@@ -5,12 +5,9 @@ import { Button, Form, Input, NumberInput } from "@heroui/react";
 import { ethers } from "ethers";
 import { twMerge } from "tailwind-merge";
 import { toast } from "react-toastify";
-import { generateInviteCodes, inviteUser } from "@/app/actions";
+import { generateInviteCodes } from "@/app/actions";
 import { signPayload } from "@/utils/aitonomy/sign";
-import {
-  GenerateInviteCodePayload,
-  InviteUserPayload,
-} from "@/utils/aitonomy/type";
+import { GenerateInviteCodePayload } from "@verisense-network/vemodel-types";
 import { WalletIcon } from "lucide-react";
 import { sleep } from "@/utils/tools";
 

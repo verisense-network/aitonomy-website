@@ -47,6 +47,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.69.0
         version: 5.69.0(react@19.0.0)
+      '@verisense-network/vemodel-types':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@wagmi/core':
         specifier: ^2.16.7
         version: 2.16.7(@tanstack/query-core@5.69.0)(@types/react@19.0.9)(immer@10.1.1)(react@19.0.0)(typescript@5.7.3)(use-sync-external-store@1.4.0(react@19.0.0))(viem@2.23.11(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10))
@@ -1489,12 +1492,24 @@ packages:
     resolution: {integrity: sha512-rLQ8nvsLp4XyiTGQigens4JDP5PPFyzlYMdAGMqYsH+K/6TdqStgXciFeUGe2jeir49aCgBgXqQV+/5kNSK2Wg==}
     engines: {node: '>=18'}
 
+  '@polkadot/types-augment@15.9.1':
+    resolution: {integrity: sha512-jEyDECSC6ww+5RLeVl32CZdtAQpWqgOv1HneXhvF15b0fRxSZgzHJ11hdYBw6I6aWJroPSgj32BNBG4qW1R2jw==}
+    engines: {node: '>=18'}
+
   '@polkadot/types-codec@15.7.1':
     resolution: {integrity: sha512-QxYNDo1SH6VqF5Atcciu1r7MbKQIr8jDIZ0jYtOkrzsw3BvynlI59+3icTRrrK4Uk79D8PD0QWo4r+krJ0VMmQ==}
     engines: {node: '>=18'}
 
+  '@polkadot/types-codec@15.9.1':
+    resolution: {integrity: sha512-HtfbTSRualmOZQnil2+8Ff6OHJXv67ndN8f92+cbL1VhnesKbbgDK3TE64YqKlZfZkOTNy4q/2a1P9E1LTCBNA==}
+    engines: {node: '>=18'}
+
   '@polkadot/types-create@15.7.1':
     resolution: {integrity: sha512-baEU+H+GnHOnNAL5hu09lr2m1bK2HiGvrOZq8txLsNpy67uxI04YzzSkckxWdORyix6Yo55rWW0QfaDlSoiP7g==}
+    engines: {node: '>=18'}
+
+  '@polkadot/types-create@15.9.1':
+    resolution: {integrity: sha512-qL3SDZpwlzjD5obBBjMapOTtEV34z+OC66jHL+DoOcUeecZ4e5j1fVZMyRmsWe32ER/MuHWhxVWRCTzdpUwtOg==}
     engines: {node: '>=18'}
 
   '@polkadot/types-support@15.7.1':
@@ -1503,6 +1518,10 @@ packages:
 
   '@polkadot/types@15.7.1':
     resolution: {integrity: sha512-E4qksl/D+sMpEIH2WDwjC6hDRBu7IBW+tK99QTxZ28F087Xkpjc8W38lzr/bZhodoJQ+lsLQkPh+XpbcaIbelA==}
+    engines: {node: '>=18'}
+
+  '@polkadot/types@15.9.1':
+    resolution: {integrity: sha512-F1cbpQeGaoBXm40re6idspqXeKQ/MVnC3Y2zGeJW6huXCz1QDfl+pMbFBCBTvU8uSoV2ii+F28vpmIOO9aDkQQ==}
     engines: {node: '>=18'}
 
   '@polkadot/util-crypto@13.4.3':
@@ -2820,6 +2839,9 @@ packages:
     resolution: {integrity: sha512-oCHlQeYOBIJIA2yWy2GnY5wE2A7hGHDyJplJo4lb+KEIBcJWRnDJDg8ywDwQS5VfWJrBBO3drzYZPFpWQjAMiQ==}
     peerDependencies:
       '@vanilla-extract/css': ^1.0.0
+
+  '@verisense-network/vemodel-types@1.0.0':
+    resolution: {integrity: sha512-lHtMT+miQ+pW6tdjJXmKASKAy2mk3t8JvgTOsBUfWUb4pfIKbY1JpNWoni6CLTExZf65dCTbsshqT5GnMIYlLg==}
 
   '@wagmi/connectors@5.7.11':
     resolution: {integrity: sha512-vJWOXMeYWmczvlsEZHq52yOoC2qu5kU8Saj6Bo+BtyfYcX1tJODZTKed3TMIoKhUx0W3vna1UIwG7GskmxGKKA==}
@@ -8253,7 +8275,20 @@ snapshots:
       '@polkadot/util': 13.4.3
       tslib: 2.8.1
 
+  '@polkadot/types-augment@15.9.1':
+    dependencies:
+      '@polkadot/types': 15.9.1
+      '@polkadot/types-codec': 15.9.1
+      '@polkadot/util': 13.4.3
+      tslib: 2.8.1
+
   '@polkadot/types-codec@15.7.1':
+    dependencies:
+      '@polkadot/util': 13.4.3
+      '@polkadot/x-bigint': 13.4.3
+      tslib: 2.8.1
+
+  '@polkadot/types-codec@15.9.1':
     dependencies:
       '@polkadot/util': 13.4.3
       '@polkadot/x-bigint': 13.4.3
@@ -8262,6 +8297,12 @@ snapshots:
   '@polkadot/types-create@15.7.1':
     dependencies:
       '@polkadot/types-codec': 15.7.1
+      '@polkadot/util': 13.4.3
+      tslib: 2.8.1
+
+  '@polkadot/types-create@15.9.1':
+    dependencies:
+      '@polkadot/types-codec': 15.9.1
       '@polkadot/util': 13.4.3
       tslib: 2.8.1
 
@@ -8276,6 +8317,17 @@ snapshots:
       '@polkadot/types-augment': 15.7.1
       '@polkadot/types-codec': 15.7.1
       '@polkadot/types-create': 15.7.1
+      '@polkadot/util': 13.4.3
+      '@polkadot/util-crypto': 13.4.3(@polkadot/util@13.4.3)
+      rxjs: 7.8.2
+      tslib: 2.8.1
+
+  '@polkadot/types@15.9.1':
+    dependencies:
+      '@polkadot/keyring': 13.4.3(@polkadot/util-crypto@13.4.3(@polkadot/util@13.4.3))(@polkadot/util@13.4.3)
+      '@polkadot/types-augment': 15.9.1
+      '@polkadot/types-codec': 15.9.1
+      '@polkadot/types-create': 15.9.1
       '@polkadot/util': 13.4.3
       '@polkadot/util-crypto': 13.4.3(@polkadot/util@13.4.3)
       rxjs: 7.8.2
@@ -10108,6 +10160,11 @@ snapshots:
   '@vanilla-extract/sprinkles@1.6.3(@vanilla-extract/css@1.15.5)':
     dependencies:
       '@vanilla-extract/css': 1.15.5
+
+  '@verisense-network/vemodel-types@1.0.0':
+    dependencies:
+      '@polkadot/types': 15.9.1
+      '@polkadot/types-codec': 15.9.1
 
   '@wagmi/connectors@5.7.11(@types/react@19.0.9)(@wagmi/core@2.16.7(@tanstack/query-core@5.69.0)(@types/react@19.0.9)(immer@10.1.1)(react@19.0.0)(typescript@5.7.3)(use-sync-external-store@1.4.0(react@19.0.0))(viem@2.23.11(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)))(bufferutil@4.0.9)(react@19.0.0)(typescript@5.7.3)(utf-8-validate@5.0.10)(viem@2.23.11(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10))':
     dependencies:

@@ -18,7 +18,7 @@ import {
   RewardPayload,
   InviteUserArg,
   GenerateInviteCodeArgs,
-} from "./type";
+} from "@verisense-network/vemodel-types";
 import {
   Result,
   Option,

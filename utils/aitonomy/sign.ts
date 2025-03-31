@@ -1,5 +1,5 @@
 import { useUserStore } from "@/stores/user";
-import { registry } from "./type";
+import { registry } from "@verisense-network/vemodel-types";
 import { Struct, u64 } from "@polkadot/types-codec";
 import { CodecClass } from "@polkadot/types-codec/types";
 import { getAccountInfo } from "@/app/actions";

@@ -1,14 +1,13 @@
 import { Controller, useForm } from "react-hook-form";
 import { InviteUserArg } from "@/utils/aitonomy";
-import { useState, useEffect, useMemo, useCallback } from "react";
-import useMeilisearch from "@/hooks/useMeilisearch";
+import { useCallback } from "react";
 import { Button, Form, Input } from "@heroui/react";
 import { ethers } from "ethers";
 import { twMerge } from "tailwind-merge";
 import { toast } from "react-toastify";
 import { checkInvite, inviteUser } from "@/app/actions";
 import { signPayload } from "@/utils/aitonomy/sign";
-import { InviteUserPayload } from "@/utils/aitonomy/type";
+import { InviteUserPayload } from "@verisense-network/vemodel-types";
 
 interface InviteUserFormProps {
   community: any;

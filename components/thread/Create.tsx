@@ -3,7 +3,7 @@ import useMeilisearch from "@/hooks/useMeilisearch";
 import { CreateThreadArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
-import { PostThreadPayload } from "@/utils/aitonomy/type";
+import { PostThreadPayload } from "@verisense-network/vemodel-types";
 import { decodeId } from "@/utils/thread";
 import { debounce, hexToLittleEndian } from "@/utils/tools";
 import {

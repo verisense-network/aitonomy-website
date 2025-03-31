@@ -1,6 +1,6 @@
 import { createComment } from "@/app/actions";
 import { signPayload } from "@/utils/aitonomy/sign";
-import { PostCommentPayload } from "@/utils/aitonomy/type";
+import { PostCommentPayload } from "@verisense-network/vemodel-types";
 import { decodeId } from "@/utils/thread";
 import { hexToBytes, hexToLittleEndian } from "@/utils/tools";
 import { Form, Button, Card, Spinner } from "@heroui/react";

@@ -13,7 +13,7 @@ import {
   User,
 } from "@heroui/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Community } from "@/utils/aitonomy/type";
+import { Community } from "@verisense-network/vemodel-types";
 import CreateComment from "./comment/Create";
 import { UserAddressView } from "@/utils/format";
 import { parseMarkdown } from "@/utils/markdown";
