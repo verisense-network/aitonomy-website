@@ -82,8 +82,6 @@ export default function PaymentModal({
     onSuccess(signatureHex, 1);
   }, [onSuccess]);
 
-  console.log("amount", amount);
-
   const listData = useMemo(() => {
     return [
       {
