@@ -4,12 +4,12 @@ import {
   Button,
   DropdownMenu,
   DropdownItem,
+  User,
 } from "@heroui/react";
 import { Key, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
 import { useAccount } from "wagmi";
-import Image from "next/image";
 import { formatAddress } from "@/utils/tools";
 import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAppearanceStore } from "@/stores/appearance";
@@ -65,24 +65,28 @@ export default function UserMenu() {
       >
         {isLogin ? (
           <>
-            <DropdownItem key="wallet">
-              {connector && (
-                <div className="flex flex-col space-y-2">
-                  <div className="flex space-x-2 items-center">
-                    {connector.icon && (
-                      <Image
-                        src={connector.icon}
-                        width={18}
-                        height={18}
-                        alt={connector.name}
-                      />
-                    )}
-                    <span>{connector.name}</span>
-                  </div>
-                  <span>{formatAddress(address)}</span>
-                </div>
-              )}
-            </DropdownItem>
+            {connector && (
+              <DropdownItem key="wallet">
+                <User
+                  avatarProps={{
+                    size: "sm",
+                    radius: "lg",
+                    src: connector.icon || connector.name,
+                  }}
+                  classNames={{
+                    name: "text-default-600",
+                    description: "text-default-500",
+                  }}
+                  description={
+                    <div className="flex text-xs space-x-2">
+                      <p>{connector.name}</p>
+                      <p>{formatAddress(address)}</p>
+                    </div>
+                  }
+                  name={alias}
+                />
+              </DropdownItem>
+            )}
             <DropdownItem key="profile">Profile</DropdownItem>
             <DropdownItem key="disconnect">Disconnect</DropdownItem>
           </>

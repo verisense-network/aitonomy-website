@@ -9,7 +9,7 @@ export const useUser = () => {
   const [isLoading, setIsLoading] = useState(false);
   const user = useUserStore();
   const { disconnect: wagmiDisconnect } = useDisconnect();
-  const { chainId, address, isConnected, status } = useAccount();
+  const { connector, chainId, address, isConnected, status } = useAccount();
 
   const { address: storedAddress, logout, setUser } = user;
 
@@ -36,8 +36,19 @@ export const useUser = () => {
   }, [chainId, address, isConnected, setUser, storedAddress, status]);
 
   const disconnect = useCallback(() => {
-    wagmiDisconnect();
-  }, [wagmiDisconnect]);
+    wagmiDisconnect(
+      { connector },
+      {
+        onError: (error) => {
+          console.error(error);
+          toast.error("Failed to disconnect");
+        },
+        onSuccess: () => {
+          logout();
+        },
+      }
+    );
+  }, [connector, wagmiDisconnect, logout]);
 
   useEffect(() => {
     if (status === "disconnected") {

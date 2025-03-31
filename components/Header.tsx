@@ -6,7 +6,7 @@ import UserMenu from "./header/UserMenu";
 import { Badge, Image, Input } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Power, SearchIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 
 export default function Header() {
   const router = useRouter();
