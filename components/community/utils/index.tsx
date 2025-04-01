@@ -14,7 +14,11 @@ const isCommunityMode = (
   communityMode: CommunityMode,
   mode: keyof CommunityMode
 ) => {
-  return mode in communityMode || (mode as unknown as any) === communityMode;
+  return (
+    communityMode &&
+    (Object.keys(communityMode).includes(mode) ||
+      (mode as unknown as any) === communityMode)
+  );
 };
 
 export function getCommunityModeIcon(mode: CommunityMode) {

@@ -30,7 +30,6 @@ import {
   BadgeCheckIcon,
   CircleAlertIcon,
   CircleDollarSignIcon,
-  ShieldEllipsisIcon,
   UserPlusIcon,
 } from "lucide-react";
 import TokenPanel from "./token/TokenPanel";
