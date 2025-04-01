@@ -21,7 +21,7 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        verisense: "#ff847c",
+        primary: "#ff847c",
       },
     },
   },
@@ -29,8 +29,13 @@ export default {
   plugins: [
     heroui({
       themes: {
-        dark: {
-          colors: {},
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: "#ff847c",
+              foreground: "#000000",
+            },
+          },
         },
       },
     }),

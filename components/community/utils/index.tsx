@@ -1,10 +1,5 @@
 import { CommunityMode } from "@verisense-network/vemodel-types";
-import {
-  EarthIcon,
-  ShieldCheckIcon,
-  CircleDollarSignIcon,
-  DollarSignIcon,
-} from "lucide-react";
+import { EarthIcon, DollarSignIcon, EarthLockIcon } from "lucide-react";
 
 export enum CommunityStatus {
   PendingCreation = "PendingCreation",
@@ -20,7 +15,7 @@ export function getCommunityMode(mode: CommunityMode) {
   return typeof mode === "string" ? mode : Object.keys(mode)[0];
 }
 
-const isCommunityMode = (
+export const isCommunityMode = (
   communityMode: CommunityMode,
   mode: keyof CommunityMode
 ) => {
@@ -32,7 +27,7 @@ export function getCommunityModeIcon(mode: CommunityMode) {
   if (isCommunityMode(mode, "Public")) {
     return <EarthIcon className="w-5 h-5" />;
   } else if (isCommunityMode(mode, "InviteOnly")) {
-    return <ShieldCheckIcon className="w-5 h-5" />;
+    return <EarthLockIcon className="w-5 h-5" />;
   } else if (isCommunityMode(mode, "PayToJoin")) {
     return <DollarSignIcon className="w-5 h-5" />;
   }

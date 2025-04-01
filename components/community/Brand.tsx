@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import TokenPanel from "./token/TokenPanel";
 import { CommunityMode } from "@verisense-network/vemodel-types";
+import useCanPost from "@/hooks/useCanPost";
 
 interface Props {
   communityId: string;
@@ -71,6 +72,8 @@ export default function CommunityBrand({ communityId }: Props) {
   const communityRef = useRef(community);
   const c = communityRef.current || community;
 
+  const canPost = useCanPost(c);
+
   const amount = c?.status?.WaitingTx;
   const viewAmount = amount ? formatReadableAmount(amount) : "";
 
@@ -86,8 +89,6 @@ export default function CommunityBrand({ communityId }: Props) {
     [community]
   );
 
-  const isPublicCommunity = isCommunityMode("Public");
-
   const isCommunityStatus = useCallback(
     (status: CommunityStatus) => {
       const cRef = communityRef.current || community;
@@ -101,7 +102,9 @@ export default function CommunityBrand({ communityId }: Props) {
   const shouldShowActivateCommunity = isLogin && isYouAddress(c?.creator);
 
   const shouldShowInviteUser =
-    shouldShowActivateCommunity && !isPublicCommunity;
+    shouldShowActivateCommunity && isCommunityMode("InviteOnly");
+
+  const shouldShowJoinCommunity = !canPost && isCommunityMode("PayToJoin");
 
   const toPayment = useCallback(() => {
     setIsOpenPaymentModal(true);
@@ -265,6 +268,8 @@ export default function CommunityBrand({ communityId }: Props) {
     toast.success("Invite successful");
   }, []);
 
+  const joinCommunity = useCallback(() => {}, []);
+
   return (
     <>
       <Card className="m-2 p-2 md:p-4 min-h-40">
@@ -312,6 +317,16 @@ export default function CommunityBrand({ communityId }: Props) {
                           />
                         </Tooltip>
                       )}
+                    {shouldShowJoinCommunity && (
+                      <Button
+                        className="ml-2"
+                        size="sm"
+                        color="primary"
+                        onPress={joinCommunity}
+                      >
+                        Join Community
+                      </Button>
+                    )}
                   </h1>
                   {shouldShowActivateCommunity && Number(viewAmount) > 0 && (
                     <div className="flex">

@@ -30,7 +30,7 @@ export default function Header() {
               <p className="text-[8px] md:text-[10px] text-center text-wrap leading-2.5 -ml-5">
                 Powered by
                 <Link
-                  className="ml-1 text-verisense"
+                  className="ml-1 text-primary"
                   href="https://x.com/veri_sense"
                   target="_blank"
                 >

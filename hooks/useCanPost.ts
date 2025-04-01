@@ -1,6 +1,7 @@
 import { useUserStore } from "@/stores/user";
 import { useState, useEffect } from "react";
 import { checkInvite } from "@/app/actions";
+import { isCommunityMode } from "@/components/community/utils";
 
 export default function useCanPost(community?: any) {
   const { isLogin, address } = useUserStore();
@@ -12,8 +13,8 @@ export default function useCanPost(community?: any) {
       return;
     }
 
-    const hasCommunityAndIsPrivate = community && community.private;
-    if (!isLogin || !hasCommunityAndIsPrivate) {
+    const isNeedCheck = community && !isCommunityMode(community.mode, "Public");
+    if (!isLogin || !isNeedCheck) {
       setCanPost(true);
       return;
     }
