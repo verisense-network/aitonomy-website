@@ -12,6 +12,7 @@ import {
   PlusIcon,
   ShieldCheckIcon,
   TelescopeIcon,
+  TorusIcon,
 } from "lucide-react";
 import {
   Accordion,
@@ -36,6 +37,8 @@ import { useAppearanceStore } from "@/stores/appearance";
 import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
 import Link from "next/link";
+import Tour from "../tour/Tour";
+import { useOnborda } from "onborda";
 
 const TopMenus = [
   { name: "Home", href: "/", icon: <HomeIcon className="w-5 h-5" /> },
@@ -69,6 +72,7 @@ export default function SideMenu() {
     useAppearanceStore();
   const { isLogin } = useUserStore();
   const { isMobile } = useAppearanceStore();
+  const { startOnborda } = useOnborda();
   const [createCommunityModal, setCreateCommunityModal] = useState(false);
 
   const { data, isLoading } = useMeilisearch("community", undefined, {
@@ -179,6 +183,13 @@ export default function SideMenu() {
               base: "py-3",
             }}
           >
+            <ListboxItem
+              key="tour"
+              startContent={<TorusIcon className="w-5 h-5" />}
+              onPress={() => startOnborda("create-community")}
+            >
+              Tour
+            </ListboxItem>
             <ListboxItem
               key="how-to-works"
               startContent={<CircleHelpIcon className="w-5 h-5" />}

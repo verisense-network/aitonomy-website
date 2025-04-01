@@ -31,6 +31,7 @@ import { Signature } from "@/utils/aitonomy/sign";
 import { NUCLEUS_ID } from "@/utils/aitonomy/tools";
 import { CHAIN } from "@/utils/chain";
 import { hexToBytes } from "@/utils/tools";
+import { CommunityMode, LLmName } from "@verisense-network/vemodel-types";
 import bs58 from "bs58";
 import { ethers } from "ethers";
 
@@ -52,6 +53,30 @@ export async function uploadImage(file: File) {
       message: e.message,
     };
   }
+}
+
+export interface CreateCommunityForm {
+  name: string;
+  mode: {
+    name: keyof CommunityMode;
+    value: number | null;
+  };
+  logo: string;
+  slug: string;
+  description: string;
+  prompt: string;
+  token: {
+    name: string;
+    symbol: string;
+    total_issuance: number;
+    decimals: number;
+    new_issue: boolean;
+    contract: string | null;
+    image: string | null;
+  };
+  llm_name: LLmName;
+  llm_api_host: string | null;
+  llm_key: string | null;
 }
 
 export async function createCommunity(

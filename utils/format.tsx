@@ -70,3 +70,13 @@ export function formatReadableAmount(amount: string): string {
     return ethers.formatEther(amount);
   }
 }
+
+export function formatAmount(amount: string | number): bigint {
+  if (!amount || Number.isNaN(Number(amount))) return 0n;
+
+  if (CHAIN === "SOL") {
+    return BigInt(amount) * BigInt(LAMPORTS_PER_SOL);
+  } else {
+    return ethers.parseEther(amount.toString());
+  }
+}

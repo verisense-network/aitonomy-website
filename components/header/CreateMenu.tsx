@@ -52,7 +52,7 @@ export default function CreateMenu() {
     <>
       <Dropdown>
         <DropdownTrigger>
-          <Button isIconOnly variant="light">
+          <Button id="create-community-step1" isIconOnly variant="light">
             <CirclePlusIcon className="w-6 h-6 md:w-8 md:h-8" />
           </Button>
         </DropdownTrigger>

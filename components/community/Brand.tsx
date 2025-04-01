@@ -18,7 +18,7 @@ import PaymentModal from "../modal/Payment";
 import { activateCommunity } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
 import { usePaymentCommunityStore } from "@/stores/paymentCommunity";
-import { CommunityStatus } from "./utils";
+import { CommunityStatus, getCommunityModeIcon } from "./utils";
 import { waitForTransactionReceipt } from "@wagmi/core";
 import { Id, toast } from "react-toastify";
 import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
@@ -34,6 +34,7 @@ import {
   UserPlusIcon,
 } from "lucide-react";
 import TokenPanel from "./token/TokenPanel";
+import { CommunityMode } from "@verisense-network/vemodel-types";
 
 interface Props {
   communityId: string;
@@ -71,7 +72,18 @@ export default function CommunityBrand({ communityId }: Props) {
   const viewAmount = amount ? formatReadableAmount(amount) : "";
 
   const isLoaded = !isLoading && c;
-  const isPrivateCommunity = c?.private;
+  const communityMode = c?.mode;
+  console.log("communityMode", communityMode);
+
+  const isCommunityMode = useCallback(
+    (mode: keyof CommunityMode) => {
+      const cRef = communityRef.current || community;
+      return cRef && (cRef?.mode?.[mode] || cRef?.mode === mode);
+    },
+    [community]
+  );
+
+  const isPublicCommunity = isCommunityMode("Public");
 
   const isCommunityStatus = useCallback(
     (status: CommunityStatus) => {
@@ -86,7 +98,7 @@ export default function CommunityBrand({ communityId }: Props) {
   const shouldShowActivateCommunity = isLogin && isYouAddress(c?.creator);
 
   const shouldShowInviteUser =
-    shouldShowActivateCommunity && isPrivateCommunity;
+    shouldShowActivateCommunity && !isPublicCommunity;
 
   const toPayment = useCallback(() => {
     setIsOpenPaymentModal(true);
@@ -252,11 +264,13 @@ export default function CommunityBrand({ communityId }: Props) {
               <Badge
                 color="default"
                 isOneChar
-                content={<ShieldEllipsisIcon className="w-3 h-3" />}
+                content={
+                  <Tooltip content={c?.mode}>
+                    {getCommunityModeIcon(c?.mode)}
+                  </Tooltip>
+                }
                 showOutline={false}
-                isInvisible={!isPrivateCommunity}
                 placement="bottom-right"
-                title="Private Community"
               >
                 <Avatar name={c?.name} src={c?.logo} size="lg" />
               </Badge>

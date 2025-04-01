@@ -18,6 +18,7 @@ import {
   RewardPayload,
   InviteUserArg,
   GenerateInviteCodeArgs,
+  CommunityMode,
 } from "@verisense-network/vemodel-types";
 import {
   Result,
@@ -30,6 +31,7 @@ import {
   u64,
   u128,
   Bool,
+  Enum,
 } from "@verisense-network/vemodel-types/dist/codec";
 
 interface Signature {
@@ -40,7 +42,7 @@ interface Signature {
 
 export interface CreateCommunityArg {
   name: string;
-  private: boolean;
+  mode: Enum;
   logo: string;
   slug: string;
   description: string;
