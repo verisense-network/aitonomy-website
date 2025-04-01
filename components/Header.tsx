@@ -3,10 +3,10 @@
 import { useCallback } from "react";
 import CreateMenu from "./header/CreateMenu";
 import UserMenu from "./header/UserMenu";
-import { Badge, Image, Input } from "@heroui/react";
+import { Badge, Image } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { SearchIcon } from "lucide-react";
+import HeaderSearch from "./header/Search";
 
 export default function Header() {
   const router = useRouter();
@@ -47,11 +47,7 @@ export default function Header() {
           </Badge>
         </div>
         <div className="max-w-xl w-full mx-4">
-          <Input
-            startContent={<SearchIcon className="h-5 w-5 text-gray-400" />}
-            type="text"
-            placeholder="Search"
-          />
+          <HeaderSearch />
         </div>
         <div className="flex-shrink-0 flex space-x-1 md:space-x-5 items-center">
           <CreateMenu />
