@@ -15,10 +15,14 @@ import {
 } from "@heroui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import PaymentModal from "../modal/Payment";
-import { activateCommunity } from "@/app/actions";
+import { activateCommunity, getCommunity } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
 import { usePaymentCommunityStore } from "@/stores/paymentCommunity";
-import { CommunityStatus, getCommunityModeIcon } from "./utils";
+import {
+  CommunityStatus,
+  getCommunityMode,
+  getCommunityModeIcon,
+} from "./utils";
 import { waitForTransactionReceipt } from "@wagmi/core";
 import { Id, toast } from "react-toastify";
 import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
@@ -229,6 +233,13 @@ export default function CommunityBrand({ communityId }: Props) {
 
   useEffect(() => {
     (async () => {
+      const res = await getCommunity(communityId);
+      console.log("res", res);
+    })();
+  }, [communityId]);
+
+  useEffect(() => {
+    (async () => {
       if (isLoading || isValidating) return;
 
       if (!data?.hits?.length) {
@@ -264,7 +275,7 @@ export default function CommunityBrand({ communityId }: Props) {
                 color="default"
                 isOneChar
                 content={
-                  <Tooltip content={c?.mode}>
+                  <Tooltip content={getCommunityMode(c?.mode)}>
                     {getCommunityModeIcon(c?.mode)}
                   </Tooltip>
                 }

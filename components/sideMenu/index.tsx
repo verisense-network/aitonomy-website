@@ -37,7 +37,6 @@ import { useAppearanceStore } from "@/stores/appearance";
 import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import Tour from "../tour/Tour";
 import { useOnborda } from "onborda";
 
 const TopMenus = [

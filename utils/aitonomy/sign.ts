@@ -15,7 +15,7 @@ export interface Signature {
 
 export async function signPayload(
   payload: Record<string, any>,
-  Struct: CodecClass<Struct<any>>
+  Struct: any
 ): Promise<Signature> {
   const user = useUserStore.getState();
 
@@ -39,7 +39,10 @@ export async function signPayload(
   const nonceEncoded = new u64(registry, nonce).toU8a();
   console.log("nonceEncoded", nonceEncoded);
   console.log("payload", payload);
-  const payloadEncoded = new Struct(registry as any, payload).toU8a();
+  const payloadEncoded = new (Struct as CodecClass)(
+    registry as any,
+    payload
+  ).toU8a();
 
   const messageBuf = new Uint8Array(
     nonceEncoded.length + payloadEncoded.length
