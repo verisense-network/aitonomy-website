@@ -1,102 +1,97 @@
-import { UserCircleIcon } from "@heroicons/react/24/outline";
 import {
   Dropdown,
   DropdownTrigger,
   Button,
   DropdownMenu,
   DropdownItem,
-  Avatar,
-  Spinner,
+  User,
 } from "@heroui/react";
-import { Key, useCallback, useEffect, useState } from "react";
-import LoginModal from "../modal/login/Login";
-import { useUserStore } from "@/stores/user";
-import { toast } from "react-toastify";
+import { Key, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { updateAccountInfo } from "@/utils/user";
+import { useUser } from "@/hooks/useUser";
+import { useAccount } from "wagmi";
+import { formatAddress } from "@/utils/tools";
+import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
+import { useAppearanceStore } from "@/stores/appearance";
 
 export default function UserMenu() {
-  const [isOpenOption, setIsOpenOption] = useState<string | null>(null);
-  const { name, address, isLogin, logout } = useUserStore();
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { user, disconnect, isLoading } = useUser();
+  const { openConnectModal } = useConnectModal();
+  const { openAccountModal } = useAccountModal();
+  const { isMobile } = useAppearanceStore();
+  const { connector, isConnecting, isReconnecting } = useAccount();
+  const { alias, isLogin, address } = user;
 
-  const getUserProfile = useCallback(async () => {
-    try {
-      if (!address) return;
-      setIsLoading(true);
-      await updateAccountInfo();
-      setIsLoading(false);
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to get user profile");
-      setIsLoading(false);
-    }
-  }, [address]);
+  const isShowSpinner = isLoading || isConnecting || isReconnecting;
 
   const openMenu = useCallback(
     (key: Key) => {
-      setIsOpenOption(key as string);
-      if (key === "profile") {
+      if ("connect" === key) {
+        openConnectModal?.();
+      } else if ("wallet" === key) {
+        openAccountModal?.();
+      } else if (key === "profile") {
         router.push("/u/" + address);
-      }
-      if (key === "logout") {
-        logout();
+      } else if (key === "disconnect") {
+        disconnect();
       }
     },
-    [address, logout, router]
+    [address, router, disconnect, openConnectModal, openAccountModal]
   );
 
-  useEffect(() => {
-    if (!address) return;
-    getUserProfile();
-  }, [address, getUserProfile]);
-
   return (
-    <>
-      <Dropdown
-        onOpenChange={() => {
-          if (!isLogin) {
-            openMenu("login");
-          }
-        }}
-      >
-        <DropdownTrigger>
-          <Button isIconOnly className="bg-transparent">
-            {isLogin ? (
-              isLoading ? (
-                <Spinner />
-              ) : (
-                <Avatar name={name} />
-              )
-            ) : (
-              <UserCircleIcon
-                width={32}
-                height={32}
-                className="h-full w-full object-cover"
-              />
-            )}
-          </Button>
-        </DropdownTrigger>
-        <DropdownMenu
-          aria-label={`Dropdown menu`}
-          variant="faded"
-          onAction={openMenu}
+    <Dropdown
+      onOpenChange={() => {
+        if (!isLogin) {
+          openMenu("connect");
+        }
+      }}
+    >
+      <DropdownTrigger>
+        <Button
+          color={!isLogin ? "primary" : "default"}
+          isLoading={isShowSpinner}
+          variant={isLogin ? "faded" : "shadow"}
+          size={isMobile ? "sm" : "md"}
         >
-          {isLogin ? (
-            <>
-              <DropdownItem key="profile">Profile</DropdownItem>
-              <DropdownItem key="logout">Logout</DropdownItem>
-            </>
-          ) : (
-            <DropdownItem key="login">Login</DropdownItem>
-          )}
-        </DropdownMenu>
-      </Dropdown>
-      <LoginModal
-        isOpen={isOpenOption === "login"}
-        onClose={() => setIsOpenOption(null)}
-      />
-    </>
+          {isLogin ? alias : "Connect"}
+        </Button>
+      </DropdownTrigger>
+      <DropdownMenu
+        aria-label={`Dropdown menu`}
+        variant="faded"
+        onAction={openMenu}
+      >
+        {isLogin ? (
+          <>
+            {connector && (
+              <DropdownItem key="wallet">
+                <User
+                  avatarProps={{
+                    size: "sm",
+                    radius: "lg",
+                    src: connector.icon || connector.name,
+                  }}
+                  classNames={{
+                    name: "text-default-600",
+                    description: "text-default-500",
+                  }}
+                  description={
+                    <div className="flex text-xs space-x-2">
+                      <p>{connector.name}</p>
+                      <p>{formatAddress(address)}</p>
+                    </div>
+                  }
+                  name={alias}
+                />
+              </DropdownItem>
+            )}
+            <DropdownItem key="profile">Profile</DropdownItem>
+            <DropdownItem key="disconnect">Disconnect</DropdownItem>
+          </>
+        ) : null}
+      </DropdownMenu>
+    </Dropdown>
   );
 }

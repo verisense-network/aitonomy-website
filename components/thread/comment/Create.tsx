@@ -1,6 +1,6 @@
 import { createComment } from "@/app/actions";
 import { signPayload } from "@/utils/aitonomy/sign";
-import { PostCommentPayload } from "@/utils/aitonomy/type";
+import { PostCommentPayload } from "@verisense-network/vemodel-types";
 import { decodeId } from "@/utils/thread";
 import { hexToBytes, hexToLittleEndian } from "@/utils/tools";
 import { Form, Button, Card, Spinner } from "@heroui/react";
@@ -16,15 +16,17 @@ import {
   mentionsToAccountId,
 } from "@/utils/markdown";
 import { compressString } from "@/utils/compressString";
-import { Lock } from "@/components/Lock";
+import LockCountdown from "@/components/lock/LockCountdown";
 import { MentionProvider } from "@/components/mdxEditor/mentionCtx";
 import { Mention } from "@/components/mdxEditor/AddMention";
-import { updateAccountInfo } from "@/utils/user";
+import { updateAccountInfo, updateLastPostAt } from "@/utils/user";
+import useCanPost from "@/hooks/useCanPost";
+import LockNotAllowedToPost from "@/components/lock/LockNotAllowedToPost";
 
 interface Props {
   threadId: string;
-  communityAgentPubkey: string;
   replyTo?: string;
+  community: any;
   onSuccess: (id: string) => void;
 }
 
@@ -38,13 +40,15 @@ export interface CreateCommentParams {
 
 export default function CreateComment({
   threadId,
-  communityAgentPubkey,
   replyTo,
+  community,
   onSuccess,
 }: Props) {
   const { isLogin, lastPostAt } = useUserStore();
   // accounts for mention
   const [accounts, setAccounts] = useState<Mention[]>([]);
+
+  const canPost = useCanPost(community);
 
   const { control, handleSubmit, reset } = useForm<CreateCommentParams>({
     defaultValues: {
@@ -91,7 +95,6 @@ export default function CreateComment({
           data: contentId,
           message: errorMessage,
         } = await createComment(payload, signature);
-        console.log("contentId", contentId);
         if (!success) {
           throw new Error(errorMessage);
         }
@@ -107,7 +110,7 @@ export default function CreateComment({
         });
         onSuccess(comment!);
         reset();
-        updateAccountInfo();
+        updateLastPostAt();
       } catch (e: any) {
         console.error("e", e);
         toast.update(toastId, {
@@ -122,14 +125,14 @@ export default function CreateComment({
   );
 
   useEffect(() => {
-    updateAccountInfo();
+    updateLastPostAt();
     setAccounts([
       {
         name: "Agent",
-        address: communityAgentPubkey,
+        address: community?.agent_pubkey,
       },
     ]);
-  }, [communityAgentPubkey]);
+  }, [community]);
 
   return (
     <Card className="relative">
@@ -140,7 +143,11 @@ export default function CreateComment({
         }}
       >
         <Form onSubmit={handleSubmit(onSubmit)}>
-          <Lock countdownTime={lastPostAt || 0} />
+          {canPost ? (
+            <LockCountdown countdownTime={lastPostAt || 0} />
+          ) : (
+            <LockNotAllowedToPost />
+          )}
           <Controller
             name="content"
             control={control}

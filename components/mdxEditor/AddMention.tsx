@@ -1,4 +1,3 @@
-import { AtSymbolIcon } from "@heroicons/react/24/outline";
 import {
   Autocomplete,
   AutocompleteItem,
@@ -21,6 +20,7 @@ import { toast } from "react-toastify";
 import { Controller, useForm } from "react-hook-form";
 import { debounce, formatAddress } from "@/utils/tools";
 import { useMentions } from "./mentionCtx";
+import { AtSignIcon } from "lucide-react";
 
 export interface FormData {
   address: string;
@@ -67,7 +67,7 @@ export default function AddMention() {
         onClick={() => setOpenDialog(true)}
         title="Add mention"
       >
-        <AtSymbolIcon width={20} height={20} />
+        <AtSignIcon width={20} height={20} />
       </ButtonWithTooltip>
 
       <Modal isOpen={isOpenDialog} onOpenChange={() => setOpenDialog(false)}>
@@ -87,6 +87,7 @@ export default function AddMention() {
                       render={({ field, fieldState }) => (
                         <Autocomplete
                           {...field}
+                          startContent={<AtSignIcon />}
                           label="Account Name or Address"
                           labelPlacement="outside"
                           placeholder="Enter your account name or address"

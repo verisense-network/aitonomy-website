@@ -2,7 +2,7 @@
 
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { decodeId } from "@/utils/thread";
-import { formatTimestamp, hexToLittleEndian } from "@/utils/tools";
+import { hexToLittleEndian } from "@/utils/tools";
 import {
   Card,
   CardBody,
@@ -11,8 +11,8 @@ import {
   Spinner,
   User,
 } from "@heroui/react";
-import { useCallback, useEffect, useState } from "react";
-import { Community } from "@/utils/aitonomy/type";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Community } from "@verisense-network/vemodel-types";
 import CreateComment from "./comment/Create";
 import { UserAddressView } from "@/utils/format";
 import { parseMarkdown } from "@/utils/markdown";
@@ -20,23 +20,16 @@ import { decompressString } from "@/utils/compressString";
 import Link from "next/link";
 import { GetAccountInfoResponse } from "@/utils/aitonomy";
 import { getAccounts } from "@/app/actions";
-import {
-  ChatBubbleLeftEllipsisIcon,
-  HomeIcon,
-} from "@heroicons/react/24/outline";
-import { isAgentAddress } from "./utils";
+import { isEqualAddress } from "./utils";
+import TooltipTime from "../formatTime/TooltipTime";
+import { BotIcon } from "lucide-react";
 
 interface Props {
   threadId: string;
   community: Community;
-  communityAgentPubkey: string;
 }
 
-export default function ThreadComments({
-  threadId,
-  community,
-  communityAgentPubkey,
-}: Props) {
+export default function ThreadComments({ threadId, community }: Props) {
   const { thread, community: communityId } = decodeId(threadId);
   const { data, isLoading, setParams, forceUpdate } = useMeilisearch(
     "comment",
@@ -49,7 +42,7 @@ export default function ThreadComments({
     }
   );
 
-  const comments = data?.hits ?? [];
+  const comments = useMemo(() => data?.hits || [], [data]);
 
   const pageChange = useCallback(
     (page: number) => {
@@ -70,7 +63,7 @@ export default function ThreadComments({
 
   useEffect(() => {
     (async () => {
-      if (isLoading || !comments?.length) return;
+      if (isLoading || !comments.length) return;
       const accounts = comments.map((comment: any) => comment.author);
       const { success, data: accountsData } = await getAccounts({
         accountIds: accounts,
@@ -83,6 +76,7 @@ export default function ThreadComments({
   const viewCommentAccount = useCallback(
     (address: string) => {
       if (!address || !commentAccounts?.length || isLoading) return "";
+
       const account = commentAccounts.find(
         (account) => account.address === address
       );
@@ -93,18 +87,20 @@ export default function ThreadComments({
 
   return (
     <div className="mx-2 space-y-3">
-      <h1 className="text-lg font-bold">Comments</h1>
+      <div className="flex items-center space-x-2">
+        <h1 className="text-lg font-bold">Comments</h1>
+      </div>
+      {!isLoading && (
+        <CreateComment
+          threadId={threadId}
+          onSuccess={onSuccessCreateCommunity}
+          community={community}
+        />
+      )}
       {isLoading && (
         <Card>
           <Spinner />
         </Card>
-      )}
-      {!isLoading && (
-        <CreateComment
-          threadId={threadId}
-          communityAgentPubkey={communityAgentPubkey}
-          onSuccess={onSuccessCreateCommunity}
-        />
       )}
       {!isLoading &&
         comments.map((comment: any) => (
@@ -121,18 +117,22 @@ export default function ThreadComments({
             </CardBody>
             <CardFooter className="text-sm text-gray-500 justify-between">
               <div>
-                <Link href={`/u/${comment.author}`}>
+                <Link
+                  href={
+                    isEqualAddress(comment?.author, community?.agent_pubkey)
+                      ? `/c/${decodeId(comment.id).community}`
+                      : `/u/${comment.author}`
+                  }
+                >
                   <User
                     className="cursor-pointer"
                     avatarProps={{
-                      ...(isAgentAddress(
+                      ...(isEqualAddress(
                         comment?.author,
                         community?.agent_pubkey
                       )
                         ? {
-                            icon: (
-                              <ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
-                            ),
+                            icon: <BotIcon className="w-5 h-5" />,
                           }
                         : {
                             name: viewCommentAccount(comment?.author),
@@ -143,13 +143,28 @@ export default function ThreadComments({
                         agentPubkey={community?.agent_pubkey}
                         address={comment?.author}
                         name={viewCommentAccount(comment?.author)}
+                        classNames={{
+                          name: isEqualAddress(
+                            comment?.author,
+                            community?.agent_pubkey
+                          )
+                            ? "text-primary"
+                            : "",
+                        }}
                       />
                     }
                   />
                 </Link>
               </div>
               <div className="flex space-x-2 items-center">
-                <div>{formatTimestamp(comment.created_time)}</div>
+                <div className="flex space-x-5 items-center">
+                  {isEqualAddress(comment?.author, community?.agent_pubkey) && (
+                    <span className="text-xs text-gray-500">
+                      AI-generated, for reference only
+                    </span>
+                  )}
+                  <TooltipTime time={comment.created_time} />
+                </div>
               </div>
             </CardFooter>
           </Card>

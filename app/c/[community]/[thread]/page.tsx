@@ -4,7 +4,7 @@ import { use } from "react";
 import ThreadComments from "@/components/thread/Comments";
 import ThreadView from "@/components/thread/Thread";
 import useMeilisearch from "@/hooks/useMeilisearch";
-import { Community } from "@/utils/aitonomy/type";
+import { Community } from "@verisense-network/vemodel-types";
 import { encodeId } from "@/utils/thread";
 import { hexToLittleEndian } from "@/utils/tools";
 
@@ -22,8 +22,6 @@ export default function ThreadPage({ params }: Props): React.ReactNode {
 
   const community = data?.hits[0];
 
-  const communityAgentPubkey = community?.agent_pubkey;
-
   const computedThreadId = encodeId({
     community: communityId,
     thread: threadId,
@@ -34,7 +32,6 @@ export default function ThreadPage({ params }: Props): React.ReactNode {
       <ThreadView threadId={computedThreadId} />
       <ThreadComments
         threadId={computedThreadId}
-        communityAgentPubkey={communityAgentPubkey}
         community={community as Community}
       />
     </div>

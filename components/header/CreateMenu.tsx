@@ -1,4 +1,3 @@
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import {
   Dropdown,
   DropdownTrigger,
@@ -15,15 +14,18 @@ import CommunityCreate from "../community/Create";
 import ThreadCreate from "../thread/Create";
 import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
+import { CirclePlusIcon, PenIcon, PlusIcon } from "lucide-react";
 
 const menuList = [
   {
     name: "community",
     title: "New community",
+    icon: <PlusIcon className="w-5 h-5" />,
   },
   {
     name: "thread",
     title: "Post thread",
+    icon: <PenIcon className="w-5 h-5" />,
   },
 ];
 
@@ -50,12 +52,8 @@ export default function CreateMenu() {
     <>
       <Dropdown>
         <DropdownTrigger>
-          <Button isIconOnly className="bg-transparent">
-            <PlusCircleIcon
-              width={32}
-              height={32}
-              className="h-full w-full object-cover"
-            />
+          <Button className="create-community-step1" isIconOnly variant="light">
+            <CirclePlusIcon className="w-6 h-6 md:w-8 md:h-8" />
           </Button>
         </DropdownTrigger>
         <DropdownMenu
@@ -64,7 +62,15 @@ export default function CreateMenu() {
           onAction={openMenu}
         >
           {menuList.map((item) => (
-            <DropdownItem key={item.name}>{item.title}</DropdownItem>
+            <DropdownItem
+              key={item.name}
+              startContent={item.icon}
+              {...(item.name === "community"
+                ? { id: "create-community-step2" }
+                : {})}
+            >
+              {item.title}
+            </DropdownItem>
           ))}
         </DropdownMenu>
       </Dropdown>

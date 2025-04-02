@@ -7,20 +7,23 @@ import {
   ModalContent,
   ModalHeader,
 } from "@heroui/react";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { toast } from "react-toastify";
-import { Lock } from "@/components/Lock";
-import { updateAccountInfo } from "@/utils/user";
+import LockCountdown from "@/components/lock/LockCountdown";
+import LockNotAllowedToPost from "@/components/lock/LockNotAllowedToPost";
+import useCanPost from "@/hooks/useCanPost";
 
 interface Props {
   communityName?: string;
+  communityId?: string;
+  community?: any;
   replyTo?: string;
   onSuccess: (id: string) => void;
   reloadCommunity?: () => void;
 }
 
 export default function CreateThread({
-  communityName,
+  community,
   replyTo,
   onSuccess,
   reloadCommunity,
@@ -28,25 +31,27 @@ export default function CreateThread({
   const [isOpen, setIsOpen] = useState(false);
   const { isLogin, lastPostAt } = useUserStore();
 
+  const canPost = useCanPost(community);
+
   const openCreateModal = useCallback(async () => {
     if (!isLogin) {
       toast.info("Please login first");
       return;
     }
-    if (!communityName) {
+    if (!community?.name) {
       await reloadCommunity?.();
     }
     setIsOpen(true);
-  }, [communityName, isLogin, reloadCommunity]);
-
-  useEffect(() => {
-    updateAccountInfo();
-  }, []);
+  }, [community, isLogin, reloadCommunity]);
 
   return (
     <>
       <div className="relative">
-        <Lock countdownTime={lastPostAt || 0} />
+        {canPost ? (
+          <LockCountdown countdownTime={lastPostAt || 0} />
+        ) : (
+          <LockNotAllowedToPost />
+        )}
         <Card
           className="flex w-full text-right px-6 py-6 hover:bg-gray-200 dark:hover:bg-zinc-800"
           isPressable
@@ -72,7 +77,7 @@ export default function CreateThread({
                   {isOpen && (
                     <ThreadCreate
                       onClose={onClose}
-                      defaultCommunity={communityName}
+                      community={community}
                       replyTo={replyTo}
                     />
                   )}

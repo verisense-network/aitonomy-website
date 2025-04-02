@@ -4,24 +4,41 @@ import useMeilisearch from "@/hooks/useMeilisearch";
 import { hexToLittleEndian, sleep } from "@/utils/tools";
 import {
   Avatar,
+  Badge,
   Button,
   Card,
   CardBody,
   CardHeader,
   Chip,
   Spinner,
+  Tooltip,
 } from "@heroui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import PaymentModal from "./modal/Payment";
-import { activateCommunity, getBalances } from "@/app/actions";
+import PaymentModal from "../modal/Payment";
+import { activateCommunity, getCommunity } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
-import { isYouAddress } from "../thread/utils";
 import { usePaymentCommunityStore } from "@/stores/paymentCommunity";
-import { CommunityStatus } from "./utils";
-import { getWalletConnect } from "@/utils/wallet";
+import {
+  CommunityStatus,
+  getCommunityMode,
+  getCommunityModeIcon,
+} from "./utils";
+import { waitForTransactionReceipt } from "@wagmi/core";
 import { Id, toast } from "react-toastify";
 import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
 import { useAppearanceStore } from "@/stores/appearance";
+import InviteUser from "../user/InviteUser";
+import { wagmiConfig } from "@/config/wagmi";
+import { useUser } from "@/hooks/useUser";
+import {
+  BadgeCheckIcon,
+  CircleAlertIcon,
+  CircleDollarSignIcon,
+  UserPlusIcon,
+} from "lucide-react";
+import TokenPanel from "./token/TokenPanel";
+import { CommunityMode } from "@verisense-network/vemodel-types";
+import useCanPost from "@/hooks/useCanPost";
 
 interface Props {
   communityId: string;
@@ -32,8 +49,9 @@ const MAX_RETRY = 15;
 export default function CommunityBrand({ communityId }: Props) {
   const [isOpenPaymentModal, setIsOpenPaymentModal] = useState(false);
   const [isActivatingLoading, setIsActivatingLoading] = useState(false);
-  const [currentBalance, setCurrentBalance] = useState<number | null>(null);
-  const { isLogin, address, wallet } = useUserStore();
+  const [isOpenInviteModal, setIsOpenInviteModal] = useState(false);
+  const { isLogin } = useUserStore();
+  const { isYouAddress } = useUser();
   const { isMobile } = useAppearanceStore();
   const {
     setSignature: storePaymentSignature,
@@ -51,24 +69,45 @@ export default function CommunityBrand({ communityId }: Props) {
   );
 
   const community = data?.hits[0];
+  const communityRef = useRef(community);
+  const c = communityRef.current || community;
 
-  const amount = community?.status?.WaitingTx;
+  const canPost = useCanPost(c);
+
+  const amount = c?.status?.WaitingTx;
   const viewAmount = amount ? formatReadableAmount(amount) : "";
 
-  const isCreateFailed =
-    community && community?.status?.[CommunityStatus.CreateFailed];
+  const isLoaded = !isLoading && c;
 
-  const hasStoredSignature =
-    community?.name === storedCommunity && storedSignature;
+  const isCommunityMode = useCallback(
+    (mode: keyof CommunityMode) => {
+      const cRef = communityRef.current || community;
+      return cRef && (cRef?.mode?.[mode] || cRef?.mode === mode);
+    },
+    [community]
+  );
 
-  const shouldShowActivateCommunity =
-    isLogin && isYouAddress(community?.creator);
+  const isCommunityStatus = useCallback(
+    (status: CommunityStatus) => {
+      const cRef = communityRef.current || community;
+      return cRef && (cRef?.status?.[status] || cRef?.status === status);
+    },
+    [community]
+  );
+
+  const hasStoredSignature = c?.name === storedCommunity && storedSignature;
+
+  const shouldShowActivateCommunity = isLogin && isYouAddress(c?.creator);
+
+  const shouldShowInviteUser =
+    shouldShowActivateCommunity && isCommunityMode("InviteOnly");
+
+  const shouldShowJoinCommunity =
+    isLogin && !canPost && isCommunityMode("PayToJoin");
 
   const toPayment = useCallback(() => {
     setIsOpenPaymentModal(true);
   }, []);
-
-  const communityRef = useRef(community);
 
   useEffect(() => {
     communityRef.current = community;
@@ -76,19 +115,19 @@ export default function CommunityBrand({ communityId }: Props) {
 
   const checkCommunityActivateStatus = useCallback(
     async (txHash: string, toastId: Id, retryCount: number = 0) => {
-      const communityCurrent = communityRef.current;
-      console.log("community", communityCurrent, communityCurrent?.status);
-      if (!communityCurrent) return;
-      if (communityCurrent.status !== CommunityStatus.Active) {
+      if (!c) return;
+      if (
+        isCommunityStatus(CommunityStatus.WaitingTx) ||
+        isCommunityStatus(CommunityStatus.TokenIssued)
+      ) {
         setIsActivatingLoading(true);
-        const userWallet = getWalletConnect(wallet);
         if (retryCount < MAX_RETRY) {
           if (!txHash) return;
-          const payload = { community: communityCurrent?.name, tx: txHash };
-          console.log("payload", payload);
-          const tx = await userWallet.getFinalizedTransaction(txHash);
+          const payload = { community: c.name, tx: txHash };
 
-          console.log("tx", tx);
+          const tx = await waitForTransactionReceipt(wagmiConfig, {
+            hash: txHash as `0x${string}`,
+          });
 
           const renderCount = `${retryCount + 1}/${MAX_RETRY}`;
           if (!tx || (tx as any)?.meta?.err) {
@@ -119,7 +158,7 @@ export default function CommunityBrand({ communityId }: Props) {
             render: `Checking community activation status...${renderCount}`,
           });
           forceUpdate();
-          await sleep(2000);
+          await sleep(5000);
           await checkCommunityActivateStatus(txHash, toastId, retryCount + 1);
         } else {
           console.log(
@@ -134,29 +173,30 @@ export default function CommunityBrand({ communityId }: Props) {
             autoClose: 2000,
           });
         }
-      } else {
+      } else if (isCommunityStatus(CommunityStatus.Active)) {
         forceUpdate();
         setTimeout(() => {
           setIsActivatingLoading(false);
-          console.log("Community is now active!");
+          console.log("Token is issued!");
           toast.update(toastId, {
-            render: "Community is now active!",
+            render: "Token is now issued, community is activating...",
             type: "success",
             isLoading: false,
             autoClose: 2000,
           });
+          forceUpdate();
         }, 2000);
       }
       forceUpdate();
     },
-    [forceUpdate, wallet]
+    [c, forceUpdate, isCommunityStatus]
   );
 
-  const onSuccess = useCallback(
+  const onActivateSuccess = useCallback(
     async (txHash: string, toastId: Id) => {
       console.log("onSuccess", txHash);
-      const payload = { community: community?.name, signature: txHash };
-      storePaymentSignature({ community: community?.name, signature: txHash });
+      const payload = { community: c?.name, signature: txHash };
+      storePaymentSignature({ community: c?.name, signature: txHash });
       console.log("storePaymentSignature", payload);
       toast.update(toastId, {
         render: "Checking community activation status...",
@@ -166,39 +206,8 @@ export default function CommunityBrand({ communityId }: Props) {
       await checkCommunityActivateStatus(txHash, toastId, 0);
       setIsOpenPaymentModal(false);
     },
-    [checkCommunityActivateStatus, community?.name, storePaymentSignature]
+    [checkCommunityActivateStatus, c?.name, storePaymentSignature]
   );
-
-  const getBalance = useCallback(async () => {
-    if (!address || !communityId) return;
-    try {
-      const {
-        success,
-        data: balances,
-        message: errorMessage,
-      } = await getBalances({
-        accountId: address,
-        gt: communityId,
-        limit: 1,
-      });
-      if (!success || !balances) {
-        throw new Error(errorMessage);
-      }
-      const current = balances?.find(
-        (item) => item[0]?.id === hexToLittleEndian(communityId)
-      );
-      if (!current) {
-        setCurrentBalance(0);
-        return;
-      }
-      // const communityInfo = current[0];
-      const currentBalance = current[1];
-      setCurrentBalance(currentBalance);
-    } catch (e: any) {
-      console.error("getBalance error", e);
-      toast.error("Failed to get balance");
-    }
-  }, [address, communityId]);
 
   const retryWithStoreSignature = useCallback(async () => {
     const signature = usePaymentCommunityStore.getState().signature;
@@ -212,7 +221,7 @@ export default function CommunityBrand({ communityId }: Props) {
       data: res,
       message: errorMessage,
     } = await activateCommunity({
-      community: community?.name,
+      community: c?.name,
       tx: signature,
     });
     if (!success) {
@@ -222,11 +231,7 @@ export default function CommunityBrand({ communityId }: Props) {
     const toastId = toast.loading("checking activation status");
     checkCommunityActivateStatus(signature, toastId, 0);
     console.log("res", res);
-  }, [checkCommunityActivateStatus, community?.name]);
-
-  useEffect(() => {
-    getBalance();
-  }, [getBalance, communityId]);
+  }, [checkCommunityActivateStatus, c?.name]);
 
   useEffect(() => {
     (async () => {
@@ -250,103 +255,178 @@ export default function CommunityBrand({ communityId }: Props) {
     })();
   }, [communityId, data, forceUpdate, isLoading, isValidating]);
 
+  const onInviteSuccess = useCallback(() => {
+    setIsOpenInviteModal(false);
+    toast.success("Invite successful");
+  }, []);
+
+  const joinCommunity = useCallback(() => {}, []);
+
   return (
     <>
       <Card className="m-2 p-2 md:p-4 min-h-40">
         <CardHeader>
-          <div className="flex justify-between items-center w-full">
+          <div className="flex flex-wrap md:flex-nowrap justify-between items-center w-full space-y-2">
             <div className="flex flex-wrap space-x-4 items-center">
-              <Avatar name={community?.name} src={community?.logo} size="lg" />
-              <h1 className="text-2xl font-bold">{community?.name}</h1>
-              {shouldShowActivateCommunity && Number(viewAmount) > 0 && (
-                <div className="flex">
-                  <Chip
-                    color="warning"
-                    size={isMobile ? "sm" : "lg"}
-                    classNames={{
-                      base: "h-9",
-                      content: "flex space-x-2 items-center",
-                    }}
-                  >
-                    <span>
-                      Waiting tx {viewAmount} {VIEW_UNIT}
-                    </span>
-                    {!isLoading &&
-                      (hasStoredSignature ? (
-                        <Button
-                          variant="shadow"
-                          size="sm"
-                          color="primary"
-                          onPress={retryWithStoreSignature}
-                        >
-                          Retry
-                        </Button>
+              <Badge
+                color="default"
+                isOneChar
+                content={
+                  <Tooltip content={getCommunityMode(c?.mode)}>
+                    {getCommunityModeIcon(c?.mode)}
+                  </Tooltip>
+                }
+                showOutline={false}
+                placement="bottom-right"
+              >
+                <Avatar name={c?.name} src={c?.logo} size="lg" />
+              </Badge>
+              <div className="flex flex-col">
+                <div className="flex flex-wrap space-x-4 items-center">
+                  <h1 className="flex items-center text-2xl font-bold">
+                    {c?.name}
+                    {isLoaded &&
+                      (isCommunityStatus(CommunityStatus.Active) ? (
+                        <Tooltip content="Activated">
+                          <BadgeCheckIcon className="ml-2 w-6 h-6 text-success" />
+                        </Tooltip>
+                      ) : isCommunityStatus(CommunityStatus.TokenIssued) ? (
+                        <Tooltip content="Token Issued">
+                          <CircleDollarSignIcon className="ml-2 w-6 h-6 text-warning" />
+                        </Tooltip>
                       ) : (
+                        <Tooltip content="Inactive">
+                          <CircleAlertIcon className="ml-2 w-6 h-6 text-danger" />
+                        </Tooltip>
+                      ))}
+                    {isLoaded &&
+                      shouldShowInviteUser &&
+                      isCommunityStatus(CommunityStatus.Active) && (
+                        <Tooltip content="Invite User">
+                          <UserPlusIcon
+                            className="ml-2 w-6 h-6 text-sky-200"
+                            onClick={() => setIsOpenInviteModal(true)}
+                          />
+                        </Tooltip>
+                      )}
+                    {/* TODO: implement join community */}
+                    {isLoaded &&
+                      shouldShowJoinCommunity &&
+                      isCommunityStatus(CommunityStatus.Active) && (
                         <Button
-                          variant="shadow"
+                          className="ml-2"
                           size="sm"
                           color="primary"
-                          onPress={toPayment}
+                          onPress={joinCommunity}
+                          isDisabled
                         >
-                          Payment
+                          Join Community
                         </Button>
-                      ))}
-                  </Chip>
+                      )}
+                  </h1>
+                  {isLoaded &&
+                    shouldShowActivateCommunity &&
+                    Number(viewAmount) > 0 && (
+                      <div className="flex">
+                        <Chip
+                          color="warning"
+                          size={isMobile ? "sm" : "lg"}
+                          classNames={{
+                            base: "h-9",
+                            content: "flex space-x-2 items-center",
+                          }}
+                        >
+                          <span>
+                            Waiting tx {viewAmount} {VIEW_UNIT}
+                          </span>
+                          {!isLoading && (
+                            <>
+                              {hasStoredSignature && (
+                                <Button
+                                  variant="shadow"
+                                  size="sm"
+                                  color="primary"
+                                  onPress={retryWithStoreSignature}
+                                >
+                                  Retry
+                                </Button>
+                              )}
+                              <Button
+                                variant="shadow"
+                                size="sm"
+                                color="primary"
+                                onPress={toPayment}
+                              >
+                                Payment
+                              </Button>
+                            </>
+                          )}
+                        </Chip>
+                      </div>
+                    )}
+                  {shouldShowActivateCommunity &&
+                    isCommunityStatus(CommunityStatus.CreateFailed) && (
+                      <Chip
+                        color="danger"
+                        size="lg"
+                        classNames={{
+                          base: "h-9",
+                          content: "flex space-x-2 items-center",
+                        }}
+                      >
+                        <span>Create Failed</span>
+                        {!isLoading && hasStoredSignature && (
+                          <Button
+                            variant="shadow"
+                            size="sm"
+                            color="primary"
+                            onPress={retryWithStoreSignature}
+                          >
+                            Retry
+                          </Button>
+                        )}
+                      </Chip>
+                    )}
+                  {isLoading && <Spinner />}
+                  {isActivatingLoading && <Spinner title="Activating..." />}
                 </div>
-              )}
-              {shouldShowActivateCommunity && isCreateFailed && (
-                <Chip
-                  color="danger"
-                  size="lg"
-                  classNames={{
-                    base: "h-9",
-                    content: "flex space-x-2 items-center",
-                  }}
-                >
-                  <span>Create Failed</span>
-                  {!isLoading && hasStoredSignature && (
-                    <Button
-                      variant="shadow"
-                      size="sm"
-                      color="primary"
-                      onPress={retryWithStoreSignature}
-                    >
-                      Retry
-                    </Button>
-                  )}
-                </Chip>
-              )}
-              {isLoading && <Spinner />}
-              {isActivatingLoading && <Spinner title="Activating..." />}
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="flex flex-col items-center">
-                <Avatar
-                  src={community?.token_info?.image}
-                  name={community?.token_info?.symbol}
-                />
-                <div className="flex items-center mt-1 space-x-1 text-md">
-                  <span>{currentBalance}</span>
-                  <span className="text-sm">
-                    {community?.token_info?.symbol}
-                  </span>
+                <div>
+                  <p className="text-sm text-zinc-400">{c?.slug}</p>
                 </div>
               </div>
+            </div>
+            <div className="hidden md:flex items-center space-x-2">
+              {isCommunityStatus(CommunityStatus.Active) && (
+                <TokenPanel community={c} />
+              )}
             </div>
           </div>
         </CardHeader>
         <CardBody>
           {isLoading && <Spinner />}
-          {community?.description}
+          {c?.description}
+          <div className="flex md:hidden items-center space-x-2 w-full justify-center mt-4">
+            {isCommunityStatus(CommunityStatus.Active) && (
+              <TokenPanel community={c} />
+            )}
+          </div>
         </CardBody>
       </Card>
       <PaymentModal
         isOpen={isOpenPaymentModal}
         onClose={() => setIsOpenPaymentModal(false)}
-        toAddress={community?.agent_pubkey}
+        toAddress={c?.agent_pubkey}
         amount={amount}
-        onSuccess={onSuccess}
+        onSuccess={onActivateSuccess}
       />
+      {isOpenInviteModal && (
+        <InviteUser
+          isOpen={isOpenInviteModal}
+          community={c}
+          onClose={() => setIsOpenInviteModal(false)}
+          onSuccess={() => onInviteSuccess()}
+        />
+      )}
     </>
   );
 }

@@ -1,5 +1,5 @@
-import { u128 } from "@polkadot/types-codec";
-import { registry } from "./aitonomy/type";
+import { u128 } from "@verisense-network/vemodel-types/dist/codec";
+import { registry } from "@verisense-network/vemodel-types";
 
 type ThreadId = {
   community: string;
@@ -16,14 +16,13 @@ export function decodeId(threadIdHex: string): ThreadId {
     throw new Error("Invalid hex string");
   }
 
-  const buf = Buffer.from(hex, "hex");
-
-  const decoded = new u128(registry, buf).toString(16);
+  const decoded = new u128(registry, Buffer.from(hex, "hex")).toHex();
+  const id = decoded.slice(2);
 
   return {
-    community: decoded.slice(0, 8),
-    thread: decoded.slice(8, 16),
-    comment: decoded.slice(16, 24),
+    community: id.slice(8, 16),
+    thread: id.slice(16, 24),
+    comment: id.slice(0, 8),
   };
 }
 

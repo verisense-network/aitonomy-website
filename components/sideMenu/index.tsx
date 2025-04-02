@@ -1,17 +1,19 @@
 "use client";
 
 import useMeilisearch from "@/hooks/useMeilisearch";
+import { SiGithub, SiX } from "@icons-pack/react-simple-icons";
 import {
-  ArrowLeftCircleIcon,
-  Bars3Icon,
-  CurrencyDollarIcon,
+  CircleDollarSignIcon,
+  CircleHelpIcon,
+  HeartHandshakeIcon,
   HomeIcon,
+  PanelLeftOpenIcon,
+  PanelRightOpenIcon,
   PlusIcon,
-  QuestionMarkCircleIcon,
   ShieldCheckIcon,
-  UserGroupIcon,
-  UsersIcon,
-} from "@heroicons/react/24/outline";
+  TelescopeIcon,
+  TorusIcon,
+} from "lucide-react";
 import {
   Accordion,
   AccordionItem,
@@ -35,13 +37,14 @@ import { useAppearanceStore } from "@/stores/appearance";
 import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
 import Link from "next/link";
+import Learn from "../tour/Learn";
 
 const TopMenus = [
   { name: "Home", href: "/", icon: <HomeIcon className="w-5 h-5" /> },
   {
     name: "Explore",
     href: "/explore",
-    icon: <UserGroupIcon className="w-5 h-5" />,
+    icon: <TelescopeIcon className="w-5 h-5" />,
   },
 ];
 
@@ -54,12 +57,12 @@ const Legals = [
   {
     name: "Terms of Service",
     href: "/legals/terms-of-service",
-    icon: <UsersIcon className="w-5 h-5" />,
+    icon: <HeartHandshakeIcon className="w-5 h-5" />,
   },
   {
     name: "Fees",
     href: "/legals/fees",
-    icon: <CurrencyDollarIcon className="w-5 h-5" />,
+    icon: <CircleDollarSignIcon className="w-5 h-5" />,
   },
 ];
 
@@ -69,6 +72,7 @@ export default function SideMenu() {
   const { isLogin } = useUserStore();
   const { isMobile } = useAppearanceStore();
   const [createCommunityModal, setCreateCommunityModal] = useState(false);
+  const [learnModalIsOpen, setLearnModalIsOpen] = useState(false);
 
   const { data, isLoading } = useMeilisearch("community", undefined, {
     // filter: "status = 'Active'",
@@ -89,19 +93,19 @@ export default function SideMenu() {
       <div
         className={twMerge(
           sideBarIsOpen ? "md:w-[240px]" : "w-1 md:w-12",
-          "fixed top-16 left-0 h-[calc(100vh-4rem)] z-40 bg-black border-r-1 border-zinc-800"
+          "group fixed top-16 left-0 h-[calc(100vh-4rem)] z-40 bg-black border-r border-zinc-800 transition-colors duration-200"
         )}
       >
         <Button
           onPress={() => setSideBarIsOpen(!sideBarIsOpen)}
           isIconOnly
           variant="light"
-          className="absolute top-20 -right-5 shadow-0 text-zinc-300"
+          className="absolute top-20 -right-5 shadow-0 text-zinc-300 hover:text-white group-hover:border-zinc-700"
         >
           {sideBarIsOpen ? (
-            <ArrowLeftCircleIcon className="w-8 h-8 bg-black" />
+            <PanelRightOpenIcon className="w-8 h-8 bg-black" />
           ) : (
-            <Bars3Icon className="w-8 h-8 bg-black" />
+            <PanelLeftOpenIcon className="w-8 h-8 bg-black" />
           )}
         </Button>
         <div className={twMerge(sideBarIsOpen ? "" : "hidden", "", "p-2 pr-4")}>
@@ -179,8 +183,18 @@ export default function SideMenu() {
             }}
           >
             <ListboxItem
+              key="tour"
+              startContent={<TorusIcon className="w-5 h-5" />}
+              onPress={() => setLearnModalIsOpen(true)}
+            >
+              <Learn
+                isOpen={learnModalIsOpen}
+                setIsOpen={setLearnModalIsOpen}
+              />
+            </ListboxItem>
+            <ListboxItem
               key="how-to-works"
-              startContent={<QuestionMarkCircleIcon className="w-5 h-5" />}
+              startContent={<CircleHelpIcon className="w-5 h-5" />}
               onPress={() => setWelcomeModalIsOpen(true)}
             >
               How it works
@@ -201,6 +215,24 @@ export default function SideMenu() {
           </Listbox>
           <div className="px-3 mt-2 text-zinc-400 hover:text-zinc-300">
             <span className="text-xs">AItonomy.world 2025</span>
+          </div>
+          <div className="flex space-x-2 items-center px-3 mt-2 text-zinc-400 ">
+            <p className="text-xs">
+              Powered by{" "}
+              <Link
+                className="text-primary"
+                href="https://verisense.network/"
+                target="_blank"
+              >
+                Verisense
+              </Link>
+            </p>
+            <Link href="https://x.com/veri_sense" target="_blank">
+              <SiX className="w-3 h-3" />
+            </Link>
+            <Link href="https://github.com/verisense-network" target="_blank">
+              <SiGithub className="w-3 h-3" />
+            </Link>
           </div>
         </div>
         <Modal

@@ -1,21 +1,23 @@
 import { getAccountInfo } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
-import { getWalletConnect } from "./wallet";
 import { toast } from "react-toastify";
+import { ethers } from "ethers";
+import { formatAddress } from "./tools";
 
 export const NAME_NOT_SET = "Name not set";
 
-export async function updateAccountInfo() {
+export async function updateAccountInfo(address: string) {
   try {
-    const {
-      wallet: walletId,
-      address,
-      setUserName,
-      setLastPostAt,
-      logout,
-    } = useUserStore.getState();
+    const chain = useUserStore.getState().chain;
 
-    if (!address) {
+    let publicKey: Uint8Array = new Uint8Array();
+    if (chain === "evm") {
+      publicKey = ethers.toBeArray(address);
+    }
+
+    const { setUser, logout } = useUserStore.getState();
+
+    if (!address || !publicKey) {
       return;
     }
 
@@ -36,13 +38,40 @@ export async function updateAccountInfo() {
     if (!success || !account) {
       throw new Error(errorMessage);
     }
-    const aliasName = account?.alias || address?.slice(0, 4);
-    setUserName(aliasName);
-    setLastPostAt(account.last_post_at);
 
-    const wallet = getWalletConnect(walletId);
-    wallet.checkConnected();
+    setUser({
+      alias: account.alias || formatAddress(address),
+      address: address,
+      publicKey: publicKey,
+      lastPostAt: account.last_post_at,
+    });
   } catch (e: any) {
     console.error("updateAccountInfo error", e);
+    toast.error(`updateAccountInfo failed: ${e}`);
+  }
+}
+
+export async function updateLastPostAt() {
+  try {
+    const { setUser, address } = useUserStore.getState();
+    if (!address) {
+      return;
+    }
+    const {
+      success,
+      data: account,
+      message: errorMessage,
+    } = await getAccountInfo({
+      accountId: address,
+    });
+    if (!success || !account) {
+      throw new Error(errorMessage);
+    }
+    setUser({
+      lastPostAt: account.last_post_at,
+    });
+  } catch (e: any) {
+    console.error("updateLastPostAt error", e);
+    toast.error(`updateLastPostAt failed: ${e}`);
   }
 }

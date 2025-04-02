@@ -2,7 +2,7 @@ import { setAlias } from "@/app/actions";
 import { SetAliasArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { NAME_REGEX } from "@/utils/aitonomy/tools";
-import { SetAliasPayload } from "@/utils/aitonomy/type";
+import { SetAliasPayload } from "@verisense-network/vemodel-types";
 import { Button, Form, Input } from "@heroui/react";
 import { useCallback } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -31,14 +31,11 @@ export default function UpdateAliasName({
         alias: data.alias,
       };
       const signature = await signPayload(payload, SetAliasPayload);
-      console.log("signature", signature);
 
       const { success, message: errorMessage } = await setAlias(
         payload,
         signature
       );
-      console.log("success", success);
-      console.log("errorMessage", errorMessage);
       if (!success) {
         toast.error(`Failed: ${errorMessage}`);
         return;

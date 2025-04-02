@@ -33,13 +33,14 @@ export function hexToLittleEndian(hex: string): string {
 
 export function formatTimestamp(
   timestamp: number,
+  relative: boolean = true,
   format: string = "YYYY-MM-DD HH:mm"
 ) {
   const date = dayjs.unix(timestamp);
   const now = dayjs();
   const diff = now.diff(date, "day");
 
-  if (diff < 7) {
+  if (diff < 7 && relative) {
     return date.fromNow();
   }
 
@@ -78,4 +79,18 @@ export function debounce<T extends (...args: any[]) => any>(
 
 export async function sleep(timeout: number) {
   return new Promise((resolve) => setTimeout(resolve, timeout));
+}
+
+export function convertStoredPublicKeyToHex(publicKey: Uint8Array) {
+  return `0x${Buffer.from(Object.values(publicKey)).toString("hex")}`;
+}
+
+export function extractWagmiErrorDetailMessage(err: any) {
+  const regex = /Details: (.+)/;
+  const match = err?.message.match(regex);
+  if (match && match[1]) {
+    return match[1].trim();
+  } else {
+    return err?.message || err;
+  }
 }

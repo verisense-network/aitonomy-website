@@ -15,7 +15,10 @@ import {
   registry,
   PostCommentArg,
   SetAliasArg,
-} from "./type";
+  RewardPayload,
+  InviteUserArg,
+  GenerateInviteTicketArg,
+} from "@verisense-network/vemodel-types";
 import {
   Result,
   Option,
@@ -25,7 +28,10 @@ import {
   Null,
   Vec,
   u64,
-} from "@polkadot/types-codec";
+  Bool,
+  Enum,
+  u128,
+} from "@verisense-network/vemodel-types/dist/codec";
 
 interface Signature {
   signature: Uint8Array;
@@ -35,15 +41,18 @@ interface Signature {
 
 export interface CreateCommunityArg {
   name: string;
-  private: boolean;
+  mode: Enum;
   logo: string;
   slug: string;
   description: string;
   prompt: string;
   token: {
+    name: string;
     symbol: string;
     total_issuance: number;
     decimals: number;
+    new_issue: boolean;
+    contract: string | null;
     image: string | null;
   };
   llm_name: LLmName;
@@ -60,6 +69,7 @@ export async function createCommunityRpc(
     ...signature,
     payload: args,
   };
+
   console.log("rpcArgs", rpcArgs);
 
   const payload = new CreateCommunityArg(registry, rpcArgs).toHex();
@@ -232,9 +242,6 @@ export async function activateCommunityRpc(
 
   console.log("payload", payload);
 
-  const decoded = new ActivateCommunityArg(registry, payload).toHuman();
-  console.log("decoded", decoded);
-
   try {
     const provider = await getRpcClient();
     const response = await provider.send<any>("nucleus_post", [
@@ -326,6 +333,65 @@ export async function getBalancesRpc(
   }
 }
 
+export interface GetRewardsArg {
+  community_id: Uint8Array;
+  account_id: Uint8Array;
+}
+
+export type GetRewardsResponse = {
+  payload: Uint8Array;
+  signature: Uint8Array;
+  agent_contract: AccountId;
+  token_contract: AccountId;
+  token_symbol: string;
+  withdrawed: boolean;
+};
+
+export async function getRewardsRpc(
+  nucleusId: string,
+  args: GetRewardsArg
+): Promise<GetRewardsResponse[]> {
+  console.log("args", args);
+  /**
+    community_id: CommunityId, account_id: AccountId
+   */
+
+  const tuple = new Tuple(
+    registry,
+    [CommunityId, AccountId],
+    [args.community_id, args.account_id]
+  );
+  const payload = tuple.toHex();
+
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_get", [
+      nucleusId,
+      "get_reward_payloads",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * Vec<RewardPayload>
+     */
+    const ResultStruct = Vec.with(RewardPayload);
+
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    if (!decoded) {
+      throw new Error("Failed to decode rewards");
+    }
+    const result = decoded.toJSON() as unknown as GetRewardsResponse[];
+    return result;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+}
+
 export interface GetAccountInfoArg {
   account_id: Uint8Array;
 }
@@ -334,6 +400,7 @@ export interface GetAccountInfoResponse {
   nonce: number;
   address: string;
   alias?: string;
+  max_invite_block: number;
   last_post_at: number;
 }
 
@@ -507,5 +574,220 @@ export async function getCommunityRpc(
   } catch (e) {
     console.error(e);
     throw e;
+  }
+}
+
+export interface InviteUserArg {
+  community: string;
+  invitee: string;
+}
+
+export async function inviteUserRpc(
+  nucleusId: string,
+  args: InviteUserArg,
+  signature: Signature
+): Promise<string> {
+  console.log("args", args);
+  const rpcArgs = {
+    ...signature,
+    payload: args,
+  };
+  const payload = new InviteUserArg(registry, rpcArgs).toHex();
+
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_post", [
+      nucleusId,
+      "invite_user",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * Result<(), String>
+     */
+    const ResultStruct = Result.with({
+      Ok: Null,
+      Err: Text,
+    });
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    if (decoded.isErr) {
+      throw new Error(decoded.toString());
+    }
+    const result = decoded.asOk.toHuman() as any;
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export interface CheckPermissionArg {
+  community_id: Uint8Array;
+  account_id: Uint8Array;
+}
+export async function checkPermissionRpc(
+  nucleusId: string,
+  args: CheckPermissionArg
+): Promise<boolean> {
+  console.log("args", args);
+  /**
+   * (community_id: CommunityId, user: AccountId)
+   */
+  const tuple = new Tuple(
+    registry,
+    [CommunityId, AccountId],
+    [args.community_id, args.account_id]
+  );
+  const payload = tuple.toHex();
+
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_get", [
+      nucleusId,
+      "check_permission",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * bool
+     */
+    const ResultStruct = Bool;
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    const result = decoded.toHuman() as boolean;
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export async function getInviteFeeRpc(
+  nucleusId: string,
+  args: string
+): Promise<bigint> {
+  const payload = new Text(registry, args).toHex();
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_get", [
+      nucleusId,
+      "get_invite_fee",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * u128
+     */
+    const ResultStruct = u128;
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    const result = decoded.toBigInt();
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export interface GenerateInviteTicketArg {
+  community_id: Uint8Array;
+  tx: string;
+}
+
+export async function generateInviteTicketsRpc(
+  nucleusId: string,
+  args: GenerateInviteTicketArg
+): Promise<string> {
+  console.log("args", args);
+
+  const rpcArgs = args;
+  const payload = new GenerateInviteTicketArg(registry, rpcArgs).toHex();
+
+  console.log("payload", payload);
+
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_post", [
+      nucleusId,
+      "generate_invite_tickets",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * Result<(), String>
+     */
+    const ResultStruct = Result.with({
+      Ok: Null,
+      Err: Text,
+    });
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    if (decoded.isErr) {
+      throw new Error(decoded.toString());
+    }
+    const result = decoded.asOk.toHuman() as any;
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export interface getInviteTicketsArg {
+  community_id: Uint8Array;
+  account_id: Uint8Array;
+}
+
+export async function getInviteTicketsRpc(
+  nucleusId: string,
+  args: getInviteTicketsArg
+): Promise<bigint> {
+  console.log("args", args);
+  /**
+   * (community_id: CommunityId, user: AccountId)
+   */
+  const tuple = new Tuple(
+    registry,
+    [CommunityId, AccountId],
+    [args.community_id, args.account_id]
+  );
+  const payload = tuple.toHex();
+
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_get", [
+      nucleusId,
+      "get_invite_tickets",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * u64
+     */
+    const ResultStruct = u64;
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    const result = decoded.toBigInt();
+    console.log("result", result);
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
   }
 }

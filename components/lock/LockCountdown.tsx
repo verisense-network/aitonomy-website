@@ -1,9 +1,13 @@
-import { LockClosedIcon } from "@heroicons/react/24/outline";
 import Countdown from "react-countdown";
 import dayjs from "@/lib/dayjs";
 import { useState } from "react";
+import { LockIcon } from "lucide-react";
 
-export function Lock({ countdownTime }: { countdownTime: number }) {
+export default function LockCountdown({
+  countdownTime,
+}: {
+  countdownTime: number;
+}) {
   const [isLocked, setIsLocked] = useState(true);
   const time = dayjs
     .unix(countdownTime || 0)
@@ -12,9 +16,9 @@ export function Lock({ countdownTime }: { countdownTime: number }) {
 
   return (
     isLocked && (
-      <div className="absolute flex flex-col justify-center items-center bg-zinc-900/80 top-0 left-0 w-full h-full z-30">
+      <div className="absolute flex flex-col justify-center items-center bg-zinc-900/80 backdrop-blur-sm top-0 left-0 w-full h-full z-30">
         <div className="flex items-center space-x-2">
-          <LockClosedIcon className="w-8 h-8 text-white" />
+          <LockIcon className="w-8 h-8 text-white" />
           <Countdown
             date={time}
             renderer={({ minutes, seconds }) => (

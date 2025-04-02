@@ -3,7 +3,7 @@ import useMeilisearch from "@/hooks/useMeilisearch";
 import { CreateThreadArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
-import { PostThreadPayload } from "@/utils/aitonomy/type";
+import { PostThreadPayload } from "@verisense-network/vemodel-types";
 import { decodeId } from "@/utils/thread";
 import { debounce, hexToLittleEndian } from "@/utils/tools";
 import {
@@ -15,7 +15,7 @@ import {
   Spinner,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
@@ -26,30 +26,28 @@ import {
   mentionsToAccountId,
 } from "@/utils/markdown";
 import { compressString } from "@/utils/compressString";
-import { Lock } from "../Lock";
+import LockCountdown from "../lock/LockCountdown";
 import { useUserStore } from "@/stores/user";
-import { updateAccountInfo } from "@/utils/user";
+import { updateAccountInfo, updateLastPostAt } from "@/utils/user";
+import LockNotAllowedToPost from "../lock/LockNotAllowedToPost";
+import useCanPost from "@/hooks/useCanPost";
 
 const ContentEditor = dynamic(() => import("../mdxEditor/ContentEditor"), {
   ssr: false,
 });
 
 interface Props {
-  defaultCommunity?: string;
+  community?: any;
   replyTo?: string;
   onClose: () => void;
 }
 
-export default function ThreadCreate({
-  defaultCommunity,
-  replyTo,
-  onClose,
-}: Props) {
+export default function ThreadCreate({ community, replyTo, onClose }: Props) {
   const router = useRouter();
   const { lastPostAt } = useUserStore();
-  const { control, handleSubmit } = useForm<CreateThreadForm>({
+  const { control, watch, handleSubmit } = useForm<CreateThreadForm>({
     defaultValues: {
-      community: defaultCommunity || "",
+      community: community?.name || "",
       title: "",
       content: "",
       images: [],
@@ -57,8 +55,7 @@ export default function ThreadCreate({
     },
   });
 
-  const searchCommunityRef = useRef(null);
-  const [searchCommunity, setSearchCommunity] = useState("");
+  const [searchCommunity, setSearchCommunity] = useState(community?.name || "");
 
   const { data: communitiesData, isLoading } = useMeilisearch(
     "community",
@@ -68,7 +65,21 @@ export default function ThreadCreate({
     }
   );
 
-  const communities = communitiesData?.hits ?? [];
+  const communities = useMemo(
+    () => communitiesData?.hits ?? [],
+    [communitiesData]
+  );
+
+  const [selectedCommunity, setSelectedCommunity] = useState(community);
+  const communityName = watch("community");
+
+  useEffect(() => {
+    if (communityName) {
+      setSelectedCommunity(communities?.find((c) => c.name === communityName));
+    }
+  }, [communityName, communities]);
+
+  const canPost = useCanPost(selectedCommunity);
 
   const onSubmit = useCallback(
     async (data: CreateThreadForm) => {
@@ -95,7 +106,6 @@ export default function ThreadCreate({
           data: contentId,
           message: errorMessage,
         } = await createThread(payload, signature);
-        console.log("contentId", contentId);
         if (!success) {
           throw new Error(errorMessage);
         }
@@ -113,7 +123,7 @@ export default function ThreadCreate({
           router.push(`/c/${community}/${thread}`);
         }, 1500);
         onClose();
-        updateAccountInfo();
+        updateLastPostAt();
       } catch (e: any) {
         console.error("e", e);
         toast.update(toastId, {
@@ -128,7 +138,7 @@ export default function ThreadCreate({
   );
 
   useEffect(() => {
-    updateAccountInfo();
+    updateLastPostAt();
   }, []);
 
   return (
@@ -151,13 +161,12 @@ export default function ThreadCreate({
         render={({ field, fieldState }) => (
           <Autocomplete
             {...field}
-            ref={searchCommunityRef}
             label="Community Name"
             labelPlacement="outside"
             placeholder="Enter your community name"
             isInvalid={!!fieldState.error}
             errorMessage={fieldState.error?.message}
-            defaultInputValue={defaultCommunity}
+            defaultInputValue={community?.name}
             isLoading={isLoading}
             value={field.value}
             onValueChange={(value) => {
@@ -206,7 +215,11 @@ export default function ThreadCreate({
               Content
             </span>
             <Suspense fallback={<Spinner />}>
-              <Lock countdownTime={lastPostAt || 0} />
+              {canPost ? (
+                <LockCountdown countdownTime={lastPostAt || 0} />
+              ) : (
+                <LockNotAllowedToPost />
+              )}
               <ContentEditor
                 className="mt-2 w-full rounded-xl"
                 {...field}

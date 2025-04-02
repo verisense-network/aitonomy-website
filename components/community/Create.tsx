@@ -1,23 +1,43 @@
-import { createCommunity, uploadImage } from "@/app/actions";
-import { CreateCommunityArg } from "@/utils/aitonomy";
+import {
+  createCommunity,
+  CreateCommunityForm,
+  uploadImage,
+} from "@/app/actions";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX, TOKEN_REGEX } from "@/utils/aitonomy/tools";
-import { CreateCommunityPayload, LLmName } from "@/utils/aitonomy/type";
+import {
+  CommunityMode,
+  CreateCommunityPayload,
+  LLmName,
+  registry,
+} from "@verisense-network/vemodel-types";
 import { isDev } from "@/utils/tools";
-import { PhotoIcon, QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
+import {
+  CircleDollarSignIcon,
+  CircleHelpIcon,
+  EarthIcon,
+  ImageIcon,
+  ShieldCheckIcon,
+} from "lucide-react";
 import {
   Accordion,
   AccordionItem,
   Avatar,
   Button,
+  cn,
   Form,
   Input,
+  NumberInput,
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Radio,
+  RadioGroup,
+  RadioProps,
   Select,
   SelectItem,
   Spinner,
+  Switch,
   Textarea,
   Tooltip,
 } from "@heroui/react";
@@ -26,49 +46,118 @@ import { Controller, useForm } from "react-hook-form";
 import { useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { useAppearanceStore } from "@/stores/appearance";
+import { CHAIN } from "@/utils/chain";
+import { formatAmount } from "@/utils/format";
 
 interface Props {
   onClose: () => void;
 }
 
-const MOCKDATA = {
+const MOCKDATA: CreateCommunityForm = {
   name: "JOKE",
   slug: "推翻人类暴政，地球属于三体！",
   logo: "",
+  mode: {
+    name: "Public",
+    value: null,
+  },
   description: "推翻人类暴政，地球属于三体！",
   prompt:
     "为地狱笑话帖子和回复评分，如果非常好笑就适当发一些JOKE代  币，不要对听过的笑话奖励",
   token: {
+    image: null,
+    name: "JOKE",
     symbol: "JOKE",
     total_issuance: 10_000_000_000,
     decimals: 2,
-    image: null,
+    new_issue: true,
+    contract: null,
   },
   llm_name: LLmName.OpenAI,
   llm_api_host: null,
   llm_key: null,
 };
 
+const CommunityModes = [
+  {
+    value: "Public",
+    label: (
+      <div className="flex items-center gap-2 text-nowrap">
+        Public <EarthIcon className="w-5 h-5" />
+      </div>
+    ),
+    description: "Anyone can join",
+  },
+  {
+    value: "InviteOnly",
+    label: (
+      <div className="flex items-center gap-2 text-nowrap">
+        Invite Only <ShieldCheckIcon className="w-5 h-5" />
+      </div>
+    ),
+    description: "Only invited users can join",
+  },
+  {
+    value: "PayToJoin",
+    label: (
+      <div className="flex items-center gap-2 text-nowrap">
+        Pay To Join <CircleDollarSignIcon className="w-5 h-5" />
+      </div>
+    ),
+    description: "Users must pay to join",
+  },
+];
+
+export const CustomCommunityModeRadio = (props: RadioProps) => {
+  const { children, ...otherProps } = props;
+
+  return (
+    <Radio
+      {...otherProps}
+      classNames={{
+        base: cn(
+          "inline-flex m-0 bg-content2 hover:bg-content1 items-center justify-between",
+          "flex-row-reverse max-w-[300px] cursor-pointer rounded-lg gap-4 p-2 border-2 border-transparent",
+          "data-[selected=true]:border-primary data-[selected=true]:bg-content1"
+        ),
+      }}
+    >
+      {children}
+    </Radio>
+  );
+};
+
+const inviteMinAmount = 0.02;
+
 export default function CommunityCreate({ onClose }: Props) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const { isMobile } = useAppearanceStore();
   const [llmAccordionSelectedKeys, setLlmAccordionSelectedKeys] = useState<
     string[]
   >([]);
+
   const { watch, control, setValue, handleSubmit, reset } =
-    useForm<CreateCommunityArg>({
+    useForm<CreateCommunityForm>({
       defaultValues: {
         name: "",
-        private: false,
+        mode: {
+          name: "Public",
+          value: null,
+        },
         slug: "",
         logo: "",
         description: "",
         prompt: "",
         token: {
           image: null,
+          name: "",
           symbol: "",
           total_issuance: 10_000_000_000,
           decimals: 2,
+          new_issue: true,
+          contract: null,
         },
         llm_name: LLmName.OpenAI,
         llm_api_host: null,
@@ -77,6 +166,7 @@ export default function CommunityCreate({ onClose }: Props) {
     });
 
   const llmName = watch("llm_name");
+  const tokenNewIssue = watch("token.new_issue");
 
   const [isLoadingLogo, setIsLoadingLogo] = useState(false);
   const { getRootProps, getInputProps } = useDropzone({
@@ -130,22 +220,42 @@ export default function CommunityCreate({ onClose }: Props) {
   });
 
   const onSubmit = useCallback(
-    async (data: CreateCommunityArg) => {
+    async (data: CreateCommunityForm) => {
       const toastId = toast.loading(
         "Creating community continue to complete in your wallet"
       );
       try {
         setIsLoading(true);
-        console.log("data", data);
 
-        const signature = await signPayload(data, CreateCommunityPayload);
+        const mode = new CommunityMode(
+          registry,
+          data.mode.name === "PayToJoin"
+            ? data.mode.value
+              ? formatAmount(data.mode.value)
+              : 0
+            : null,
+          ["Public", "InviteOnly", "PayToJoin"].findIndex(
+            (mode) => mode === data.mode.name
+          )
+        );
 
-        console.log("signature", signature);
+        const payload = {
+          ...data,
+          mode,
+          token: {
+            ...data.token,
+            contract: data.token.contract ? ` ${data.token.contract}` : null,
+          },
+        };
+        console.log("payload", payload);
+
+        const signature = await signPayload(payload, CreateCommunityPayload);
+
         const {
           success,
           data: communityId,
           message,
-        } = await createCommunity(data, signature);
+        } = await createCommunity(payload, signature);
         if (!success) {
           if (message?.includes("LLM key not found")) {
             setLlmAccordionSelectedKeys(["llm"]);
@@ -232,7 +342,7 @@ export default function CommunityCreate({ onClose }: Props) {
                     {isLoadingLogo ? (
                       <Spinner />
                     ) : (
-                      <PhotoIcon className="w-8 h-8" />
+                      <ImageIcon className="w-8 h-8" />
                     )}
                   </div>
                 </div>
@@ -264,45 +374,57 @@ export default function CommunityCreate({ onClose }: Props) {
           )}
         />
       </div>
-      {/*  TODO: enable private switch */}
-      {/* <Controller
-        name="private"
+      <Controller
+        name="mode"
         control={control}
         render={({ field, fieldState }) => (
-          <Switch
-            classNames={{
-              base: cn(
-                "inline-flex flex-row-reverse w-full max-w-full bg-content2 hover:bg-content3 items-center",
-                "justify-between cursor-pointer rounded-lg gap-2 p-4 border-2 border-transparent",
-                "data-[selected=true]:border-primary"
-              ),
-              wrapper: "p-0 h-4 overflow-visible",
-              thumb: cn(
-                "w-6 h-6 border-2 shadow-lg",
-                "group-data-[hover=true]:border-primary",
-                //selected
-                "group-data-[selected=true]:ms-6",
-                //pressed
-                "group-data-[pressed=true]:w-7",
-                "group-data-[selected]:group-data-[pressed]:ms-4"
-              ),
-            }}
-          >
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center space-x-2">
-                <ShieldCheckIcon className="w-5 h-5" />
-                <span className="text-medium">Private Community</span>
-              </div>
-              <p className="text-tiny text-default-400">
-                Only members can join this community.
-              </p>
-              {fieldState.error && (
-                <p className="text-red-500">{fieldState.error.message}</p>
-              )}
-            </div>
-          </Switch>
+          <div className="flex flex-col space-y-2 w-full">
+            <RadioGroup
+              label="Mode"
+              orientation={isMobile ? "vertical" : "horizontal"}
+              classNames={{
+                wrapper: "flex flex-nowrap",
+              }}
+              value={field.value.name}
+              onValueChange={(value) =>
+                field.onChange({
+                  name: value,
+                  value: value === "PayToJoin" ? inviteMinAmount : null,
+                })
+              }
+              isInvalid={!!fieldState.error}
+              errorMessage={fieldState.error?.message}
+            >
+              {CommunityModes.map((mode) => (
+                <CustomCommunityModeRadio
+                  key={mode.value}
+                  description={mode.description}
+                  value={mode.value}
+                >
+                  {mode.label}
+                </CustomCommunityModeRadio>
+              ))}
+            </RadioGroup>
+            {field.value.name === "PayToJoin" && (
+              <NumberInput
+                label="Invite Amount"
+                labelPlacement="outside"
+                placeholder="Enter invite amount"
+                endContent={<span className="text-gray-500">{CHAIN}</span>}
+                isInvalid={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
+                value={field.value.value || 0}
+                onValueChange={(value) =>
+                  field.onChange({
+                    name: field.value.name,
+                    value: value,
+                  })
+                }
+              />
+            )}
+          </div>
         )}
-      /> */}
+      />
       <Controller
         name="slug"
         control={control}
@@ -366,7 +488,6 @@ export default function CommunityCreate({ onClose }: Props) {
         <Controller
           name="token.image"
           control={control}
-          rules={{}}
           render={({ field }) => (
             <div className="flex justify-center items-center m-2 w-14 h-14 aspect-square">
               {field.value ? (
@@ -402,7 +523,7 @@ export default function CommunityCreate({ onClose }: Props) {
                     {isLoadingTokenLogo ? (
                       <Spinner />
                     ) : (
-                      <PhotoIcon className="w-8 h-8" />
+                      <ImageIcon className="w-8 h-8" />
                     )}
                   </div>
                 </div>
@@ -411,7 +532,7 @@ export default function CommunityCreate({ onClose }: Props) {
           )}
         />
         <Controller
-          name="token.symbol"
+          name="token.name"
           control={control}
           rules={{
             required: "Please enter a token name",
@@ -433,8 +554,96 @@ export default function CommunityCreate({ onClose }: Props) {
             />
           )}
         />
+        <Controller
+          name="token.symbol"
+          control={control}
+          rules={{
+            required: "Please enter a token symbol",
+            validate: (value) => {
+              if (!TOKEN_REGEX.test(value)) {
+                return "Invalid token symbol";
+              }
+              return true;
+            },
+          }}
+          render={({ field, fieldState }) => (
+            <Input
+              {...field}
+              label="Symbol"
+              placeholder="Enter your token symbol"
+              labelPlacement="outside"
+              isInvalid={!!fieldState.error}
+              errorMessage={fieldState.error?.message}
+            />
+          )}
+        />
       </div>
-      <div className="flex grid grid-cols-2 gap-2 mt-3 w-full">
+      <div className="flex gap-2 mt-3 w-full">
+        <Controller
+          name="token.new_issue"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Switch
+              classNames={{
+                base: cn(
+                  "inline-flex flex-row-reverse w-1/3 max-w-full bg-content2 hover:bg-content3 items-center",
+                  "justify-between cursor-pointer rounded-lg gap-2 p-2 border-2 border-transparent",
+                  "data-[selected=true]:border-zinc-700 data-[selected=true]:w-full data-[selected=true]:p-4"
+                ),
+                wrapper: "p-0 h-4 overflow-visible",
+                thumb: cn(
+                  "w-6 h-6 border-2 shadow-lg",
+                  "group-data-[hover=true]:border-primary",
+                  //selected
+                  "group-data-[selected=true]:ms-6",
+                  //pressed
+                  "group-data-[pressed=true]:w-7",
+                  "group-data-[selected]:group-data-[pressed]:ms-4"
+                ),
+              }}
+              onChange={field.onChange}
+              isSelected={field.value}
+              defaultSelected={field.value}
+            >
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm">New Issue Token</span>
+                </div>
+                {fieldState.error && (
+                  <p className="text-red-500">{fieldState.error.message}</p>
+                )}
+              </div>
+            </Switch>
+          )}
+        />
+        {!tokenNewIssue && (
+          <Controller
+            name="token.contract"
+            control={control}
+            rules={{
+              required: "Please enter a token contract",
+              validate: (value) => {
+                if (!value?.startsWith("0x")) {
+                  return "Invalid token contract";
+                }
+                return true;
+              },
+            }}
+            render={({ field, fieldState }) => (
+              <Input
+                {...field}
+                label="Contract"
+                placeholder="Enter your token contract"
+                labelPlacement="outside"
+                isInvalid={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
+                value={field.value?.toString()}
+              />
+            )}
+          />
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-2 mt-3 w-full">
         <Controller
           name="token.decimals"
           control={control}
@@ -514,7 +723,7 @@ export default function CommunityCreate({ onClose }: Props) {
                   selectedKeys={[field.value]}
                   endContent={
                     <Tooltip content="currently only supports OpenAI">
-                      <QuestionMarkCircleIcon className="h-6 w-6" />
+                      <CircleHelpIcon className="h-6 w-6" />
                     </Tooltip>
                   }
                   disabledKeys={[LLmName.DeepSeek]}

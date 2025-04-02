@@ -9,16 +9,19 @@ export default {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
 
     "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/onborda/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
       fontFamily: {
         sans: ["var(--font-inter)"],
         mono: ["var(--font-roboto-mono)"],
+        montserrat: ["var(--font-montserrat)"],
       },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        primary: "#ff847c",
       },
     },
   },
@@ -26,8 +29,13 @@ export default {
   plugins: [
     heroui({
       themes: {
-        dark: {
-          colors: {},
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: "#ff847c",
+              foreground: "#000000",
+            },
+          },
         },
       },
     }),
