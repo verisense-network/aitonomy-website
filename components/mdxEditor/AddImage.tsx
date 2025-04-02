@@ -98,6 +98,9 @@ export default function AddImage() {
       <Modal
         isOpen={openImageDialog}
         onOpenChange={() => seOpenImageDialog(false)}
+        classNames={{
+          body: "max-h-[85vh] overflow-y-auto md:max-h-[95vh]",
+        }}
       >
         <ModalContent>
           {(onClose) => (

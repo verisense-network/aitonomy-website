@@ -67,6 +67,9 @@ export default function CreateThread({
         onClose={() => setIsOpen(false)}
         isDismissable={false}
         size="2xl"
+        classNames={{
+          body: "max-h-[80vh] overflow-y-auto md:max-h-[95vh]",
+        }}
       >
         <ModalContent>
           {(onClose) => (

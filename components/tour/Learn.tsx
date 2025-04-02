@@ -13,7 +13,13 @@ export default function Learn({ isOpen, setIsOpen }: Props) {
   return (
     <>
       <span>Learn</span>
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+      <Modal
+        isOpen={isOpen}
+        classNames={{
+          body: "max-h-[85vh] overflow-y-auto md:max-h-[95vh]",
+        }}
+        onClose={() => setIsOpen(false)}
+      >
         <ModalContent>
           <ModalHeader>Learn</ModalHeader>
           <ModalBody>

@@ -100,7 +100,13 @@ export default function PaymentModal({
   }, [fromAddress, toAddress, amount]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      classNames={{
+        body: "max-h-[85vh] overflow-y-auto md:max-h-[95vh]",
+      }}
+    >
       <ModalContent>
         {(onClose) => (
           <>

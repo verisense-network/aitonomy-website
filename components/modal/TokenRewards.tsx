@@ -34,7 +34,7 @@ export default function TokenRewardsModal({
       onClose={onClose}
       size="3xl"
       classNames={{
-        body: "max-h-[80vh] overflow-y-auto md:max-h-[85vh]",
+        body: "max-h-[85vh] overflow-y-auto md:max-h-[95vh]",
       }}
     >
       <ModalContent>

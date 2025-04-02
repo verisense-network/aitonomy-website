@@ -7,6 +7,7 @@ import {
   ModalHeader,
   ModalBody,
   ModalContent,
+  useDisclosure,
 } from "@heroui/react";
 import {
   ButtonWithTooltip,
@@ -32,9 +33,8 @@ export interface Mention {
 }
 
 export default function AddMention() {
-  const insertDirective = usePublisher(insertDirective$);
   const insertMarkdown = usePublisher(insertMarkdown$);
-  const [isOpenDialog, setOpenDialog] = useState(false);
+  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
   const { control, handleSubmit, reset } = useForm<FormData>({
     defaultValues: {
       address: "",
@@ -52,25 +52,27 @@ export default function AddMention() {
           throw new Error("Account not found");
         }
         insertMarkdown(`@${account.address}`);
-        setOpenDialog(false);
+        onClose();
         reset();
       } catch {
         toast.error("Can't Add your Mention, try again.");
       }
     },
-    [accounts, insertMarkdown, reset, setOpenDialog]
+    [accounts, insertMarkdown, reset, onClose]
   );
 
   return (
     <>
-      <ButtonWithTooltip
-        onClick={() => setOpenDialog(true)}
-        title="Add mention"
-      >
+      <ButtonWithTooltip onClick={() => onOpen()} title="Add mention">
         <AtSignIcon width={20} height={20} />
       </ButtonWithTooltip>
-
-      <Modal isOpen={isOpenDialog} onOpenChange={() => setOpenDialog(false)}>
+      <Modal
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+        classNames={{
+          body: "max-h-[85vh] overflow-y-auto md:max-h-[95vh]",
+        }}
+      >
         <ModalContent>
           {(onClose) => (
             <>
@@ -113,7 +115,7 @@ export default function AddMention() {
                       )}
                     />
                     <div className="flex justify-end items-center w-full gap-2">
-                      <Button type="reset" onPress={() => setOpenDialog(false)}>
+                      <Button type="reset" onPress={() => onClose()}>
                         Cancel
                       </Button>
                       <Button

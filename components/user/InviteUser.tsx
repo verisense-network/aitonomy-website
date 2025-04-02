@@ -129,7 +129,13 @@ export default function InviteUser({
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal
+        isOpen={isOpen}
+        classNames={{
+          body: "max-h-[85vh] overflow-y-auto md:max-h-[95vh]",
+        }}
+        onClose={onClose}
+      >
         <ModalContent>
           <ModalHeader>Invite User</ModalHeader>
           <ModalBody>

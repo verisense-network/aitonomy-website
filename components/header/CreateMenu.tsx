@@ -87,7 +87,7 @@ export default function CreateMenu() {
         isDismissable={false}
         size="xl"
         classNames={{
-          body: "max-h-[90vh] overflow-y-auto md:max-h-[95vh]",
+          body: "max-h-[85vh] overflow-y-auto md:max-h-[95vh]",
         }}
       >
         <ModalContent>
