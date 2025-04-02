@@ -37,7 +37,7 @@ import { useAppearanceStore } from "@/stores/appearance";
 import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import { useOnborda } from "onborda";
+import Learn from "../tour/Learn";
 
 const TopMenus = [
   { name: "Home", href: "/", icon: <HomeIcon className="w-5 h-5" /> },
@@ -71,8 +71,8 @@ export default function SideMenu() {
     useAppearanceStore();
   const { isLogin } = useUserStore();
   const { isMobile } = useAppearanceStore();
-  const { startOnborda } = useOnborda();
   const [createCommunityModal, setCreateCommunityModal] = useState(false);
+  const [learnModalIsOpen, setLearnModalIsOpen] = useState(false);
 
   const { data, isLoading } = useMeilisearch("community", undefined, {
     // filter: "status = 'Active'",
@@ -185,9 +185,12 @@ export default function SideMenu() {
             <ListboxItem
               key="tour"
               startContent={<TorusIcon className="w-5 h-5" />}
-              onPress={() => startOnborda("create-community")}
+              onPress={() => setLearnModalIsOpen(true)}
             >
-              Tour
+              <Learn
+                isOpen={learnModalIsOpen}
+                setIsOpen={setLearnModalIsOpen}
+              />
             </ListboxItem>
             <ListboxItem
               key="how-to-works"

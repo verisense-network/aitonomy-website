@@ -3,12 +3,10 @@
 import { SWRConfig } from "swr";
 import { HeroUIProvider } from "@heroui/react";
 import { ToastContainer } from "react-toastify";
-import { Onborda, OnbordaProvider } from "onborda";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { useRouter } from "next/navigation";
 import RainbowProvider from "@/lib/rainbow";
-import { tours } from "@/components/tour/steps";
-import CustomCard from "@/components/tour/CustomCard";
+import TourProvider from "@/lib/tour";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -23,11 +21,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
               fetch(resource, init).then((res) => res.json()),
           }}
         >
-          <OnbordaProvider>
-            <Onborda cardComponent={CustomCard} steps={tours}>
-              <RainbowProvider>{children}</RainbowProvider>
-            </Onborda>
-          </OnbordaProvider>
+          <TourProvider>
+            <RainbowProvider>{children}</RainbowProvider>
+          </TourProvider>
         </SWRConfig>
       </NextThemesProvider>
     </HeroUIProvider>

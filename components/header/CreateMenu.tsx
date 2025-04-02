@@ -52,7 +52,7 @@ export default function CreateMenu() {
     <>
       <Dropdown>
         <DropdownTrigger>
-          <Button id="create-community-step1" isIconOnly variant="light">
+          <Button className="create-community-step1" isIconOnly variant="light">
             <CirclePlusIcon className="w-6 h-6 md:w-8 md:h-8" />
           </Button>
         </DropdownTrigger>
@@ -62,7 +62,13 @@ export default function CreateMenu() {
           onAction={openMenu}
         >
           {menuList.map((item) => (
-            <DropdownItem key={item.name} startContent={item.icon}>
+            <DropdownItem
+              key={item.name}
+              startContent={item.icon}
+              {...(item.name === "community"
+                ? { id: "create-community-step2" }
+                : {})}
+            >
               {item.title}
             </DropdownItem>
           ))}
