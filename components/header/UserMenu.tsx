@@ -6,13 +6,15 @@ import {
   DropdownItem,
   User,
 } from "@heroui/react";
-import { Key, useCallback } from "react";
+import { Key, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
-import { useAccount } from "wagmi";
+import { useAccount, useSwitchChain } from "wagmi";
 import { formatAddress } from "@/utils/tools";
 import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAppearanceStore } from "@/stores/appearance";
+import { bsc } from "@/config/bscChain";
+import { toast } from "react-toastify";
 
 export default function UserMenu() {
   const router = useRouter();
@@ -20,15 +22,25 @@ export default function UserMenu() {
   const { openConnectModal } = useConnectModal();
   const { openAccountModal } = useAccountModal();
   const { isMobile } = useAppearanceStore();
-  const { connector, isConnecting, isReconnecting } = useAccount();
+  const { connector, isConnecting, isReconnecting, chainId } = useAccount();
+  const { switchChain } = useSwitchChain();
   const { alias, isLogin, address } = user;
 
   const isShowSpinner = isLoading || isConnecting || isReconnecting;
+
+  const checkNetwork = useCallback(() => {
+    if (!connector || (chainId && Number.isNaN(chainId))) return;
+    if (chainId !== bsc.id) {
+      toast.info("request switch to BSC network");
+      switchChain?.({ chainId: bsc.id });
+    }
+  }, [chainId, switchChain, connector]);
 
   const openMenu = useCallback(
     (key: Key) => {
       if ("connect" === key) {
         openConnectModal?.();
+        checkNetwork();
       } else if ("wallet" === key) {
         openAccountModal?.();
       } else if (key === "profile") {
@@ -37,8 +49,19 @@ export default function UserMenu() {
         disconnect();
       }
     },
-    [address, router, disconnect, openConnectModal, openAccountModal]
+    [
+      address,
+      router,
+      disconnect,
+      openConnectModal,
+      openAccountModal,
+      checkNetwork,
+    ]
   );
+
+  useEffect(() => {
+    checkNetwork();
+  }, [checkNetwork]);
 
   return (
     <Dropdown
@@ -90,7 +113,9 @@ export default function UserMenu() {
             <DropdownItem key="profile">Profile</DropdownItem>
             <DropdownItem key="disconnect">Disconnect</DropdownItem>
           </>
-        ) : null}
+        ) : (
+          <DropdownItem key="connect">Connect</DropdownItem>
+        )}
       </DropdownMenu>
     </Dropdown>
   );
