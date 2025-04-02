@@ -5,9 +5,6 @@ const nextConfig: NextConfig = {
     domains: ["i.postimg.cc"],
   },
   experimental: {
-    sri: {
-      algorithm: "sha384",
-    },
     useWasmBinary: true,
     serverActions: {
       allowedOrigins: ["aitonomy-website.vercel.app"],
