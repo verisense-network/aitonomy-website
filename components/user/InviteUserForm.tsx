@@ -129,7 +129,7 @@ export default function InviteUserForm({
         )}
       />
       <div className="w-full">
-        <p className="text-small">Invite code amount</p>
+        <p className="text-small">Ticket Balance</p>
         <div className="flex space-x-2 w-full mt-2">
           <div className="px-3 py-2 w-2/3 bg-zinc-800 rounded-xl">
             {invitecodeAmount}

@@ -2,9 +2,8 @@
 
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { decodeId } from "@/utils/thread";
-import { formatTimestamp, hexToLittleEndian } from "@/utils/tools";
+import { hexToLittleEndian } from "@/utils/tools";
 import {
-  Button,
   Card,
   CardBody,
   CardFooter,
@@ -23,7 +22,7 @@ import { GetAccountInfoResponse } from "@/utils/aitonomy";
 import { getAccounts } from "@/app/actions";
 import { isEqualAddress } from "./utils";
 import TooltipTime from "../formatTime/TooltipTime";
-import { BotIcon, RotateCwIcon } from "lucide-react";
+import { BotIcon } from "lucide-react";
 
 interface Props {
   threadId: string;
@@ -118,7 +117,13 @@ export default function ThreadComments({ threadId, community }: Props) {
             </CardBody>
             <CardFooter className="text-sm text-gray-500 justify-between">
               <div>
-                <Link href={`/u/${comment.author}`}>
+                <Link
+                  href={
+                    isEqualAddress(comment?.author, community?.agent_pubkey)
+                      ? `/c/${decodeId(comment.id).community}`
+                      : `/u/${comment.author}`
+                  }
+                >
                   <User
                     className="cursor-pointer"
                     avatarProps={{
@@ -138,13 +143,28 @@ export default function ThreadComments({ threadId, community }: Props) {
                         agentPubkey={community?.agent_pubkey}
                         address={comment?.author}
                         name={viewCommentAccount(comment?.author)}
+                        classNames={{
+                          name: isEqualAddress(
+                            comment?.author,
+                            community?.agent_pubkey
+                          )
+                            ? "text-primary"
+                            : "",
+                        }}
                       />
                     }
                   />
                 </Link>
               </div>
               <div className="flex space-x-2 items-center">
-                <TooltipTime time={comment.created_time} />
+                <div className="flex space-x-5 items-center">
+                  {isEqualAddress(comment?.author, community?.agent_pubkey) && (
+                    <span className="text-xs text-gray-500">
+                      AI-generated, for reference only
+                    </span>
+                  )}
+                  <TooltipTime time={comment.created_time} />
+                </div>
               </div>
             </CardFooter>
           </Card>
