@@ -1,40 +1,42 @@
 import { Controller, useForm } from "react-hook-form";
-import { GenerateInviteCodeArg } from "@/utils/aitonomy";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Form, Input, NumberInput } from "@heroui/react";
 import { ethers } from "ethers";
 import { twMerge } from "tailwind-merge";
 import { toast } from "react-toastify";
-import { generateInviteCodes } from "@/app/actions";
-import { signPayload } from "@/utils/aitonomy/sign";
-import { GenerateInviteCodePayload } from "@verisense-network/vemodel-types";
+import {
+  GenerateInviteTicketParams,
+  generateInviteTickets,
+} from "@/app/actions";
 import { WalletIcon } from "lucide-react";
 import { sleep } from "@/utils/tools";
+import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
 
 interface InviteUserFormProps {
   community: any;
-  invitecodeAmount: number;
+  inviteTickets: number;
   setIsOpenPaymentModal: (isOpen: boolean) => void;
-  paymentFee: string;
   txHash: string;
+  paymentAmount: string;
   setPaymentAmount: (amount: string) => void;
   refreshInvitecodeAmount: () => Promise<void>;
 }
 
 export default function BuyInviteCodeForm({
   community,
-  invitecodeAmount,
+  inviteTickets,
   setIsOpenPaymentModal,
-  paymentFee,
   txHash,
+  paymentAmount,
   setPaymentAmount,
   refreshInvitecodeAmount,
 }: InviteUserFormProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const { control, setValue, watch, handleSubmit } = useForm<
-    GenerateInviteCodeArg & { amount: number }
+    GenerateInviteTicketParams & { amount: number }
   >({
     defaultValues: {
-      community: community?.name || "",
+      communityId: community?.id || "",
       tx: "",
       amount: 1,
     },
@@ -43,11 +45,15 @@ export default function BuyInviteCodeForm({
   const amount = watch("amount");
 
   useEffect(() => {
-    if (!amount || Number.isNaN(Number(amount))) {
+    if (
+      !amount ||
+      Number.isNaN(Number(amount)) ||
+      !community.mode?.InviteOnly
+    ) {
       return;
     }
-    setPaymentAmount(`${BigInt(amount) * BigInt(paymentFee)}`);
-  }, [amount, paymentFee, setPaymentAmount]);
+    setPaymentAmount(`${BigInt(amount) * BigInt(community.mode.InviteOnly)}`);
+  }, [amount, community, setPaymentAmount]);
 
   useEffect(() => {
     setValue("tx", txHash);
@@ -55,25 +61,30 @@ export default function BuyInviteCodeForm({
 
   const onSubmit = useCallback(
     async (data: any) => {
-      const payload = {
-        community: data.community,
-        tx: ` ${data.tx}`,
-      };
-      console.log("payload", payload);
-      const signature = await signPayload(payload, GenerateInviteCodePayload);
-      console.log("signature", signature);
+      try {
+        setIsLoading(true);
+        const payload = {
+          communityId: data.communityId,
+          tx: ` ${data.tx}`,
+        };
+        console.log("payload", payload);
 
-      const { success, message: errorMessage } = await generateInviteCodes(
-        payload,
-        signature
-      );
-      if (!success) {
-        toast.error(`Failed: ${errorMessage}`);
-        return;
+        const { success, message: errorMessage } = await generateInviteTickets(
+          payload
+        );
+        if (!success) {
+          toast.error(`Failed: ${errorMessage}`);
+          setIsLoading(false);
+          return;
+        }
+        await sleep(2000);
+        await refreshInvitecodeAmount();
+        toast.success("Successfully generated invite code");
+        setIsLoading(false);
+      } catch (error) {
+        toast.error("Failed to generate invite code");
+        setIsLoading(false);
       }
-      await sleep(2000);
-      await refreshInvitecodeAmount();
-      toast.success("Successfully generated invite code");
     },
     [refreshInvitecodeAmount]
   );
@@ -90,50 +101,65 @@ export default function BuyInviteCodeForm({
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
-      <div className="w-full pb-2">
-        <p className="text-small">Invite code amount: {invitecodeAmount}</p>
-      </div>
-      <Controller
-        name="amount"
-        control={control}
-        rules={{
-          required: "Amount is required",
-          validate: (value) => {
-            if (!Number.isInteger(Number(value))) {
-              return "Invalid amount";
-            }
-            if (Number(value) < 1) {
-              return `Amount cannot be less than 1`;
-            }
-            if (Number(value) > 1000000) {
-              return `Amount cannot be greater than 1000000`;
-            }
-            return true;
-          },
-        }}
-        render={({ field, fieldState }) => (
-          <div
-            className={twMerge(
-              "flex space-x-2 w-full",
-              !!fieldState.error ? "items-center" : "items-end"
-            )}
-          >
-            <NumberInput
-              label="Number"
-              labelPlacement="outside"
-              placeholder="amount"
-              isInvalid={!!fieldState.error}
-              errorMessage={fieldState.error?.message}
-              value={field.value}
-              defaultValue={field.value}
-              onValueChange={field.onChange}
-              maxValue={1000000}
-              minValue={1}
-              isRequired
-            />
+      <div className="w-full">
+        <p className="text-small">Ticket Balance</p>
+        <div className="flex space-x-2 w-full mt-2">
+          <div className="px-3 py-2 w-full bg-zinc-800 rounded-xl">
+            {inviteTickets}
           </div>
-        )}
-      />
+        </div>
+      </div>
+      <div className="flex space-x-2 w-full">
+        <div className="w-full">
+          <p className="text-small">Ticket Price</p>
+          <div className="flex space-x-2 w-full mt-2">
+            <div className="px-3 py-2 w-full bg-zinc-800 rounded-xl">
+              {`${formatReadableAmount(paymentAmount)} ${VIEW_UNIT}`}
+            </div>
+          </div>
+        </div>
+        <Controller
+          name="amount"
+          control={control}
+          rules={{
+            required: "Amount is required",
+            validate: (value) => {
+              if (!Number.isInteger(Number(value))) {
+                return "Invalid amount";
+              }
+              if (Number(value) < 1) {
+                return `Amount cannot be less than 1`;
+              }
+              if (Number(value) > 1000000) {
+                return `Amount cannot be greater than 1000000`;
+              }
+              return true;
+            },
+          }}
+          render={({ field, fieldState }) => (
+            <div
+              className={twMerge(
+                "flex space-x-2 w-full",
+                !!fieldState.error ? "items-center" : "items-end"
+              )}
+            >
+              <NumberInput
+                label="Number"
+                labelPlacement="outside"
+                placeholder="amount"
+                isInvalid={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
+                value={field.value}
+                defaultValue={field.value}
+                onValueChange={field.onChange}
+                maxValue={1000000}
+                minValue={1}
+                isRequired
+              />
+            </div>
+          )}
+        />
+      </div>
       <Controller
         name="tx"
         control={control}
@@ -170,7 +196,7 @@ export default function BuyInviteCodeForm({
         )}
       />
       <div className="flex gap-2">
-        <Button color="primary" type="submit">
+        <Button color="primary" type="submit" isLoading={isLoading}>
           Submit
         </Button>
         <Button type="reset" variant="flat">

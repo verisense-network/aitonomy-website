@@ -1,7 +1,4 @@
-import {
-  getInviteFee,
-  invitecodeAmount as getInvitecodeAmount,
-} from "@/app/actions";
+import { getInviteTickets } from "@/app/actions";
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { InviteUserArg } from "@/utils/aitonomy";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
@@ -38,9 +35,8 @@ export default function InviteUser({
   const [isOpenPaymentModal, setIsOpenPaymentModal] = useState(false);
   const [currentCommunity, setCurrentCommunity] = useState(community);
   const [tab, setTab] = useState<"invite" | "buy">("invite");
-  const [paymentFee, setPaymentFee] = useState("");
   const [paymentAmount, setPaymentAmount] = useState("");
-  const [invitecodeAmount, setInvitecodeAmount] = useState(0);
+  const [inviteTickets, setInviteTickets] = useState(0);
   const [txHash, setTxHash] = useState("");
 
   const { control, setValue, watch } = useForm<InviteUserArg>({
@@ -89,35 +85,23 @@ export default function InviteUser({
     }
   }, [selectedCommunity, communities, setCurrentCommunity]);
 
-  const refreshInvitecodeAmount = useCallback(async () => {
+  const refreshInviteTickets = useCallback(async () => {
     if (!toAddress || !currentCommunity) {
       return;
     }
-    const { data: amount, success } = await getInvitecodeAmount({
+    const { data: amount, success } = await getInviteTickets({
       accountId: currentCommunity.creator,
       communityId: currentCommunity.id,
     });
     if (!success) {
       throw new Error("Failed: get invitecode amount error");
     }
-    setInvitecodeAmount(Number(amount));
+    setInviteTickets(Number(amount));
   }, [toAddress, currentCommunity]);
 
   useEffect(() => {
-    (async () => {
-      if (paymentAmount) {
-        return;
-      }
-      if (!paymentAmount && toAddress) {
-        const { data: fee, success } = await getInviteFee();
-        if (!success || !fee) {
-          throw new Error("Failed: get fee error");
-        }
-        setPaymentFee(fee.toString());
-      }
-      refreshInvitecodeAmount();
-    })();
-  }, [paymentAmount, toAddress, currentCommunity, refreshInvitecodeAmount]);
+    refreshInviteTickets();
+  }, [refreshInviteTickets]);
 
   const onPaymentSuccess = useCallback((tx: string, toastId: Id) => {
     setIsOpenPaymentModal(false);
@@ -194,19 +178,19 @@ export default function InviteUser({
                 <InviteUserForm
                   community={currentCommunity}
                   setTab={setTab}
-                  invitecodeAmount={invitecodeAmount}
+                  invitecodeAmount={inviteTickets}
                   onSuccess={onSuccess}
                 />
               </Tab>
               <Tab key="buy" title="Buy code">
                 <BuyInviteCodeForm
                   community={currentCommunity}
-                  invitecodeAmount={invitecodeAmount}
+                  inviteTickets={inviteTickets}
                   setIsOpenPaymentModal={setIsOpenPaymentModal}
-                  paymentFee={paymentFee}
                   txHash={txHash}
+                  paymentAmount={paymentAmount}
                   setPaymentAmount={setPaymentAmount}
-                  refreshInvitecodeAmount={refreshInvitecodeAmount}
+                  refreshInvitecodeAmount={refreshInviteTickets}
                 />
               </Tab>
             </Tabs>

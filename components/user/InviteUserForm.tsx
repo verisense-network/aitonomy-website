@@ -5,7 +5,7 @@ import { Button, Form, Input } from "@heroui/react";
 import { ethers } from "ethers";
 import { twMerge } from "tailwind-merge";
 import { toast } from "react-toastify";
-import { checkInvite, inviteUser } from "@/app/actions";
+import { checkPermission, inviteUser } from "@/app/actions";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { InviteUserPayload } from "@verisense-network/vemodel-types";
 
@@ -38,7 +38,7 @@ export default function InviteUserForm({
         toast.error("address is empty");
         return;
       }
-      const { data: isInvited, success } = await checkInvite({
+      const { data: isInvited, success } = await checkPermission({
         communityId: community.id,
         accountId: address,
       });

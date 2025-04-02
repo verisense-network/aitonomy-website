@@ -1,6 +1,6 @@
 import { useUserStore } from "@/stores/user";
 import { useState, useEffect } from "react";
-import { checkInvite } from "@/app/actions";
+import { checkPermission } from "@/app/actions";
 import { isCommunityMode } from "@/components/community/utils";
 
 export default function useCanPost(community?: any) {
@@ -23,7 +23,7 @@ export default function useCanPost(community?: any) {
       try {
         if (!address) return;
 
-        const { data: permission, success } = await checkInvite({
+        const { data: permission, success } = await checkPermission({
           communityId: community.id,
           accountId: address,
         });

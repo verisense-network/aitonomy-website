@@ -4,28 +4,26 @@ import uploadImageWithPostImages from "@/lib/uploadImage";
 import {
   ActivateCommunityArg,
   activateCommunityRpc,
-  checkInviteRpc,
   CreateCommentArg,
   createCommentRpc,
   CreateCommunityArg,
   createCommunityRpc,
   CreateThreadArg,
   createThreadRpc,
-  GenerateInviteCodeArg,
-  generateInvitesCodesRpc,
+  generateInviteTicketsRpc,
   getAccountInfoRpc,
   getAccountsRpc,
   GetBalancesResponse,
   getBalancesRpc,
   getCommunityRpc,
-  getInviteFeeRpc,
   GetRewardsResponse,
   getRewardsRpc,
-  invitecodeAmountRpc,
+  getInviteTicketsRpc,
   InviteUserArg,
   inviteUserRpc,
   SetAliasArg,
   setAliasRpc,
+  checkPermissionRpc,
 } from "@/utils/aitonomy";
 import { Signature } from "@/utils/aitonomy/sign";
 import { NUCLEUS_ID } from "@/utils/aitonomy/tools";
@@ -377,29 +375,12 @@ export async function inviteUser(data: InviteUserArg, signature: Signature) {
   }
 }
 
-export async function getInviteFee() {
-  try {
-    const args = "";
-    const res = await getInviteFeeRpc(NUCLEUS_ID, args);
-    return {
-      success: true,
-      data: res,
-    };
-  } catch (e: any) {
-    console.error("getCommunity error", e);
-    return {
-      success: false,
-      message: e.message,
-    };
-  }
-}
-
-interface CheckInviteParams {
+interface CheckPermissionParams {
   accountId: string;
   communityId: string;
 }
 
-export async function checkInvite(data: CheckInviteParams) {
+export async function checkPermission(data: CheckPermissionParams) {
   try {
     let accountId: Uint8Array = new Uint8Array();
     if (CHAIN === "BSC") {
@@ -413,7 +394,7 @@ export async function checkInvite(data: CheckInviteParams) {
       community_id: hexToBytes(data.communityId),
     };
 
-    const res = await checkInviteRpc(NUCLEUS_ID, args);
+    const res = await checkPermissionRpc(NUCLEUS_ID, args);
 
     return {
       success: true,
@@ -428,13 +409,18 @@ export async function checkInvite(data: CheckInviteParams) {
   }
 }
 
-export async function generateInviteCodes(
-  data: GenerateInviteCodeArg,
-  signature: Signature
-) {
+export interface GenerateInviteTicketParams {
+  communityId: string;
+  tx: string;
+}
+
+export async function generateInviteTickets(data: GenerateInviteTicketParams) {
   try {
-    const args = data;
-    const res = await generateInvitesCodesRpc(NUCLEUS_ID, args, signature);
+    const args = {
+      community_id: hexToBytes(data.communityId),
+      tx: data.tx,
+    };
+    const res = await generateInviteTicketsRpc(NUCLEUS_ID, args);
 
     return {
       success: true,
@@ -449,12 +435,12 @@ export async function generateInviteCodes(
   }
 }
 
-interface InvitecodeAmountParams {
+interface GetInviteTicketsParams {
   accountId: string;
   communityId: string;
 }
 
-export async function invitecodeAmount(data: InvitecodeAmountParams) {
+export async function getInviteTickets(data: GetInviteTicketsParams) {
   try {
     let accountId: Uint8Array = new Uint8Array();
     if (CHAIN === "BSC") {
@@ -468,7 +454,7 @@ export async function invitecodeAmount(data: InvitecodeAmountParams) {
       community_id: hexToBytes(data.communityId),
     };
 
-    const res = await invitecodeAmountRpc(NUCLEUS_ID, args);
+    const res = await getInviteTicketsRpc(NUCLEUS_ID, args);
 
     return {
       success: true,

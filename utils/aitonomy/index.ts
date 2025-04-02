@@ -17,8 +17,7 @@ import {
   SetAliasArg,
   RewardPayload,
   InviteUserArg,
-  GenerateInviteCodeArgs,
-  CommunityMode,
+  GenerateInviteTicketArg,
 } from "@verisense-network/vemodel-types";
 import {
   Result,
@@ -29,7 +28,6 @@ import {
   Null,
   Vec,
   u64,
-  u128,
   Bool,
   Enum,
 } from "@verisense-network/vemodel-types/dist/codec";
@@ -626,43 +624,13 @@ export async function inviteUserRpc(
   }
 }
 
-export async function getInviteFeeRpc(
-  nucleusId: string,
-  args: string
-): Promise<bigint> {
-  const payload = new Text(registry, args).toHex();
-  try {
-    const provider = await getRpcClient();
-    const response = await provider.send<any>("nucleus_get", [
-      nucleusId,
-      "get_invite_fee",
-      payload,
-    ]);
-    console.log("response", response);
-
-    const responseBytes = Buffer.from(response, "hex");
-
-    /**
-     * u128
-     */
-    const ResultStruct = u128;
-    const decoded = new ResultStruct(registry, responseBytes);
-
-    const result = decoded.toBigInt();
-    return result;
-  } catch (err: any) {
-    console.error(err);
-    throw err;
-  }
-}
-
-export interface CheckInviteArg {
+export interface CheckPermissionArg {
   community_id: Uint8Array;
   account_id: Uint8Array;
 }
-export async function checkInviteRpc(
+export async function checkPermissionRpc(
   nucleusId: string,
-  args: CheckInviteArg
+  args: CheckPermissionArg
 ): Promise<boolean> {
   console.log("args", args);
   /**
@@ -679,7 +647,7 @@ export async function checkInviteRpc(
     const provider = await getRpcClient();
     const response = await provider.send<any>("nucleus_get", [
       nucleusId,
-      "check_invite",
+      "check_permission",
       payload,
     ]);
     console.log("response", response);
@@ -700,29 +668,27 @@ export async function checkInviteRpc(
   }
 }
 
-export interface GenerateInviteCodeArg {
-  community: string;
+export interface GenerateInviteTicketArg {
+  community_id: Uint8Array;
   tx: string;
 }
 
-export async function generateInvitesCodesRpc(
+export async function generateInviteTicketsRpc(
   nucleusId: string,
-  args: GenerateInviteCodeArg,
-  signature: Signature
+  args: GenerateInviteTicketArg
 ): Promise<string> {
   console.log("args", args);
 
-  const rpcArgs = {
-    ...signature,
-    payload: args,
-  };
-  const payload = new GenerateInviteCodeArgs(registry, rpcArgs).toHex();
+  const rpcArgs = args;
+  const payload = new GenerateInviteTicketArg(registry, rpcArgs).toHex();
+
+  console.log("payload", payload);
 
   try {
     const provider = await getRpcClient();
     const response = await provider.send<any>("nucleus_post", [
       nucleusId,
-      "generate_invite_codes",
+      "generate_invite_tickets",
       payload,
     ]);
     console.log("response", response);
@@ -749,14 +715,14 @@ export async function generateInvitesCodesRpc(
   }
 }
 
-export interface InvitecodeAmountArg {
+export interface getInviteTicketsArg {
   community_id: Uint8Array;
   account_id: Uint8Array;
 }
 
-export async function invitecodeAmountRpc(
+export async function getInviteTicketsRpc(
   nucleusId: string,
-  args: InvitecodeAmountArg
+  args: getInviteTicketsArg
 ): Promise<bigint> {
   console.log("args", args);
   /**
@@ -773,7 +739,7 @@ export async function invitecodeAmountRpc(
     const provider = await getRpcClient();
     const response = await provider.send<any>("nucleus_get", [
       nucleusId,
-      "invitecode_amount",
+      "get_invite_tickets",
       payload,
     ]);
     console.log("response", response);
@@ -787,6 +753,7 @@ export async function invitecodeAmountRpc(
     const decoded = new ResultStruct(registry, responseBytes);
 
     const result = decoded.toBigInt();
+    console.log("result", result);
     return result;
   } catch (err: any) {
     console.error(err);

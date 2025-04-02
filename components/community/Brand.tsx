@@ -78,8 +78,6 @@ export default function CommunityBrand({ communityId }: Props) {
   const viewAmount = amount ? formatReadableAmount(amount) : "";
 
   const isLoaded = !isLoading && c;
-  const communityMode = c?.mode;
-  console.log("communityMode", communityMode);
 
   const isCommunityMode = useCallback(
     (mode: keyof CommunityMode) => {
@@ -104,7 +102,8 @@ export default function CommunityBrand({ communityId }: Props) {
   const shouldShowInviteUser =
     shouldShowActivateCommunity && isCommunityMode("InviteOnly");
 
-  const shouldShowJoinCommunity = !canPost && isCommunityMode("PayToJoin");
+  const shouldShowJoinCommunity =
+    isLogin && !canPost && isCommunityMode("PayToJoin");
 
   const toPayment = useCallback(() => {
     setIsOpenPaymentModal(true);
@@ -159,7 +158,7 @@ export default function CommunityBrand({ communityId }: Props) {
             render: `Checking community activation status...${renderCount}`,
           });
           forceUpdate();
-          await sleep(2000);
+          await sleep(5000);
           await checkCommunityActivateStatus(txHash, toastId, retryCount + 1);
         } else {
           console.log(
@@ -233,13 +232,6 @@ export default function CommunityBrand({ communityId }: Props) {
     checkCommunityActivateStatus(signature, toastId, 0);
     console.log("res", res);
   }, [checkCommunityActivateStatus, c?.name]);
-
-  useEffect(() => {
-    (async () => {
-      const res = await getCommunity(communityId);
-      console.log("res", res);
-    })();
-  }, [communityId]);
 
   useEffect(() => {
     (async () => {
@@ -317,55 +309,61 @@ export default function CommunityBrand({ communityId }: Props) {
                           />
                         </Tooltip>
                       )}
-                    {shouldShowJoinCommunity && (
-                      <Button
-                        className="ml-2"
-                        size="sm"
-                        color="primary"
-                        onPress={joinCommunity}
-                      >
-                        Join Community
-                      </Button>
-                    )}
+                    {/* TODO: implement join community */}
+                    {isLoaded &&
+                      shouldShowJoinCommunity &&
+                      isCommunityStatus(CommunityStatus.Active) && (
+                        <Button
+                          className="ml-2"
+                          size="sm"
+                          color="primary"
+                          onPress={joinCommunity}
+                          isDisabled
+                        >
+                          Join Community
+                        </Button>
+                      )}
                   </h1>
-                  {shouldShowActivateCommunity && Number(viewAmount) > 0 && (
-                    <div className="flex">
-                      <Chip
-                        color="warning"
-                        size={isMobile ? "sm" : "lg"}
-                        classNames={{
-                          base: "h-9",
-                          content: "flex space-x-2 items-center",
-                        }}
-                      >
-                        <span>
-                          Waiting tx {viewAmount} {VIEW_UNIT}
-                        </span>
-                        {!isLoading && (
-                          <>
-                            {hasStoredSignature && (
+                  {isLoaded &&
+                    shouldShowActivateCommunity &&
+                    Number(viewAmount) > 0 && (
+                      <div className="flex">
+                        <Chip
+                          color="warning"
+                          size={isMobile ? "sm" : "lg"}
+                          classNames={{
+                            base: "h-9",
+                            content: "flex space-x-2 items-center",
+                          }}
+                        >
+                          <span>
+                            Waiting tx {viewAmount} {VIEW_UNIT}
+                          </span>
+                          {!isLoading && (
+                            <>
+                              {hasStoredSignature && (
+                                <Button
+                                  variant="shadow"
+                                  size="sm"
+                                  color="primary"
+                                  onPress={retryWithStoreSignature}
+                                >
+                                  Retry
+                                </Button>
+                              )}
                               <Button
                                 variant="shadow"
                                 size="sm"
                                 color="primary"
-                                onPress={retryWithStoreSignature}
+                                onPress={toPayment}
                               >
-                                Retry
+                                Payment
                               </Button>
-                            )}
-                            <Button
-                              variant="shadow"
-                              size="sm"
-                              color="primary"
-                              onPress={toPayment}
-                            >
-                              Payment
-                            </Button>
-                          </>
-                        )}
-                      </Chip>
-                    </div>
-                  )}
+                            </>
+                          )}
+                        </Chip>
+                      </div>
+                    )}
                   {shouldShowActivateCommunity &&
                     isCommunityStatus(CommunityStatus.CreateFailed) && (
                       <Chip
