@@ -19,7 +19,11 @@ export default function Learn({ isOpen, setIsOpen }: Props) {
           <ModalBody>
             <div>
               {learnTours.map((tour) => (
-                <LearnCard key={tour.title} {...tour} />
+                <LearnCard
+                  key={tour.title}
+                  {...tour}
+                  closeLearnModal={() => setIsOpen(false)}
+                />
               ))}
             </div>
           </ModalBody>

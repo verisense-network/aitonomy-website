@@ -13,9 +13,9 @@ export default function TourProvider({
           ...base,
           backgroundColor: "#1e1e1e",
         }),
-        controls: (base) => ({
+        arrow: (base, state) => ({
           ...base,
-          backgroundColor: "#1e1e1e",
+          color: state?.disabled === true ? "#555" : "#999",
         }),
       }}
     >

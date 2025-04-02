@@ -9,12 +9,13 @@ import {
   ModalContent,
   ModalHeader,
 } from "@heroui/react";
-import { Key, Suspense, useCallback, useState } from "react";
+import { Key, Suspense, useCallback } from "react";
 import CommunityCreate from "../community/Create";
 import ThreadCreate from "../thread/Create";
 import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
 import { CirclePlusIcon, PenIcon, PlusIcon } from "lucide-react";
+import { useModalStore } from "@/stores/modal";
 
 const menuList = [
   {
@@ -30,7 +31,12 @@ const menuList = [
 ];
 
 export default function CreateMenu() {
-  const [isOpen, setIsOpen] = useState<string | null>(null);
+  const {
+    isShowCreateCommunity,
+    setIsShowCreateCommunity,
+    isShowCreateThread,
+    setIsShowCreateThread,
+  } = useModalStore();
   const { isLogin } = useUserStore();
 
   const openMenu = useCallback(
@@ -43,9 +49,13 @@ export default function CreateMenu() {
       const item = menuList.find((it) => it.name === key);
       if (!item) return;
 
-      setIsOpen(item.name);
+      if (item.name === "community") {
+        setIsShowCreateCommunity(true);
+      } else if (item.name === "thread") {
+        setIsShowCreateThread(true);
+      }
     },
-    [isLogin]
+    [isLogin, setIsShowCreateCommunity, setIsShowCreateThread]
   );
 
   return (
@@ -62,21 +72,18 @@ export default function CreateMenu() {
           onAction={openMenu}
         >
           {menuList.map((item) => (
-            <DropdownItem
-              key={item.name}
-              startContent={item.icon}
-              {...(item.name === "community"
-                ? { id: "create-community-step2" }
-                : {})}
-            >
+            <DropdownItem key={item.name} startContent={item.icon}>
               {item.title}
             </DropdownItem>
           ))}
         </DropdownMenu>
       </Dropdown>
       <Modal
-        isOpen={!!isOpen}
-        onClose={() => setIsOpen(null)}
+        isOpen={isShowCreateCommunity || isShowCreateThread}
+        onClose={() => {
+          setIsShowCreateCommunity(false);
+          setIsShowCreateThread(false);
+        }}
         isDismissable={false}
         size="xl"
         classNames={{
@@ -87,14 +94,14 @@ export default function CreateMenu() {
           {(onClose) => (
             <>
               <ModalHeader>
-                {isOpen === "community" ? "Create community" : "Post thread"}
+                {isShowCreateCommunity ? "Create community" : "Post thread"}
               </ModalHeader>
               <ModalBody>
                 <Suspense>
-                  {isOpen === "community" && (
+                  {isShowCreateCommunity && (
                     <CommunityCreate onClose={onClose} />
                   )}
-                  {isOpen === "thread" && <ThreadCreate onClose={onClose} />}
+                  {isShowCreateThread && <ThreadCreate onClose={onClose} />}
                 </Suspense>
               </ModalBody>
             </>
