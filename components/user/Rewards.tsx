@@ -82,9 +82,14 @@ const UserTicketsABI = [
 interface RewardsProps {
   communityId: string;
   agentContract: string;
+  showTitle?: boolean;
 }
 
-export default function Rewards({ communityId, agentContract }: RewardsProps) {
+export default function Rewards({
+  communityId,
+  agentContract,
+  showTitle,
+}: RewardsProps) {
   const [isTableLoading, setIsTableLoading] = useState(false);
   const [rewards, setRewards] = useState<Reward[]>([]);
 
@@ -159,7 +164,7 @@ export default function Rewards({ communityId, agentContract }: RewardsProps) {
 
   return (
     <div>
-      <h1 className="text-md font-bold">Rewards</h1>
+      {showTitle && <h1 className="text-md font-bold">Rewards</h1>}
       <Table>
         <TableHeader columns={TABLE_COLUMNS}>
           {(column) => (

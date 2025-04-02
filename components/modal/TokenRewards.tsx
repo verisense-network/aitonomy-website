@@ -1,18 +1,6 @@
 "use client";
 
-import { formatAddress } from "@/utils/tools";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
-  Button,
-  Avatar,
-  Listbox,
-  ListboxItem,
-  Tooltip,
-} from "@heroui/react";
-import { useState, useCallback, useEffect } from "react";
+import { Modal, ModalBody, ModalContent, ModalHeader } from "@heroui/react";
 import Rewards from "../user/Rewards";
 
 interface TokenModalProps {
