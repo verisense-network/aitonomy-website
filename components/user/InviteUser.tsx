@@ -1,4 +1,4 @@
-import { getInviteTickets } from "@/app/actions";
+import { getInviteFee, getInviteTickets } from "@/app/actions";
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { InviteUserArg } from "@/utils/aitonomy";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
@@ -36,6 +36,7 @@ export default function InviteUser({
   const [currentCommunity, setCurrentCommunity] = useState(community);
   const [tab, setTab] = useState<"invite" | "buy">("invite");
   const [paymentAmount, setPaymentAmount] = useState("");
+  const [inviteFee, setInviteFee] = useState(0);
   const [inviteTickets, setInviteTickets] = useState(0);
   const [txHash, setTxHash] = useState("");
 
@@ -99,9 +100,21 @@ export default function InviteUser({
     setInviteTickets(Number(amount));
   }, [toAddress, currentCommunity]);
 
+  const getInvitePaymentFee = useCallback(async () => {
+    if (inviteFee !== 0) {
+      return;
+    }
+    const { data: amount, success } = await getInviteFee();
+    if (!success) {
+      throw new Error("Failed: get inviteFee error");
+    }
+    setInviteFee(Number(amount));
+  }, [inviteFee, setInviteFee]);
+
   useEffect(() => {
     refreshInviteTickets();
-  }, [refreshInviteTickets]);
+    getInvitePaymentFee();
+  }, [refreshInviteTickets, getInvitePaymentFee]);
 
   const onPaymentSuccess = useCallback((tx: string, toastId: Id) => {
     setIsOpenPaymentModal(false);
@@ -188,6 +201,7 @@ export default function InviteUser({
                   inviteTickets={inviteTickets}
                   setIsOpenPaymentModal={setIsOpenPaymentModal}
                   txHash={txHash}
+                  inviteFee={inviteFee}
                   paymentAmount={paymentAmount}
                   setPaymentAmount={setPaymentAmount}
                   refreshInvitecodeAmount={refreshInviteTickets}

@@ -229,7 +229,11 @@ export default function CommunityCreate({ onClose }: Props) {
 
         const mode = new CommunityMode(
           registry,
-          data.mode.value ? formatAmount(data.mode.value) : 0,
+          data.mode.name === "PayToJoin"
+            ? data.mode.value
+              ? formatAmount(data.mode.value)
+              : 0
+            : null,
           ["Public", "InviteOnly", "PayToJoin"].findIndex(
             (mode) => mode === data.mode.name
           )
@@ -385,7 +389,7 @@ export default function CommunityCreate({ onClose }: Props) {
               onValueChange={(value) =>
                 field.onChange({
                   name: value,
-                  value: value === "Public" ? null : inviteMinAmount,
+                  value: value === "PayToJoin" ? inviteMinAmount : null,
                 })
               }
               isInvalid={!!fieldState.error}
@@ -401,7 +405,7 @@ export default function CommunityCreate({ onClose }: Props) {
                 </CustomCommunityModeRadio>
               ))}
             </RadioGroup>
-            {field.value.name !== "Public" && (
+            {field.value.name === "PayToJoin" && (
               <NumberInput
                 label="Invite Amount"
                 labelPlacement="outside"
@@ -411,7 +415,10 @@ export default function CommunityCreate({ onClose }: Props) {
                 errorMessage={fieldState.error?.message}
                 value={field.value.value || 0}
                 onValueChange={(value) =>
-                  field.onChange({ name: field.value.name, value })
+                  field.onChange({
+                    name: field.value.name,
+                    value: value,
+                  })
                 }
               />
             )}

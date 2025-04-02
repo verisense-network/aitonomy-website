@@ -17,6 +17,7 @@ interface InviteUserFormProps {
   inviteTickets: number;
   setIsOpenPaymentModal: (isOpen: boolean) => void;
   txHash: string;
+  inviteFee: number;
   paymentAmount: string;
   setPaymentAmount: (amount: string) => void;
   refreshInvitecodeAmount: () => Promise<void>;
@@ -27,6 +28,7 @@ export default function BuyInviteCodeForm({
   inviteTickets,
   setIsOpenPaymentModal,
   txHash,
+  inviteFee,
   paymentAmount,
   setPaymentAmount,
   refreshInvitecodeAmount,
@@ -48,12 +50,12 @@ export default function BuyInviteCodeForm({
     if (
       !amount ||
       Number.isNaN(Number(amount)) ||
-      !community.mode?.InviteOnly
+      Number.isNaN(Number(inviteFee))
     ) {
       return;
     }
-    setPaymentAmount(`${BigInt(amount) * BigInt(community.mode.InviteOnly)}`);
-  }, [amount, community, setPaymentAmount]);
+    setPaymentAmount(`${BigInt(amount) * BigInt(inviteFee)}`);
+  }, [amount, community, inviteFee, setPaymentAmount]);
 
   useEffect(() => {
     setValue("tx", txHash);

@@ -24,6 +24,7 @@ import {
   SetAliasArg,
   setAliasRpc,
   checkPermissionRpc,
+  getInviteFeeRpc,
 } from "@/utils/aitonomy";
 import { Signature } from "@/utils/aitonomy/sign";
 import { NUCLEUS_ID } from "@/utils/aitonomy/tools";
@@ -344,6 +345,23 @@ export async function getCommunity(id: string) {
   try {
     const res = await getCommunityRpc(NUCLEUS_ID, { id: hexToBytes(id) });
 
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("getCommunity error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+export async function getInviteFee() {
+  try {
+    const args = "";
+    const res = await getInviteFeeRpc(NUCLEUS_ID, args);
     return {
       success: true,
       data: res,

@@ -30,6 +30,7 @@ import {
   u64,
   Bool,
   Enum,
+  u128,
 } from "@verisense-network/vemodel-types/dist/codec";
 
 interface Signature {
@@ -661,6 +662,36 @@ export async function checkPermissionRpc(
     const decoded = new ResultStruct(registry, responseBytes);
 
     const result = decoded.toHuman() as boolean;
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export async function getInviteFeeRpc(
+  nucleusId: string,
+  args: string
+): Promise<bigint> {
+  const payload = new Text(registry, args).toHex();
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_get", [
+      nucleusId,
+      "get_invite_fee",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * u128
+     */
+    const ResultStruct = u128;
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    const result = decoded.toBigInt();
     return result;
   } catch (err: any) {
     console.error(err);
