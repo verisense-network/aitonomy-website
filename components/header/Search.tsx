@@ -52,6 +52,10 @@ export default function HeaderSearch() {
         value={search}
         onValueChange={debounce(setSearch, 300)}
         fullWidth
+        classNames={{
+          popoverContent:
+            "w-[80vw] max-h-[85vh] overflow-y-auto md:w-full md:max-h-[95vh]",
+        }}
       >
         <AutocompleteSection showDivider title="Threads">
           {threads.map((hit) => (
