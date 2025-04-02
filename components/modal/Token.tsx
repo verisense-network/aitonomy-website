@@ -75,7 +75,7 @@ export default function TokenModal({
                     </span>
                   </div>
                 </div>
-                <div className="text-sm text-zinc-300">
+                <div className="flex flex-col space-y-2 text-sm text-zinc-300">
                   {tokenInfo.map((it) => (
                     <div className="flex" key={it.label}>
                       <span className="mr-1 font-semibold">{it.label}:</span>
