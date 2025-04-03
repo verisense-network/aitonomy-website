@@ -15,7 +15,7 @@ import {
 } from "@heroui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import PaymentModal from "../modal/Payment";
-import { activateCommunity, getCommunity } from "@/app/actions";
+import { activateCommunity } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
 import { usePaymentCommunityStore } from "@/stores/paymentCommunity";
 import {
@@ -39,6 +39,7 @@ import {
 import TokenPanel from "./token/TokenPanel";
 import { CommunityMode } from "@verisense-network/vemodel-types";
 import useCanPost from "@/hooks/useCanPost";
+import JoinCommunity from "../user/JoinCommunity";
 
 interface Props {
   communityId: string;
@@ -50,6 +51,8 @@ export default function CommunityBrand({ communityId }: Props) {
   const [isOpenPaymentModal, setIsOpenPaymentModal] = useState(false);
   const [isActivatingLoading, setIsActivatingLoading] = useState(false);
   const [isOpenInviteModal, setIsOpenInviteModal] = useState(false);
+  const [isOpenJoinCommunityModal, setIsOpenJoinCommunityModal] =
+    useState(false);
   const { isLogin } = useUserStore();
   const { isYouAddress } = useUser();
   const { isMobile } = useAppearanceStore();
@@ -103,7 +106,7 @@ export default function CommunityBrand({ communityId }: Props) {
     shouldShowActivateCommunity && isCommunityMode("InviteOnly");
 
   const shouldShowJoinCommunity =
-    isLogin && !canPost && isCommunityMode("PayToJoin");
+    isLogin && !canPost && !isCommunityMode("Public");
 
   const toPayment = useCallback(() => {
     setIsOpenPaymentModal(true);
@@ -260,7 +263,14 @@ export default function CommunityBrand({ communityId }: Props) {
     toast.success("Invite successful");
   }, []);
 
-  const joinCommunity = useCallback(() => {}, []);
+  const openJoinCommunity = useCallback(() => {
+    setIsOpenJoinCommunityModal(true);
+  }, []);
+
+  const onJoinCommunitySuccess = useCallback(() => {
+    setIsOpenJoinCommunityModal(false);
+    toast.success("Join community successful");
+  }, []);
 
   return (
     <>
@@ -309,7 +319,6 @@ export default function CommunityBrand({ communityId }: Props) {
                           />
                         </Tooltip>
                       )}
-                    {/* TODO: implement join community */}
                     {isLoaded &&
                       shouldShowJoinCommunity &&
                       isCommunityStatus(CommunityStatus.Active) && (
@@ -317,8 +326,8 @@ export default function CommunityBrand({ communityId }: Props) {
                           className="ml-2"
                           size="sm"
                           color="primary"
-                          onPress={joinCommunity}
-                          isDisabled
+                          onPress={openJoinCommunity}
+                          isDisabled={isCommunityMode("PayToJoin")}
                         >
                           Join Community
                         </Button>
@@ -425,6 +434,14 @@ export default function CommunityBrand({ communityId }: Props) {
           community={c}
           onClose={() => setIsOpenInviteModal(false)}
           onSuccess={() => onInviteSuccess()}
+        />
+      )}
+      {isOpenJoinCommunityModal && (
+        <JoinCommunity
+          isOpen={isOpenJoinCommunityModal}
+          community={c}
+          onClose={() => setIsOpenJoinCommunityModal(false)}
+          onSuccess={() => onJoinCommunitySuccess()}
         />
       )}
     </>

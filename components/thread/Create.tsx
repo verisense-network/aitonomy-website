@@ -28,7 +28,7 @@ import {
 import { compressString } from "@/utils/compressString";
 import LockCountdown from "../lock/LockCountdown";
 import { useUserStore } from "@/stores/user";
-import { updateAccountInfo, updateLastPostAt } from "@/utils/user";
+import { updateLastPostAt } from "@/utils/user";
 import LockNotAllowedToPost from "../lock/LockNotAllowedToPost";
 import useCanPost from "@/hooks/useCanPost";
 
@@ -218,7 +218,7 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
               {canPost ? (
                 <LockCountdown countdownTime={lastPostAt || 0} />
               ) : (
-                <LockNotAllowedToPost />
+                <LockNotAllowedToPost community={selectedCommunity} />
               )}
               <ContentEditor
                 className="mt-2 w-full rounded-xl"

@@ -3,6 +3,7 @@
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { SiGithub, SiX } from "@icons-pack/react-simple-icons";
 import {
+  BadgeDollarSignIcon,
   CircleDollarSignIcon,
   CircleHelpIcon,
   HeartHandshakeIcon,
@@ -67,7 +68,7 @@ const Legals = [
   {
     name: "Incentive Plan",
     href: "/legals/incentive-plan",
-    icon: <CircleDollarSignIcon className="w-5 h-5" />,
+    icon: <BadgeDollarSignIcon className="w-5 h-5" />,
   },
 ];
 

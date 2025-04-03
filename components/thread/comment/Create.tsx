@@ -19,7 +19,7 @@ import { compressString } from "@/utils/compressString";
 import LockCountdown from "@/components/lock/LockCountdown";
 import { MentionProvider } from "@/components/mdxEditor/mentionCtx";
 import { Mention } from "@/components/mdxEditor/AddMention";
-import { updateAccountInfo, updateLastPostAt } from "@/utils/user";
+import { updateLastPostAt } from "@/utils/user";
 import useCanPost from "@/hooks/useCanPost";
 import LockNotAllowedToPost from "@/components/lock/LockNotAllowedToPost";
 
@@ -146,7 +146,7 @@ export default function CreateComment({
           {canPost ? (
             <LockCountdown countdownTime={lastPostAt || 0} />
           ) : (
-            <LockNotAllowedToPost />
+            <LockNotAllowedToPost community={community} />
           )}
           <Controller
             name="content"

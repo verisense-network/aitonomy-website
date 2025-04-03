@@ -16,8 +16,8 @@ import {
   CircleDollarSignIcon,
   CircleHelpIcon,
   EarthIcon,
-  ImageIcon,
-  ShieldCheckIcon,
+  EarthLockIcon,
+  ImageUpIcon,
 } from "lucide-react";
 import {
   Accordion,
@@ -47,8 +47,7 @@ import { useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { useAppearanceStore } from "@/stores/appearance";
-import { CHAIN } from "@/utils/chain";
-import { formatAmount } from "@/utils/format";
+import { formatAmount, VIEW_UNIT } from "@/utils/format";
 
 interface Props {
   onClose: () => void;
@@ -93,7 +92,7 @@ const CommunityModes = [
     value: "InviteOnly",
     label: (
       <div className="flex items-center gap-2 text-nowrap">
-        Invite Only <ShieldCheckIcon className="w-5 h-5" />
+        Invite Only <EarthLockIcon className="w-5 h-5" />
       </div>
     ),
     description: "Only invited users can join",
@@ -167,6 +166,8 @@ export default function CommunityCreate({ onClose }: Props) {
 
   const llmName = watch("llm_name");
   const tokenNewIssue = watch("token.new_issue");
+  const tokenDecimals = watch("token.decimals");
+  const tokenTotalIssuance = watch("token.total_issuance");
 
   const [isLoadingLogo, setIsLoadingLogo] = useState(false);
   const { getRootProps, getInputProps } = useDropzone({
@@ -338,11 +339,11 @@ export default function CommunityCreate({ onClose }: Props) {
                   className="flex justify-center items-center rounded-full overflow-hidden cursor-pointer"
                 >
                   <input {...getInputProps()} />
-                  <div className="flex justify-center items-center bg-gray-300 p-3">
+                  <div className="flex justify-center items-center bg-gray-500 p-3">
                     {isLoadingLogo ? (
                       <Spinner />
                     ) : (
-                      <ImageIcon className="w-8 h-8" />
+                      <ImageUpIcon className="w-8 h-8" />
                     )}
                   </div>
                 </div>
@@ -410,10 +411,11 @@ export default function CommunityCreate({ onClose }: Props) {
                 label="Invite Amount"
                 labelPlacement="outside"
                 placeholder="Enter invite amount"
-                endContent={<span className="text-gray-500">{CHAIN}</span>}
+                endContent={<span className="text-gray-500">{VIEW_UNIT}</span>}
                 isInvalid={!!fieldState.error}
                 errorMessage={fieldState.error?.message}
                 value={field.value.value || 0}
+                minValue={0}
                 onValueChange={(value) =>
                   field.onChange({
                     name: field.value.name,
@@ -430,15 +432,20 @@ export default function CommunityCreate({ onClose }: Props) {
         control={control}
         rules={{
           required: "Please enter a slug",
+          maxLength: {
+            value: 80,
+            message: "Slug is too long",
+          },
         }}
         render={({ field, fieldState }) => (
           <Input
             {...field}
             label="Slug"
             labelPlacement="outside"
-            placeholder="Enter your slug"
+            placeholder="Enter a community slogan or short description"
             isInvalid={!!fieldState.error}
             errorMessage={fieldState.error?.message}
+            maxLength={80}
           />
         )}
       />
@@ -448,7 +455,7 @@ export default function CommunityCreate({ onClose }: Props) {
         rules={{
           required: "Please enter a description",
           maxLength: {
-            value: 60,
+            value: 300,
             message: "Description is too long",
           },
         }}
@@ -457,10 +464,10 @@ export default function CommunityCreate({ onClose }: Props) {
             {...field}
             label="Description"
             labelPlacement="outside"
-            placeholder="Enter your description"
+            placeholder="Enter your description (max 300 characters)"
             isInvalid={!!fieldState.error}
             errorMessage={fieldState.error?.message}
-            maxLength={60}
+            maxLength={300}
           />
         )}
       />
@@ -475,6 +482,16 @@ export default function CommunityCreate({ onClose }: Props) {
             {...field}
             label="Prompt"
             labelPlacement="outside"
+            startContent={
+              <Tooltip
+                content="There is no limit on the prompt length. The more detailed your prompts, the better the agent will perform. Please define your prompts carefully. It cannot be modified after it is launched."
+                classNames={{
+                  content: "w-60",
+                }}
+              >
+                <CircleHelpIcon className="w-5 h-5" />
+              </Tooltip>
+            }
             placeholder="Enter your prompt"
             isInvalid={!!fieldState.error}
             errorMessage={fieldState.error?.message}
@@ -507,7 +524,7 @@ export default function CommunityCreate({ onClose }: Props) {
                     <Button
                       size="sm"
                       variant="light"
-                      onPress={() => setValue("logo", "")}
+                      onPress={() => setValue("token.image", "")}
                     >
                       Remove logo
                     </Button>
@@ -519,11 +536,11 @@ export default function CommunityCreate({ onClose }: Props) {
                   className="flex justify-center items-center rounded-full overflow-hidden cursor-pointer"
                 >
                   <input {...getTokenLogoInputProps()} />
-                  <div className="flex justify-center items-center bg-gray-300 p-3">
+                  <div className="flex justify-center items-center bg-gray-500 p-3">
                     {isLoadingTokenLogo ? (
                       <Spinner />
                     ) : (
-                      <ImageIcon className="w-8 h-8" />
+                      <ImageUpIcon className="w-8 h-8" />
                     )}
                   </div>
                 </div>
@@ -583,37 +600,39 @@ export default function CommunityCreate({ onClose }: Props) {
           name="token.new_issue"
           control={control}
           render={({ field, fieldState }) => (
-            <Switch
-              classNames={{
-                base: cn(
-                  "inline-flex flex-row-reverse w-1/3 max-w-full bg-content2 hover:bg-content3 items-center",
-                  "justify-between cursor-pointer rounded-lg gap-2 p-2 border-2 border-transparent",
-                  "data-[selected=true]:border-zinc-700 data-[selected=true]:w-full data-[selected=true]:p-4"
-                ),
-                wrapper: "p-0 h-4 overflow-visible",
-                thumb: cn(
-                  "w-6 h-6 border-2 shadow-lg",
-                  "group-data-[hover=true]:border-primary",
-                  //selected
-                  "group-data-[selected=true]:ms-6",
-                  //pressed
-                  "group-data-[pressed=true]:w-7",
-                  "group-data-[selected]:group-data-[pressed]:ms-4"
-                ),
-              }}
-              onChange={field.onChange}
-              isSelected={field.value}
-              defaultSelected={field.value}
-            >
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm">New Issue Token</span>
+            <Tooltip content="Issue new token currently only support BEP-20 token.">
+              <Switch
+                classNames={{
+                  base: cn(
+                    "inline-flex flex-row-reverse w-1/3 max-w-full bg-content2 hover:bg-content3 items-center",
+                    "justify-between cursor-pointer rounded-lg gap-2 p-2 border-2 border-transparent",
+                    "data-[selected=true]:border-zinc-700 data-[selected=true]:w-full data-[selected=true]:p-4"
+                  ),
+                  wrapper: "p-0 h-4 overflow-visible",
+                  thumb: cn(
+                    "w-6 h-6 border-2 shadow-lg",
+                    "group-data-[hover=true]:border-primary",
+                    //selected
+                    "group-data-[selected=true]:ms-6",
+                    //pressed
+                    "group-data-[pressed=true]:w-7",
+                    "group-data-[selected]:group-data-[pressed]:ms-4"
+                  ),
+                }}
+                onChange={field.onChange}
+                isSelected={field.value}
+                defaultSelected={field.value}
+              >
+                <div className="flex gap-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm">Issue New Token</span>
+                  </div>
+                  {fieldState.error && (
+                    <p className="text-red-500">{fieldState.error.message}</p>
+                  )}
                 </div>
-                {fieldState.error && (
-                  <p className="text-red-500">{fieldState.error.message}</p>
-                )}
-              </div>
-            </Switch>
+              </Switch>
+            </Tooltip>
           )}
         />
         {!tokenNewIssue && (
@@ -624,7 +643,7 @@ export default function CommunityCreate({ onClose }: Props) {
               required: "Please enter a token contract",
               validate: (value) => {
                 if (!value?.startsWith("0x")) {
-                  return "Invalid token contract";
+                  return "Invalid token contract address";
                 }
                 return true;
               },
@@ -633,7 +652,7 @@ export default function CommunityCreate({ onClose }: Props) {
               <Input
                 {...field}
                 label="Contract"
-                placeholder="Enter your token contract"
+                placeholder="Enter your BEP-20 token contract address"
                 labelPlacement="outside"
                 isInvalid={!!fieldState.error}
                 errorMessage={fieldState.error?.message}
@@ -643,7 +662,7 @@ export default function CommunityCreate({ onClose }: Props) {
           />
         )}
       </div>
-      <div className="grid grid-cols-2 gap-2 mt-3 w-full">
+      <div className="flex gap-2 mt-3 w-full">
         <Controller
           name="token.decimals"
           control={control}
@@ -651,15 +670,16 @@ export default function CommunityCreate({ onClose }: Props) {
             required: "Please enter a token decimals",
           }}
           render={({ field, fieldState }) => (
-            <Input
-              {...field}
+            <NumberInput
+              className="w-5/2"
               label="Decimals"
               labelPlacement="outside"
-              type="number"
               placeholder="Enter your token name"
               isInvalid={!!fieldState.error}
               errorMessage={fieldState.error?.message}
-              value={field.value?.toString()}
+              value={field.value}
+              onValueChange={field.onChange}
+              minValue={0}
             />
           )}
         />
@@ -670,18 +690,23 @@ export default function CommunityCreate({ onClose }: Props) {
             required: "Please enter a token total issuance",
           }}
           render={({ field, fieldState }) => (
-            <Input
-              {...field}
-              label="Total Issuance"
+            <NumberInput
+              className="w-5/2"
+              label="Total Supply"
               labelPlacement="outside"
-              type="number"
-              placeholder="Enter your token total issuance"
+              placeholder="Enter your token total supply"
               isInvalid={!!fieldState.error}
               errorMessage={fieldState.error?.message}
-              value={field.value?.toString()}
+              value={field.value}
+              onValueChange={field.onChange}
+              minValue={0}
             />
           )}
         />
+        <div className="text-xs">
+          <div>Actual Supply:</div>
+          <div>{tokenTotalIssuance / 10 ** tokenDecimals}</div>
+        </div>
       </div>
       <Accordion
         selectedKeys={llmAccordionSelectedKeys}

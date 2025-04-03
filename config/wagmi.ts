@@ -15,7 +15,7 @@ const APP_NAME = process.env.NEXT_PUBLIC_WALLET_CONNECT_APP_NAME;
 const recommendedWalletList: WalletList = [
   {
     groupName: "Recommended",
-    wallets: [metaMaskWallet, okxWallet, binanceWallet],
+    wallets: [binanceWallet, metaMaskWallet, okxWallet],
   },
 ];
 const connectors = connectorsForWallets(recommendedWalletList, {

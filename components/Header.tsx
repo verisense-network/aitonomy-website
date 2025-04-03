@@ -7,9 +7,11 @@ import { Badge, Image } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import HeaderSearch from "./header/Search";
+import { useAppearanceStore } from "@/stores/appearance";
 
 export default function Header() {
   const router = useRouter();
+  const { isMobile } = useAppearanceStore();
 
   const toHomePage = useCallback(() => {
     router.push("/");
@@ -27,7 +29,7 @@ export default function Header() {
               badge: "bg-transparent",
             }}
             content={
-              <p className="text-[8px] md:text-[10px] text-center text-wrap leading-2.5 -ml-5">
+              <p className="text-[8px] md:text-[10px] text-center leading-2.5 mt-2 md:mt-0 -ml-5 md:-ml-27">
                 Powered by
                 <Link
                   className="ml-1 text-primary"
@@ -39,11 +41,19 @@ export default function Header() {
               </p>
             }
           >
-            <Image
-              src="/logo.svg"
-              alt="AItonomy.world Logo"
-              className="w-5 h-10 md:w-7 md:h-11 object-contain bg-top mb-2 text-gray-400"
-            />
+            {isMobile ? (
+              <Image
+                src="/aitonomy-s.svg"
+                alt="AItonomy.world"
+                className="w-[50px]"
+              />
+            ) : (
+              <Image
+                src="/aitonomy-h.svg"
+                alt="AItonomy.world"
+                className="w-[180px]"
+              />
+            )}
           </Badge>
         </div>
         <div className="max-w-xl w-full mx-4">
