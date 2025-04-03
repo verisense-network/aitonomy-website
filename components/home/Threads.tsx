@@ -15,11 +15,10 @@ import { decodeId } from "@/utils/thread";
 import { hexToLittleEndian } from "@/utils/tools";
 import { twMerge } from "tailwind-merge";
 import CreateThread from "../community/thread/Create";
-import { parseMarkdown } from "@/utils/markdown";
-import truncateHtml from "truncate-html";
 import { decompressString } from "@/utils/compressString";
 import Link from "next/link";
 import TooltipTime from "../formatTime/TooltipTime";
+import RenderMarkdown from "../markdown/RenderMarkdown";
 
 export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full px-1 py-2 rounded-small">{children}</div>
@@ -132,15 +131,10 @@ export default function Threads({
                 </CardHeader>
                 <CardBody>
                   <h1 className="text-xl font-bold mb-2">{hit.title}</h1>
-                  <div
-                    className="prose max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{
-                      __html: truncateHtml(
-                        parseMarkdown(decompressString(hit.content || "")),
-                        120
-                      ) as string,
-                    }}
-                  ></div>
+                  <RenderMarkdown
+                    content={decompressString(hit.content || "")}
+                    truncate={120}
+                  />
                 </CardBody>
               </Card>
               {index !== threads?.length - 1 && <Divider className="my-1" />}

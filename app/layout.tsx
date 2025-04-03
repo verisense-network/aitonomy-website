@@ -6,7 +6,6 @@ import Header from "@/components/Header";
 import SideMenu from "@/components/sideMenu";
 import RightMenu from "@/components/RightMenu";
 import WelcomeModal from "@/components/modal/Welcome";
-import "highlight.js/styles/atom-one-dark.min.css";
 
 const montserrat = Montserrat({
   subsets: ["vietnamese"],

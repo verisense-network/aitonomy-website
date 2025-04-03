@@ -94,3 +94,9 @@ export function extractWagmiErrorDetailMessage(err: any) {
     return err?.message || err;
   }
 }
+
+export type BuildEnv = "test" | "prod";
+
+export function isBuildEnv(env: BuildEnv) {
+  return process.env.NEXT_PUBLIC_BUILD_ENV === env;
+}

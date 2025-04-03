@@ -60,8 +60,13 @@ const Legals = [
     icon: <HeartHandshakeIcon className="w-5 h-5" />,
   },
   {
-    name: "Fees",
-    href: "/legals/fees",
+    name: "Fee",
+    href: "/legals/fee",
+    icon: <CircleDollarSignIcon className="w-5 h-5" />,
+  },
+  {
+    name: "Incentive Plan",
+    href: "/legals/incentive-plan",
     icon: <CircleDollarSignIcon className="w-5 h-5" />,
   },
 ];

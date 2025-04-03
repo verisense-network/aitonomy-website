@@ -9,9 +9,9 @@ import {
   Button,
 } from "@heroui/react";
 import { useCallback, useEffect } from "react";
-import { parseMarkdown } from "@/utils/markdown";
 import { welcomeDoc } from "./docs";
 import { useAppearanceStore } from "@/stores/appearance";
+import RenderMarkdown from "../markdown/RenderMarkdown";
 
 export default function WelcomeModal() {
   const {
@@ -48,12 +48,7 @@ export default function WelcomeModal() {
               How it works
             </ModalHeader>
             <ModalBody>
-              <div
-                className="prose max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{
-                  __html: parseMarkdown(welcomeDoc.trim()),
-                }}
-              ></div>
+              <RenderMarkdown content={welcomeDoc} />
             </ModalBody>
             <ModalFooter>
               <Button color="primary" onPress={onModalClose}>

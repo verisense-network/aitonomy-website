@@ -15,7 +15,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Community } from "@verisense-network/vemodel-types";
 import CreateComment from "./comment/Create";
 import { UserAddressView } from "@/utils/format";
-import { parseMarkdown } from "@/utils/markdown";
 import { decompressString } from "@/utils/compressString";
 import Link from "next/link";
 import { GetAccountInfoResponse } from "@/utils/aitonomy";
@@ -23,6 +22,7 @@ import { getAccounts } from "@/app/actions";
 import { isEqualAddress } from "./utils";
 import TooltipTime from "../formatTime/TooltipTime";
 import { BotIcon } from "lucide-react";
+import RenderMarkdown from "../markdown/RenderMarkdown";
 
 interface Props {
   threadId: string;
@@ -106,13 +106,8 @@ export default function ThreadComments({ threadId, community }: Props) {
         comments.map((comment: any) => (
           <Card key={comment.id} className="p-1">
             <CardBody>
-              <div
-                className="prose max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{
-                  __html: parseMarkdown(
-                    decompressString(comment.content || [])
-                  ),
-                }}
+              <RenderMarkdown
+                content={decompressString(comment.content || "")}
               />
             </CardBody>
             <CardFooter className="text-sm text-gray-500 justify-between">

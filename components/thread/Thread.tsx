@@ -1,7 +1,7 @@
 "use client";
 
 import useMeilisearch from "@/hooks/useMeilisearch";
-import { formatTimestamp, sleep } from "@/utils/tools";
+import { sleep } from "@/utils/tools";
 import {
   BreadcrumbItem,
   Breadcrumbs,
@@ -10,18 +10,17 @@ import {
   CardFooter,
   CardHeader,
   Spinner,
-  Tooltip,
   User,
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { UserAddressView } from "@/utils/format";
-import { parseMarkdown } from "@/utils/markdown";
 import { decompressString } from "@/utils/compressString";
 import Link from "next/link";
 import ShareButtons from "../share/ShareButtons";
 import { getAccountInfo } from "@/app/actions";
 import { GetAccountInfoResponse } from "@/utils/aitonomy";
 import TooltipTime from "../formatTime/TooltipTime";
+import RenderMarkdown from "../markdown/RenderMarkdown";
 
 export default function ThreadView({ threadId }: { threadId: string }) {
   const { data, isLoading, isValidating, forceUpdate } = useMeilisearch(
@@ -103,12 +102,7 @@ export default function ThreadView({ threadId }: { threadId: string }) {
               </div>
             </CardHeader>
             <CardBody>
-              <div
-                className="prose max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{
-                  __html: parseMarkdown(content),
-                }}
-              />
+              <RenderMarkdown content={content} />
             </CardBody>
             <CardFooter className="text-sm text-gray-500 justify-between">
               <div>

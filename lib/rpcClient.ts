@@ -1,7 +1,7 @@
 import { HttpProvider } from "@polkadot/rpc-provider";
 
 const provider = new HttpProvider(
-  `${process.env.NEXT_PUBLIC_AITONOMY_RPC_HOST}:${process.env.NEXT_PUBLIC_AITONOMY_RPC_PORT}`
+  `${process.env.AITONOMY_RPC_HOST}:${process.env.AITONOMY_RPC_PORT}`
 );
 
 export async function getRpcClient() {

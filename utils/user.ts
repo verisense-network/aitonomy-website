@@ -47,7 +47,11 @@ export async function updateAccountInfo(address: string) {
     });
   } catch (e: any) {
     console.error("updateAccountInfo error", e);
-    toast.error(`updateAccountInfo failed: ${e}`);
+    if (e?.message.includes("fetch failed")) {
+      toast.error("Failed to connect server, fetch account error");
+    } else {
+      toast.error(`updateAccountInfo failed: ${e}`);
+    }
   }
 }
 
