@@ -92,7 +92,7 @@ const CommunityModes = [
     value: "InviteOnly",
     label: (
       <div className="flex items-center gap-2 text-nowrap">
-        Invite Only <EarthLockIcon className="w-5 h-5" />
+        Invite Only <EarthLockIcon className="w-5 h-5 text-primary" />
       </div>
     ),
     description: "Only invited users can join",
@@ -117,7 +117,7 @@ export const CustomCommunityModeRadio = (props: RadioProps) => {
       classNames={{
         base: cn(
           "inline-flex m-0 bg-content2 hover:bg-content1 items-center justify-between",
-          "flex-row-reverse max-w-[300px] cursor-pointer rounded-lg gap-4 p-2 border-2 border-transparent",
+          "flex-row-reverse max-w-none cursor-pointer rounded-lg gap-4 p-2 border-2 border-transparent",
           "data-[selected=true]:border-primary data-[selected=true]:bg-content1"
         ),
       }}
@@ -166,8 +166,6 @@ export default function CommunityCreate({ onClose }: Props) {
 
   const llmName = watch("llm_name");
   const tokenNewIssue = watch("token.new_issue");
-  const tokenDecimals = watch("token.decimals");
-  const tokenTotalIssuance = watch("token.total_issuance");
 
   const [isLoadingLogo, setIsLoadingLogo] = useState(false);
   const { getRootProps, getInputProps } = useDropzone({
@@ -246,9 +244,9 @@ export default function CommunityCreate({ onClose }: Props) {
           token: {
             ...data.token,
             contract: data.token.contract ? ` ${data.token.contract}` : null,
+            total_issuance: data.token.total_issuance * 10 ** data.token.decimals,
           },
         };
-        console.log("payload", payload);
 
         const signature = await signPayload(payload, CreateCommunityPayload);
 
@@ -651,8 +649,8 @@ export default function CommunityCreate({ onClose }: Props) {
             render={({ field, fieldState }) => (
               <Input
                 {...field}
-                label="Contract"
-                placeholder="Enter your BEP-20 token contract address"
+                label="Import Your Contract of Issued Token"
+                placeholder="Only BEP-20 address for now"
                 labelPlacement="outside"
                 isInvalid={!!fieldState.error}
                 errorMessage={fieldState.error?.message}
@@ -703,10 +701,6 @@ export default function CommunityCreate({ onClose }: Props) {
             />
           )}
         />
-        <div className="text-xs">
-          <div>Actual Supply:</div>
-          <div>{tokenTotalIssuance / 10 ** tokenDecimals}</div>
-        </div>
       </div>
       <Accordion
         selectedKeys={llmAccordionSelectedKeys}
