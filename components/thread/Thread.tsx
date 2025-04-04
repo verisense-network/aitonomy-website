@@ -21,6 +21,7 @@ import { getAccountInfo } from "@/app/actions";
 import { GetAccountInfoResponse } from "@/utils/aitonomy";
 import TooltipTime from "../formatTime/TooltipTime";
 import RenderMarkdown from "../markdown/RenderMarkdown";
+import { HomeIcon } from "lucide-react";
 
 export default function ThreadView({ threadId }: { threadId: string }) {
   const { data, isLoading, isValidating, forceUpdate } = useMeilisearch(
@@ -80,9 +81,14 @@ export default function ThreadView({ threadId }: { threadId: string }) {
 
   return (
     <div className="w-full">
-      <Breadcrumbs className="m-2">
+      <Breadcrumbs className="m-2" itemClasses={{
+        item: "block max-w-62 truncate"
+      }}>
         <BreadcrumbItem>
-          <Link href="/">Home</Link>
+          <div className="flex items-center space-x-1">
+            <HomeIcon className="h-4 w-4" />
+            <Link href="/">Home</Link>
+          </div>
         </BreadcrumbItem>
         <BreadcrumbItem>
           <Link href={`/c/${threadData?.formattedId?.community}`}>
