@@ -1,6 +1,6 @@
 "use server";
 
-import uploadImageWithPostImages from "@/lib/uploadImage";
+import { uploadImageWithPostImages } from "@/lib/uploadImage";
 import {
   ActivateCommunityArg,
   activateCommunityRpc,
