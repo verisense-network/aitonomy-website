@@ -27,7 +27,7 @@ export function getCommunityModeIcon(mode: CommunityMode) {
   if (isCommunityMode(mode, "Public")) {
     return <EarthIcon className="w-5 h-5" />;
   } else if (isCommunityMode(mode, "InviteOnly")) {
-    return <EarthLockIcon className="w-5 h-5" />;
+    return <EarthLockIcon className="w-5 h-5 text-primary" />;
   } else if (isCommunityMode(mode, "PayToJoin")) {
     return <DollarSignIcon className="w-5 h-5" />;
   }

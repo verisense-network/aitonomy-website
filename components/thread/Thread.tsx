@@ -101,9 +101,9 @@ export default function ThreadView({ threadId }: { threadId: string }) {
         {isLoading && <Spinner />}
         {!isLoading && threadData && (
           <>
-            <CardHeader className="flex flex-col md:flex-row items-stretch space-y-2">
-              <h1 className="flex-1 text-xl font-bold">{threadData.title}</h1>
-              <div className="flex flex-1 justify-end">
+            <CardHeader className="flex flex-wrap justify-between space-y-2">
+              <h1 className="text-xl font-bold">{threadData.title}</h1>
+              <div className="flex justify-end">
                 <ShareButtons title={threadData.title} url={location.href} />
               </div>
             </CardHeader>

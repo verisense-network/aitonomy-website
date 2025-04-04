@@ -110,7 +110,7 @@ export default function ThreadComments({ threadId, community }: Props) {
                 content={decompressString(comment.content || "")}
               />
             </CardBody>
-            <CardFooter className="text-sm text-gray-500 justify-between">
+            <CardFooter className="flex flex-wrap items-center text-sm text-gray-500 justify-between">
               <div>
                 <Link
                   href={
