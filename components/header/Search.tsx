@@ -22,7 +22,7 @@ export default function HeaderSearch() {
     return threadsData?.hits?.map((hit: any) => {
       return {
         ...hit,
-        id: decodeId(hit.id),
+        decodeId: decodeId(hit.id),
       };
     });
   }, [threadsData]);
@@ -61,7 +61,7 @@ export default function HeaderSearch() {
           {threads.map((hit) => (
             <AutocompleteItem
               as={Link}
-              href={`/c/${hit.id.community}/${hit.id.thread}`}
+              href={`/c/${hit.decodeId.community}/${hit.decodeId.thread}`}
               key={hit.id}
             >
               {hit.title}
