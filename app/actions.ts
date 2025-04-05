@@ -38,7 +38,13 @@ if (!NUCLEUS_ID) {
   throw new Error("Nucleus ID is not defined");
 }
 
-export async function uploadImage(file: File) {
+interface UploadImageResponse {
+  success: boolean;
+  data: string;
+  message?: string;
+}
+
+export async function uploadImage(file: File): Promise<UploadImageResponse> {
   try {
     const res = await uploadImageWithGoogleStorage(file);
     return {
@@ -48,6 +54,7 @@ export async function uploadImage(file: File) {
   } catch (e: any) {
     console.error("uploadImage error", e);
     return {
+      data: "",
       success: false,
       message: e.message,
     };
