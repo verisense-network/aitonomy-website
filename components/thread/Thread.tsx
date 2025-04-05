@@ -1,6 +1,6 @@
 "use client";
 
-import useMeilisearch from "@/hooks/useMeilisearch";
+import { useMeilisearch } from "@/hooks/useMeilisearch";
 import { sleep } from "@/utils/tools";
 import {
   BreadcrumbItem,
@@ -81,9 +81,12 @@ export default function ThreadView({ threadId }: { threadId: string }) {
 
   return (
     <div className="w-full">
-      <Breadcrumbs className="m-2" itemClasses={{
-        item: "block max-w-62 truncate"
-      }}>
+      <Breadcrumbs
+        className="m-2"
+        itemClasses={{
+          item: "block max-w-62 truncate",
+        }}
+      >
         <BreadcrumbItem>
           <div className="flex items-center space-x-1">
             <HomeIcon className="h-4 w-4" />

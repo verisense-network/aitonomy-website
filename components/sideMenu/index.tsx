@@ -1,6 +1,6 @@
 "use client";
 
-import useMeilisearch from "@/hooks/useMeilisearch";
+import { useMeilisearch } from "@/hooks/useMeilisearch";
 import { SiGithub, SiX } from "@icons-pack/react-simple-icons";
 import {
   CircleDollarSignIcon,

@@ -1,5 +1,5 @@
 import { createThread, CreateThreadForm } from "@/app/actions";
-import useMeilisearch from "@/hooks/useMeilisearch";
+import { useMeilisearch } from "@/hooks/useMeilisearch";
 import { CreateThreadArg } from "@/utils/aitonomy";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";

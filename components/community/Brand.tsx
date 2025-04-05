@@ -1,6 +1,6 @@
 "use client";
 
-import useMeilisearch from "@/hooks/useMeilisearch";
+import { useMeilisearch } from "@/hooks/useMeilisearch";
 import { hexToLittleEndian, sleep } from "@/utils/tools";
 import {
   Avatar,

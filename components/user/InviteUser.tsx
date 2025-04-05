@@ -1,5 +1,5 @@
 import { getInviteFee, getInviteTickets } from "@/app/actions";
-import useMeilisearch from "@/hooks/useMeilisearch";
+import { useMeilisearch } from "@/hooks/useMeilisearch";
 import { InviteUserArg } from "@/utils/aitonomy";
 import { COMMUNITY_REGEX } from "@/utils/aitonomy/tools";
 import { debounce } from "@/utils/tools";

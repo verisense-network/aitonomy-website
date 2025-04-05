@@ -2,6 +2,7 @@ const api_url = process.env.NEXT_PUBLIC_MEILISEARCH_URL;
 
 import { MeiliSearch, SearchParams } from "meilisearch";
 import { decodeId } from "../thread";
+import { hexToLittleEndian } from "../tools";
 
 const client = new MeiliSearch({
   host: api_url!,
@@ -20,7 +21,12 @@ export async function meiliSearchFetcher(
   res.hits = res.hits.map((hit) => {
     return {
       ...hit,
-      ...(["thread", 'comment'].includes(index) 
+      ...(index === "community"
+        ? {
+            formattedId: hexToLittleEndian(hit.id),
+          }
+        : {}),
+      ...(["thread", "comment"].includes(index)
         ? {
             formattedId: decodeId(hit.id),
           }

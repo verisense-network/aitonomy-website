@@ -1,28 +1,16 @@
 "use client";
 
-import useMeilisearch from "@/hooks/useMeilisearch";
+import { useMeilisearchInfinite } from "@/hooks/useMeilisearch";
 import { decodeId } from "@/utils/thread";
 import { hexToLittleEndian } from "@/utils/tools";
-import {
-  Card,
-  CardBody,
-  CardFooter,
-  Pagination,
-  Spinner,
-  User,
-} from "@heroui/react";
+import { Button, Card, Spinner } from "@heroui/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { sort } from "radash";
 import { Community } from "@verisense-network/vemodel-types";
 import CreateComment from "./comment/Create";
-import { UserAddressView } from "@/utils/format";
-import { decompressString } from "@/utils/compressString";
-import Link from "next/link";
 import { GetAccountInfoResponse } from "@/utils/aitonomy";
 import { getAccounts } from "@/app/actions";
-import { isEqualAddress } from "./utils";
-import TooltipTime from "../formatTime/TooltipTime";
-import { BotIcon } from "lucide-react";
-import RenderMarkdown from "../markdown/RenderMarkdown";
+import Comment from "./comment/Comment";
 
 interface Props {
   threadId: string;
@@ -31,25 +19,44 @@ interface Props {
 
 export default function ThreadComments({ threadId, community }: Props) {
   const { thread, community: communityId } = decodeId(threadId);
-  const { data, isLoading, setParams, forceUpdate } = useMeilisearch(
-    "comment",
-    undefined,
-    {
+  const { data, isLoading, isValidating, hasMore, loadMore, forceUpdate } =
+    useMeilisearchInfinite("comment", undefined, {
       sort: ["created_time:desc"],
       filter: `id CONTAINS ${hexToLittleEndian(thread)}${hexToLittleEndian(
         communityId
       )}`,
-    }
-  );
+      hitsPerPage: 20,
+    });
 
-  const comments = useMemo(() => data?.hits || [], [data]);
+  const comments = useMemo(() => {
+    if (!data) return [];
 
-  const pageChange = useCallback(
-    (page: number) => {
-      setParams((prev) => ({ ...prev, page }));
-    },
-    [setParams]
-  );
+    const allComments = data.flatMap((page) => page.hits);
+
+    const groupedReplies: Record<string, Set<any>> = {};
+
+    allComments.forEach((comment) => {
+      if (comment.reply_to !== null) {
+        if (!groupedReplies[comment.reply_to]) {
+          groupedReplies[comment.reply_to] = new Set();
+        }
+        groupedReplies[comment.reply_to].add(comment);
+      }
+    });
+
+    const uniqueMainComments = allComments.filter(
+      (comment) => comment.reply_to === null
+    );
+
+    const output = uniqueMainComments.map((comment) => ({
+      ...comment,
+      replies: groupedReplies[comment.id]
+        ? Array.from(groupedReplies[comment.id])
+        : [],
+    }));
+
+    return sort(output, (comment: any) => -comment.created_time);
+  }, [data]);
 
   const onSuccessCreateCommunity = useCallback(() => {
     setTimeout(() => {
@@ -104,75 +111,26 @@ export default function ThreadComments({ threadId, community }: Props) {
       )}
       {!isLoading &&
         comments.map((comment: any) => (
-          <Card key={comment.id} className="p-1">
-            <CardBody>
-              <RenderMarkdown
-                content={decompressString(comment.content || "")}
-              />
-            </CardBody>
-            <CardFooter className="flex flex-wrap items-center text-sm text-gray-500 justify-between">
-              <div>
-                <Link
-                  href={
-                    isEqualAddress(comment?.author, community?.agent_pubkey)
-                      ? `/c/${decodeId(comment.id).community}`
-                      : `/u/${comment.author}`
-                  }
-                >
-                  <User
-                    className="cursor-pointer"
-                    avatarProps={{
-                      ...(isEqualAddress(
-                        comment?.author,
-                        community?.agent_pubkey
-                      )
-                        ? {
-                            icon: <BotIcon className="w-5 h-5" />,
-                          }
-                        : {
-                            name: viewCommentAccount(comment?.author),
-                          }),
-                    }}
-                    name={
-                      <UserAddressView
-                        agentPubkey={community?.agent_pubkey}
-                        address={comment?.author}
-                        name={viewCommentAccount(comment?.author)}
-                        classNames={{
-                          name: isEqualAddress(
-                            comment?.author,
-                            community?.agent_pubkey
-                          )
-                            ? "text-primary"
-                            : "",
-                        }}
-                      />
-                    }
-                  />
-                </Link>
-              </div>
-              <div className="flex space-x-2 items-center">
-                <div className="flex space-x-5 items-center">
-                  {isEqualAddress(comment?.author, community?.agent_pubkey) && (
-                    <span className="text-xs text-gray-500">
-                      AI-generated, for reference only
-                    </span>
-                  )}
-                  <TooltipTime time={comment.created_time} />
-                </div>
-              </div>
-            </CardFooter>
-          </Card>
+          <div key={comment.id}>
+            <Comment
+              key={comment.id}
+              comment={comment}
+              community={community}
+              viewCommentAccount={viewCommentAccount}
+            />
+          </div>
         ))}
-      <Pagination
-        className="mt-2"
-        isCompact
-        showControls
-        initialPage={1}
-        page={(data as any)?.page}
-        total={(data as any)?.totalPages || 1}
-        onChange={pageChange}
-      />
+      <div className="flex justify-center">
+        {hasMore && (
+          <Button
+            onPress={() => loadMore()}
+            color="primary"
+            isLoading={isLoading || isValidating}
+          >
+            Load More
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

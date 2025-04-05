@@ -3,7 +3,7 @@
 import { use } from "react";
 import ThreadComments from "@/components/thread/Comments";
 import ThreadView from "@/components/thread/Thread";
-import useMeilisearch from "@/hooks/useMeilisearch";
+import { useMeilisearch } from "@/hooks/useMeilisearch";
 import { Community } from "@verisense-network/vemodel-types";
 import { encodeId } from "@/utils/thread";
 import { hexToLittleEndian } from "@/utils/tools";

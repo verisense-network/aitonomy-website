@@ -1,6 +1,6 @@
 "use client";
 
-import useMeilisearch from "@/hooks/useMeilisearch";
+import { useMeilisearch } from "@/hooks/useMeilisearch";
 import { hexToLittleEndian } from "@/utils/tools";
 import { Card, CardBody, Avatar, Spinner } from "@heroui/react";
 import Link from "next/link";

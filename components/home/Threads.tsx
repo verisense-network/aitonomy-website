@@ -1,6 +1,6 @@
 "use client";
 
-import useMeilisearch from "@/hooks/useMeilisearch";
+import { useMeilisearch } from "@/hooks/useMeilisearch";
 import {
   Card,
   CardBody,
@@ -10,8 +10,7 @@ import {
   Spinner,
   User,
 } from "@heroui/react";
-import { useCallback, useMemo } from "react";
-import { decodeId } from "@/utils/thread";
+import { useCallback } from "react";
 import { hexToLittleEndian } from "@/utils/tools";
 import { twMerge } from "tailwind-merge";
 import CreateThread from "../community/thread/Create";
@@ -65,21 +64,6 @@ export default function Threads({
     filter,
   });
 
-  const threads = useMemo(
-    () =>
-      data?.hits.map((hit: any) => {
-        const { community: communityId, thread: threadNumber } = decodeId(
-          hit.id
-        );
-        return {
-          ...hit,
-          communityId,
-          threadNumber,
-        };
-      }) || [],
-    [data?.hits]
-  );
-
   const pageChange = useCallback(
     (page: number) => {
       setParams((prev) => ({ ...prev, page }));
@@ -99,17 +83,17 @@ export default function Threads({
             onSuccess={() => {}}
           />
         )}
-        {!isLoading && threads?.length === 0 && (
+        {!isLoading && data?.hits?.length === 0 && (
           <div className="p-2">
             <h1 className="text-xl">No threads found</h1>
           </div>
         )}
         <div>
-          {threads?.map((hit: any, index: number) => (
+          {data?.hits?.map((hit: any, index: number) => (
             <div key={hit.id}>
               <Card
                 as={Link}
-                href={`/c/${hit.communityId}/${hit.threadNumber}`}
+                href={`/c/${hit.formattedId.community}/${hit.formattedId.thread}`}
                 className="w-full p-2"
                 classNames={{
                   base: "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900",
@@ -137,7 +121,7 @@ export default function Threads({
                   />
                 </CardBody>
               </Card>
-              {index !== threads?.length - 1 && <Divider className="my-1" />}
+              {index !== data?.hits?.length - 1 && <Divider className="my-1" />}
             </div>
           ))}
         </div>

@@ -1,6 +1,5 @@
-import useMeilisearch from "@/hooks/useMeilisearch";
-import { decodeId } from "@/utils/thread";
-import { debounce, hexToLittleEndian } from "@/utils/tools";
+import { useMeilisearch } from "@/hooks/useMeilisearch";
+import { debounce } from "@/utils/tools";
 import {
   Autocomplete,
   AutocompleteItem,
@@ -8,38 +7,18 @@ import {
 } from "@heroui/react";
 import { SearchIcon } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 export default function HeaderSearch() {
   const [search, setSearch] = useState("");
 
-  const { data: threadsData } = useMeilisearch("thread", search, {
+  const { data: threads } = useMeilisearch("thread", search, {
     limit: 10,
   });
 
-  const threads = useMemo(() => {
-    if (!threadsData?.hits) return [];
-    return threadsData?.hits?.map((hit: any) => {
-      return {
-        ...hit,
-        decodeId: decodeId(hit.id),
-      };
-    });
-  }, [threadsData]);
-
-  const { data: communitiesData } = useMeilisearch("community", search, {
+  const { data: communities } = useMeilisearch("community", search, {
     limit: 10,
   });
-
-  const communities = useMemo(() => {
-    if (!communitiesData?.hits) return [];
-    return communitiesData?.hits?.map((hit: any) => {
-      return {
-        ...hit,
-        id: hexToLittleEndian(hit.id),
-      };
-    });
-  }, [communitiesData]);
 
   return (
     <div>
@@ -58,22 +37,30 @@ export default function HeaderSearch() {
         }}
       >
         <AutocompleteSection showDivider title="Threads">
-          {threads.map((hit) => (
-            <AutocompleteItem
-              as={Link}
-              href={`/c/${hit.decodeId.community}/${hit.decodeId.thread}`}
-              key={hit.id}
-            >
-              {hit.title}
-            </AutocompleteItem>
-          ))}
+          {threads
+            ? threads.hits?.map((hit) => (
+                <AutocompleteItem
+                  as={Link}
+                  href={`/c/${hit.formattedId.community}/${hit.formattedId.thread}`}
+                  key={hit.id}
+                >
+                  {hit.title}
+                </AutocompleteItem>
+              ))
+            : null}
         </AutocompleteSection>
         <AutocompleteSection showDivider title="Communities">
-          {communities?.map((hit) => (
-            <AutocompleteItem as={Link} href={`/c/${hit.id}`} key={hit.id}>
-              {hit.name}
-            </AutocompleteItem>
-          ))}
+          {communities
+            ? communities.hits?.map((hit) => (
+                <AutocompleteItem
+                  as={Link}
+                  href={`/c/${hit.formattedId}`}
+                  key={hit.id}
+                >
+                  {hit.name}
+                </AutocompleteItem>
+              ))
+            : null}
         </AutocompleteSection>
       </Autocomplete>
     </div>
