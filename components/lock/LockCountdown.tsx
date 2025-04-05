@@ -9,10 +9,9 @@ export default function LockCountdown({
   countdownTime: number;
 }) {
   const [isLocked, setIsLocked] = useState(true);
-  const time = dayjs
-    .unix(countdownTime || 0)
-    .add(3, "m")
-    .valueOf();
+  if (!countdownTime) return null;
+
+  const time = dayjs.unix(countdownTime).add(3, "m").valueOf();
 
   return (
     isLocked && (

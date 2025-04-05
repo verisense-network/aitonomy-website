@@ -67,8 +67,6 @@ export default function CreateComment({
         return;
       }
 
-      console.log(data);
-
       const toastId = toast.loading(
         "Posting, continue to complete in your wallet"
       );
