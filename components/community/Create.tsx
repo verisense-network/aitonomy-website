@@ -666,7 +666,7 @@ export default function CommunityCreate({ onClose }: Props) {
         )}
       </div>
       <div className="flex items-start gap-2 mt-3 w-full">
-        <Controller
+        {/* <Controller
           name="token.decimals"
           control={control}
           rules={{
@@ -691,7 +691,7 @@ export default function CommunityCreate({ onClose }: Props) {
               ))}
             </Select>
           )}
-        />
+        /> */}
         <Controller
           name="token.total_issuance"
           control={control}
@@ -702,16 +702,15 @@ export default function CommunityCreate({ onClose }: Props) {
                 return "Total supply cannot be negative";
               }
               const issuance = BigInt(value) * 10n ** BigInt(tokenDecimals);
-              const max = BigInt(10 ** 10);
-              if (issuance >= max) {
-                return "Total supply cannot exceed 10^10";
+              const max = BigInt(10 ** 9);
+              if (issuance > max) {
+                return `Total supply ${issuance} exceeds maximum ${max}`;
               }
               return true;
             },
           }}
           render={({ field, fieldState }) => (
             <NumberInput
-              className="w-5/3"
               label="Total Supply"
               labelPlacement="outside"
               placeholder="Enter your token total supply"
@@ -719,30 +718,9 @@ export default function CommunityCreate({ onClose }: Props) {
               errorMessage={fieldState.error?.message}
               value={Number(field.value)}
               onValueChange={field.onChange}
-              startContent={
-                <Tooltip
-                  content={
-                    <p>
-                      For BEP-20 tokens, the system typically recommends setting
-                      Decimals to 8 and Total Supply to 10. Enter the total
-                      amount to be issued, excluding the decimal part.
-                    </p>
-                  }
-                  classNames={{
-                    content: "w-60",
-                  }}
-                >
-                  <CircleHelpIcon />
-                </Tooltip>
-              }
-              endContent={
-                <span className="text-xs">
-                  10<sup>{tokenDecimals}</sup>
-                </span>
-              }
-              description="Enter the total amount to be issued, excluding the decimal part."
+              description="excluding the decimal part. decimal is 8 by default."
               minValue={1}
-              maxValue={10 ** tokenDecimals}
+              maxValue={10}
             />
           )}
         />
