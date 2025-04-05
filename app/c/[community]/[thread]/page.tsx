@@ -29,7 +29,10 @@ export default function ThreadPage({ params }: Props): React.ReactNode {
 
   return (
     <div className="w-full mx-auto py-4 space-y-6">
-      <ThreadView threadId={computedThreadId} />
+      <ThreadView
+        threadId={computedThreadId}
+        community={community as Community}
+      />
       <ThreadComments
         threadId={computedThreadId}
         community={community as Community}

@@ -22,8 +22,14 @@ import { GetAccountInfoResponse } from "@/utils/aitonomy";
 import TooltipTime from "../formatTime/TooltipTime";
 import RenderMarkdown from "../markdown/RenderMarkdown";
 import { HomeIcon } from "lucide-react";
+import { Community } from "@verisense-network/vemodel-types";
 
-export default function ThreadView({ threadId }: { threadId: string }) {
+interface ThreadViewProps {
+  threadId: string;
+  community: Community;
+}
+
+export default function ThreadView({ threadId, community }: ThreadViewProps) {
   const { data, isLoading, isValidating, forceUpdate } = useMeilisearch(
     "thread",
     undefined,
@@ -123,6 +129,7 @@ export default function ThreadView({ threadId }: { threadId: string }) {
                     }}
                     name={
                       <UserAddressView
+                        creator={community?.creator}
                         address={threadAccount?.address || threadData.author}
                         name={threadAccount?.alias || threadData.author}
                       />
