@@ -1,6 +1,6 @@
 "use server";
 
-import { uploadImageWithPostImages } from "@/lib/uploadImage";
+import { uploadImageWithGoogleStorage } from "@/lib/uploadImage";
 import {
   ActivateCommunityArg,
   activateCommunityRpc,
@@ -40,7 +40,7 @@ if (!NUCLEUS_ID) {
 
 export async function uploadImage(file: File) {
   try {
-    const res = await uploadImageWithPostImages(file);
+    const res = await uploadImageWithGoogleStorage(file);
     return {
       success: true,
       data: res,

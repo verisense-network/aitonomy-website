@@ -1,6 +1,7 @@
 import { Buffer } from "buffer";
 import storage from "./googleStorage";
 import { ImageUploadService } from "postimages-upload";
+import dayjs from "@/lib/dayjs";
 
 const service = new (ImageUploadService as any)(
   "postimages.org",
@@ -32,9 +33,9 @@ export async function uploadImageWithGoogleStorage(file: File) {
 
     const signedUrl = await bucketFile.getSignedUrl({
       action: "read",
-      expires: Date.now() + 3600 * 1000,
+      expires: dayjs().add(100, "year").valueOf(),
     });
-    return signedUrl;
+    return signedUrl[0];
   } catch (error) {
     console.error("error uploading image", error);
     throw new Error("failed to upload image");
