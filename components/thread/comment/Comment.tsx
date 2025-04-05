@@ -48,6 +48,7 @@ function Content({
               name={
                 <UserAddressView
                   agentPubkey={community?.agent_pubkey}
+                  creator={community?.creator}
                   address={comment?.author}
                   name={viewCommentAccount(comment?.author)}
                   classNames={{

@@ -82,14 +82,14 @@ export default function ThreadComments({ threadId, community }: Props) {
 
   const viewCommentAccount = useCallback(
     (address: string) => {
-      if (!address || !commentAccounts?.length || isLoading) return "";
+      if (!address) return "";
 
       const account = commentAccounts.find(
         (account) => account.address === address
       );
       return account?.alias || address;
     },
-    [commentAccounts, isLoading]
+    [commentAccounts]
   );
 
   return (

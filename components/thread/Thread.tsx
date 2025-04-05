@@ -123,7 +123,6 @@ export default function ThreadView({ threadId }: { threadId: string }) {
                     }}
                     name={
                       <UserAddressView
-                        agentPubkey={""}
                         address={threadAccount?.address || threadData.author}
                         name={threadAccount?.alias || threadData.author}
                       />

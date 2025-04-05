@@ -5,6 +5,7 @@ import { ethers } from "ethers";
 import { CHAIN } from "./chain";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { twMerge } from "tailwind-merge";
+import { ReactNode } from "react";
 
 interface AddressViewFormatProps {
   address: string;
@@ -29,6 +30,7 @@ export function AddressViewFormat({
 interface NamedAddressViewProps {
   address: string;
   name?: string;
+  nameSuffix?: ReactNode;
   classNames?: {
     name?: string;
     address?: string;
@@ -38,21 +40,24 @@ interface NamedAddressViewProps {
 export function NamedAddressView({
   address,
   name,
+  nameSuffix,
   classNames,
 }: NamedAddressViewProps) {
   return (
     <div className="space-x-2">
-      <span className={twMerge("font-semibold text-md", classNames?.name)}>
+      <span className={twMerge("text-xs", classNames?.name)}>
         {(name && (name.startsWith("0x") ? name.slice(0, 4) : name)) || ""}
       </span>
+      {nameSuffix}
       <AddressViewFormat className={classNames?.address} address={address} />
     </div>
   );
 }
 
 interface UserAddressViewProps {
-  agentPubkey: string;
   address: string;
+  agentPubkey?: string;
+  creator?: string;
   name?: string;
   classNames?: {
     name?: string;
@@ -61,13 +66,21 @@ interface UserAddressViewProps {
 }
 
 export function UserAddressView({
-  agentPubkey,
   address,
+  agentPubkey,
+  creator,
   name,
   classNames,
 }: UserAddressViewProps) {
-  return isEqualAddress(agentPubkey, address) ? (
+  return isEqualAddress(address, agentPubkey || "") ? (
     <NamedAddressView classNames={classNames} address={address} name="Agent" />
+  ) : isEqualAddress(address, creator || "") ? (
+    <NamedAddressView
+      classNames={classNames}
+      address={address}
+      name={name}
+      nameSuffix={<span className="text-xs text-primary/80">Creator</span>}
+    />
   ) : isYouAddress(address) ? (
     <NamedAddressView classNames={classNames} address={address} name="You" />
   ) : (
