@@ -49,7 +49,7 @@ export interface CreateCommunityArg {
   token: {
     name: string;
     symbol: string;
-    total_issuance: number;
+    total_issuance: bigint;
     decimals: number;
     new_issue: boolean;
     contract: string | null;

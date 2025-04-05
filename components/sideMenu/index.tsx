@@ -3,7 +3,6 @@
 import useMeilisearch from "@/hooks/useMeilisearch";
 import { SiGithub, SiX } from "@icons-pack/react-simple-icons";
 import {
-  BadgeDollarSignIcon,
   CircleDollarSignIcon,
   CircleHelpIcon,
   HeartHandshakeIcon,
@@ -11,9 +10,7 @@ import {
   PanelLeftOpenIcon,
   PanelRightOpenIcon,
   PlusIcon,
-  ShieldCheckIcon,
   TelescopeIcon,
-  TorusIcon,
 } from "lucide-react";
 import {
   Accordion,
@@ -38,7 +35,6 @@ import { useAppearanceStore } from "@/stores/appearance";
 import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import Learn from "../tour/Learn";
 
 const TopMenus = [
   { name: "Home", href: "/", icon: <HomeIcon className="w-5 h-5" /> },
@@ -49,15 +45,10 @@ const TopMenus = [
   },
 ];
 
-const Legals = [
+const SidebarMenus = [
   {
-    name: "Privacy Policy",
-    href: "/legals/privacy-policy",
-    icon: <ShieldCheckIcon className="w-5 h-5" />,
-  },
-  {
-    name: "Terms of Service",
-    href: "/legals/terms-of-service",
+    name: "Incentive Plan",
+    href: "/legals/incentive-plan",
     icon: <HeartHandshakeIcon className="w-5 h-5" />,
   },
   {
@@ -65,10 +56,16 @@ const Legals = [
     href: "/legals/fee",
     icon: <CircleDollarSignIcon className="w-5 h-5" />,
   },
+];
+
+const FooterLegals = [
   {
-    name: "Incentive Plan",
-    href: "/legals/incentive-plan",
-    icon: <BadgeDollarSignIcon className="w-5 h-5" />,
+    name: "Privacy Policy",
+    href: "/legals/privacy-policy",
+  },
+  {
+    name: "Terms of Service",
+    href: "/legals/terms-of-service",
   },
 ];
 
@@ -78,7 +75,6 @@ export default function SideMenu() {
   const { isLogin } = useUserStore();
   const { isMobile } = useAppearanceStore();
   const [createCommunityModal, setCreateCommunityModal] = useState(false);
-  const [learnModalIsOpen, setLearnModalIsOpen] = useState(false);
 
   const { data, isLoading } = useMeilisearch("community", undefined, {
     // filter: "status = 'Active'",
@@ -189,16 +185,6 @@ export default function SideMenu() {
             }}
           >
             <ListboxItem
-              key="tour"
-              startContent={<TorusIcon className="w-5 h-5" />}
-              onPress={() => setLearnModalIsOpen(true)}
-            >
-              <Learn
-                isOpen={learnModalIsOpen}
-                setIsOpen={setLearnModalIsOpen}
-              />
-            </ListboxItem>
-            <ListboxItem
               key="how-to-works"
               startContent={<CircleHelpIcon className="w-5 h-5" />}
               onPress={() => setWelcomeModalIsOpen(true)}
@@ -206,7 +192,7 @@ export default function SideMenu() {
               How it works
             </ListboxItem>
             {
-              Legals.map((it) => (
+              SidebarMenus.map((it) => (
                 <ListboxItem
                   as={Link}
                   key={it.name}
@@ -219,26 +205,39 @@ export default function SideMenu() {
               )) as any
             }
           </Listbox>
-          <div className="px-3 mt-2 text-zinc-400 hover:text-zinc-300">
-            <span className="text-xs">AItonomy.world 2025</span>
-          </div>
-          <div className="flex space-x-2 items-center px-3 mt-2 text-zinc-400 ">
-            <p className="text-xs">
-              Powered by{" "}
-              <Link
-                className="text-primary"
-                href="https://verisense.network/"
-                target="_blank"
-              >
-                Verisense
+          <div className="flex flex-col space-y-2 px-3 text-zinc-400">
+            <div className="flex text-xs space-x-2">
+              {FooterLegals.map((it) => (
+                <Link
+                  className="hover:text-zinc-300"
+                  key={it.name}
+                  href={it.href}
+                >
+                  {it.name}
+                </Link>
+              ))}
+            </div>
+            <div>
+              <span className="text-xs">AItonomy.world 2025</span>
+            </div>
+            <div className="flex space-x-2 items-center">
+              <p className="text-xs">
+                Powered by{" "}
+                <Link
+                  className="text-primary"
+                  href="https://verisense.network/"
+                  target="_blank"
+                >
+                  Verisense
+                </Link>
+              </p>
+              <Link href="https://x.com/veri_sense" target="_blank">
+                <SiX className="w-3 h-3" />
               </Link>
-            </p>
-            <Link href="https://x.com/veri_sense" target="_blank">
-              <SiX className="w-3 h-3" />
-            </Link>
-            <Link href="https://github.com/verisense-network" target="_blank">
-              <SiGithub className="w-3 h-3" />
-            </Link>
+              <Link href="https://github.com/verisense-network" target="_blank">
+                <SiGithub className="w-3 h-3" />
+              </Link>
+            </div>
           </div>
         </div>
         <Modal

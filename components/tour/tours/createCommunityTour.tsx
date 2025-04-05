@@ -15,7 +15,7 @@ export const createCommunityTour: LearnStep = {
     {
       selector: ".create-community-step2",
       position: "center",
-      content: "Enter form details and click Create Community",
+      content: "Enter the details and click Submit",
     },
   ],
 };

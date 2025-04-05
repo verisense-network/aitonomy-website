@@ -4,21 +4,20 @@ import LearnCard from "./LearnCard";
 
 interface Props {
   isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
+  onClose: () => void;
 }
 
-export default function Learn({ isOpen, setIsOpen }: Props) {
+export default function LearnModal({ isOpen, onClose }: Props) {
   const learnTours = [createCommunityTour];
 
   return (
     <>
-      <span>Learn</span>
       <Modal
         isOpen={isOpen}
         classNames={{
           body: "max-h-[85vh] overflow-y-auto md:max-h-[95vh]",
         }}
-        onClose={() => setIsOpen(false)}
+        onClose={() => onClose()}
       >
         <ModalContent>
           <ModalHeader>Learn</ModalHeader>
@@ -28,7 +27,7 @@ export default function Learn({ isOpen, setIsOpen }: Props) {
                 <LearnCard
                   key={tour.title}
                   {...tour}
-                  closeLearnModal={() => setIsOpen(false)}
+                  closeLearnModal={() => onClose()}
                 />
               ))}
             </div>

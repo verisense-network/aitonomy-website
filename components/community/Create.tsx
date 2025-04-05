@@ -68,8 +68,8 @@ const MOCKDATA: CreateCommunityForm = {
     image: null,
     name: "JOKE",
     symbol: "JOKE",
-    total_issuance: 10_000_000_000,
-    decimals: 2,
+    total_issuance: 10n,
+    decimals: 8,
     new_issue: true,
     contract: null,
   },
@@ -129,6 +129,8 @@ export const CustomCommunityModeRadio = (props: RadioProps) => {
 
 const inviteMinAmount = 0.02;
 
+const TokenDecimals = [8];
+
 export default function CommunityCreate({ onClose }: Props) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -153,8 +155,8 @@ export default function CommunityCreate({ onClose }: Props) {
           image: null,
           name: "",
           symbol: "",
-          total_issuance: 10_000_000_000,
-          decimals: 2,
+          total_issuance: 10n,
+          decimals: 8,
           new_issue: true,
           contract: null,
         },
@@ -166,6 +168,7 @@ export default function CommunityCreate({ onClose }: Props) {
 
   const llmName = watch("llm_name");
   const tokenNewIssue = watch("token.new_issue");
+  const tokenDecimals = watch("token.decimals");
 
   const [isLoadingLogo, setIsLoadingLogo] = useState(false);
   const { getRootProps, getInputProps } = useDropzone({
@@ -244,7 +247,9 @@ export default function CommunityCreate({ onClose }: Props) {
           token: {
             ...data.token,
             contract: data.token.contract ? ` ${data.token.contract}` : null,
-            total_issuance: data.token.total_issuance * 10 ** data.token.decimals,
+            total_issuance:
+              BigInt(data.token.total_issuance) *
+              10n ** BigInt(data.token.decimals),
           },
         };
 
@@ -598,7 +603,7 @@ export default function CommunityCreate({ onClose }: Props) {
           name="token.new_issue"
           control={control}
           render={({ field, fieldState }) => (
-            <Tooltip content="Issue new token currently only support BEP-20 token.">
+            <Tooltip content="Newly issued token in BEP-20 only for now.">
               <Switch
                 classNames={{
                   base: cn(
@@ -660,7 +665,7 @@ export default function CommunityCreate({ onClose }: Props) {
           />
         )}
       </div>
-      <div className="flex gap-2 mt-3 w-full">
+      <div className="flex items-start gap-2 mt-3 w-full">
         <Controller
           name="token.decimals"
           control={control}
@@ -668,17 +673,23 @@ export default function CommunityCreate({ onClose }: Props) {
             required: "Please enter a token decimals",
           }}
           render={({ field, fieldState }) => (
-            <NumberInput
-              className="w-5/2"
+            <Select
               label="Decimals"
+              placeholder="Enter your token decimals"
               labelPlacement="outside"
-              placeholder="Enter your token name"
-              isInvalid={!!fieldState.error}
-              errorMessage={fieldState.error?.message}
-              value={field.value}
-              onValueChange={field.onChange}
-              minValue={0}
-            />
+              itemType="number"
+              selectedKeys={[field.value.toString()]}
+              defaultSelectedKeys={[field.value.toString()]}
+              onSelectionChange={(selection) => {
+                field.onChange(Number(selection.currentKey));
+              }}
+            >
+              {TokenDecimals.map((decimal) => (
+                <SelectItem key={decimal} textValue={decimal.toString()}>
+                  {decimal.toString()}
+                </SelectItem>
+              ))}
+            </Select>
           )}
         />
         <Controller
@@ -686,18 +697,52 @@ export default function CommunityCreate({ onClose }: Props) {
           control={control}
           rules={{
             required: "Please enter a token total issuance",
+            validate: (value) => {
+              if (value < 0) {
+                return "Total supply cannot be negative";
+              }
+              const issuance = BigInt(value) * 10n ** BigInt(tokenDecimals);
+              const max = BigInt(10 ** 10);
+              if (issuance >= max) {
+                return "Total supply cannot exceed 10^10";
+              }
+              return true;
+            },
           }}
           render={({ field, fieldState }) => (
             <NumberInput
-              className="w-5/2"
+              className="w-5/3"
               label="Total Supply"
               labelPlacement="outside"
               placeholder="Enter your token total supply"
               isInvalid={!!fieldState.error}
               errorMessage={fieldState.error?.message}
-              value={field.value}
+              value={Number(field.value)}
               onValueChange={field.onChange}
-              minValue={0}
+              startContent={
+                <Tooltip
+                  content={
+                    <p>
+                      For BEP-20 tokens, the system typically recommends setting
+                      Decimals to 8 and Total Supply to 10. Enter the total
+                      amount to be issued, excluding the decimal part.
+                    </p>
+                  }
+                  classNames={{
+                    content: "w-60",
+                  }}
+                >
+                  <CircleHelpIcon />
+                </Tooltip>
+              }
+              endContent={
+                <span className="text-xs">
+                  10<sup>{tokenDecimals}</sup>
+                </span>
+              }
+              description="Enter the total amount to be issued, excluding the decimal part."
+              minValue={1}
+              maxValue={10 ** tokenDecimals}
             />
           )}
         />
@@ -710,7 +755,7 @@ export default function CommunityCreate({ onClose }: Props) {
         selectionMode="multiple"
         variant="light"
         itemClasses={{
-          content: "pb-4",
+          content: "pb-4 cursor-pointer",
         }}
         isCompact
         keepContentMounted
