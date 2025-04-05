@@ -1,18 +1,15 @@
 "use client";
 
-import { formatAddress } from "@/utils/tools";
+import { formatAddress, getAddressLink } from "@/utils/tools";
 import {
   Modal,
   ModalBody,
   ModalContent,
   ModalHeader,
-  Button,
   Avatar,
-  Listbox,
-  ListboxItem,
   Tooltip,
 } from "@heroui/react";
-import { useState, useCallback, useEffect } from "react";
+import Link from "next/link";
 
 interface TokenModalProps {
   isOpen: boolean;
@@ -44,7 +41,9 @@ export default function TokenModal({
     },
     {
       label: "Issuance",
-      value: community.token_info?.total_issuance,
+      value: community.token_info?.total_issuance
+        ? Number(community.token_info?.total_issuance).toLocaleString()
+        : "0",
     },
   ];
 
@@ -80,8 +79,10 @@ export default function TokenModal({
                     <div className="flex" key={it.label}>
                       <span className="mr-1 font-semibold">{it.label}:</span>
                       {it?.type === "address" ? (
-                        <Tooltip content={it.value}>
-                          {formatAddress(it.value)}
+                        <Tooltip content={it.value} placement="right">
+                          <Link href={getAddressLink(it.value)} target="_blank">
+                            {formatAddress(it.value)}
+                          </Link>
                         </Tooltip>
                       ) : (
                         it.value

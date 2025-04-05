@@ -13,13 +13,18 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { getRewards } from "@/app/actions";
 import { decodeRewards, Reward } from "@/utils/reward";
-import { extractWagmiErrorDetailMessage, formatAddress } from "@/utils/tools";
+import {
+  extractWagmiErrorDetailMessage,
+  formatAddress,
+  getAddressLink,
+} from "@/utils/tools";
 import { toast } from "react-toastify";
 import { ethers } from "ethers";
 import { readContract, writeContract } from "@wagmi/core";
 import { wagmiConfig } from "@/config/wagmi";
 import { useUser } from "@/hooks/useUser";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const TABLE_COLUMNS = [
   {
@@ -185,17 +190,31 @@ export default function Rewards({
                   cell = (
                     <div className="flex space-x-2 items-center">
                       <Tooltip content={item.agent_contract}>
-                        {formatAddress(item.agent_contract)}
+                        <Link
+                          href={getAddressLink(item.agent_contract)}
+                          target="_blank"
+                        >
+                          {formatAddress(item.agent_contract)}
+                        </Link>
                       </Tooltip>
                       <ArrowRight className="w-4 h-4" />
                       <Tooltip content={item.address}>
-                        {formatAddress(item.address)}
+                        <Link
+                          href={getAddressLink(item.address)}
+                          target="_blank"
+                        >
+                          {formatAddress(item.address)}
+                        </Link>
                       </Tooltip>
                     </div>
                   );
                 } else if (columnKey === "token_contract") {
                   cell = (
-                    <Tooltip content={cell}>{formatAddress(cell)}</Tooltip>
+                    <Tooltip content={cell}>
+                      <Link href={getAddressLink(cell)} target="_blank">
+                        {formatAddress(cell)}
+                      </Link>
+                    </Tooltip>
                   );
                 } else if (columnKey === "amount") {
                   cell = `${cell} ${item.token_symbol}`;
@@ -203,7 +222,7 @@ export default function Rewards({
                   if (!item.withdrawed) {
                     cell = (
                       <Button size="sm" onPress={() => receiveReward(item)}>
-                        Receive
+                        Claim
                       </Button>
                     );
                   }

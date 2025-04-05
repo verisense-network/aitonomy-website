@@ -1,4 +1,5 @@
 import dayjs from "@/lib/dayjs";
+import { CHAIN } from "./chain";
 
 export function stringToHex(str: string) {
   return Buffer.from(str, "utf-8").toString("hex");
@@ -99,4 +100,14 @@ export type BuildEnv = "test" | "prod";
 
 export function isBuildEnv(env: BuildEnv) {
   return process.env.NEXT_PUBLIC_BUILD_ENV === env;
+}
+
+export function getAddressLink(address: string) {
+  let link: string;
+  if (CHAIN === "BSC") {
+    link = `https://bscscan.com/address/${address}`;
+  } else {
+    link = `https://solscan.io/address/${address}`;
+  }
+  return link;
 }
