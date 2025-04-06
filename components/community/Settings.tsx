@@ -20,17 +20,18 @@ import {
 import {
   CommunityMode,
   registry,
-  SetModeArg,
+  SetModePayload,
 } from "@verisense-network/vemodel-types";
 import { formatAmount, VIEW_UNIT } from "@/utils/format";
 import { useAppearanceStore } from "@/stores/appearance";
-import { toast } from "react-toastify";
+import { Id, toast } from "react-toastify";
 import { signPayload } from "@/utils/aitonomy/sign";
+import { ethers } from "ethers";
 
 interface CommunitySettingsProps {
   isOpen: boolean;
   community?: any;
-  onSuccess: () => void;
+  onSuccess: (toastId: Id) => void;
   onClose: () => void;
   onOpenChange: () => void;
 }
@@ -43,12 +44,22 @@ export default function CommunitySettings({
   const { isMobile } = useAppearanceStore();
   const [currentCommunity, setCurrentCommunity] = useState(community);
 
+  const communityMode = getCommunityMode(
+    currentCommunity.mode
+  ) as keyof CommunityMode;
+
   const { control, handleSubmit } = useForm<SetModeForm>({
     defaultValues: {
       community: currentCommunity.name,
       mode: {
-        name: getCommunityMode(currentCommunity.mode) as keyof CommunityMode,
-        value: null,
+        name: communityMode,
+        value: currentCommunity.mode?.[communityMode]
+          ? Number(
+              ethers.formatEther(
+                currentCommunity.mode[communityMode].toString()
+              )
+            )
+          : null,
       },
     },
   });
@@ -72,8 +83,9 @@ export default function CommunitySettings({
           ),
         };
         console.log("payload", payload);
-        const signature = await signPayload(payload, SetModeArg);
+        const signature = await signPayload(payload, SetModePayload);
         const { success, message } = await setMode(payload, signature);
+
         if (!success) {
           toast.update(toastId, {
             render: message,
@@ -83,13 +95,7 @@ export default function CommunitySettings({
           });
           return;
         }
-        toast.update(toastId, {
-          render: "Community mode set successfully",
-          type: "success",
-          isLoading: false,
-          autoClose: 2000,
-        });
-        onSuccess();
+        onSuccess(toastId);
       } catch (e: any) {
         console.error("setting mode error", e);
         toast.update(toastId, {

@@ -96,7 +96,9 @@ export function formatReadableAmount(amount: string): string {
   if (CHAIN === "SOL") {
     return (Number(amount) / LAMPORTS_PER_SOL).toString();
   } else {
-    return ethers.formatEther(amount);
+    return ethers.formatEther(
+      typeof amount === "number" ? `${amount}` : amount
+    );
   }
 }
 

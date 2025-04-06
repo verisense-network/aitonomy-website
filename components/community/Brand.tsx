@@ -277,10 +277,21 @@ export default function CommunityBrand({ communityId }: Props) {
     toast.success("Join community successful");
   }, []);
 
-  const onCommunitySettingsSuccess = useCallback(() => {
-    communitySettingsDisclosure.onClose();
-    toast.success("Community settings successful");
-  }, [communitySettingsDisclosure]);
+  const onCommunitySettingsSuccess = useCallback(
+    (toastId: Id) => {
+      communitySettingsDisclosure.onClose();
+      toast.update(toastId, {
+        render: "Community settings successful",
+        type: "success",
+        isLoading: false,
+        autoClose: 2000,
+      });
+      setTimeout(() => {
+        forceUpdate();
+      }, 2000);
+    },
+    [communitySettingsDisclosure, forceUpdate]
+  );
 
   return (
     <>
@@ -468,7 +479,7 @@ export default function CommunityBrand({ communityId }: Props) {
           isOpen={communitySettingsDisclosure.isOpen}
           community={c}
           onClose={communitySettingsDisclosure.onClose}
-          onSuccess={() => onCommunitySettingsSuccess()}
+          onSuccess={onCommunitySettingsSuccess}
           onOpenChange={communitySettingsDisclosure.onOpenChange}
         />
       )}

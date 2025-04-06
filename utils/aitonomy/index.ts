@@ -809,6 +809,8 @@ export async function setModeRpc(
     ...signature,
     payload: args,
   };
+  console.log("rpcArgs", rpcArgs);
+
   const payload = new SetModeArg(registry, rpcArgs).toHex();
 
   try {
