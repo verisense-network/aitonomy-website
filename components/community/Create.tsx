@@ -171,6 +171,10 @@ export default function CommunityCreate({ onClose }: Props) {
 
   const onSubmit = useCallback(
     async (data: CreateCommunityForm) => {
+      if (data.mode.name === "PayToJoin" && !data.mode.value) {
+        toast.error("Please enter a valid invite amount");
+        return;
+      }
       const toastId = toast.loading(
         "Creating community continue to complete in your wallet"
       );
