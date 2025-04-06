@@ -51,6 +51,7 @@ export async function signPayload(
   messageBuf.set(payloadEncoded, nonceEncoded.length);
 
   const message = Buffer.from(messageBuf).toString("hex");
+  console.log("message", message);
 
   console.log("call sign");
 

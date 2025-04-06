@@ -18,6 +18,8 @@ import {
   RewardPayload,
   InviteUserArg,
   GenerateInviteTicketArg,
+  SetModeArg,
+  PaysFeeArg,
 } from "@verisense-network/vemodel-types";
 import {
   Result,
@@ -785,6 +787,98 @@ export async function getInviteTicketsRpc(
 
     const result = decoded.toBigInt();
     console.log("result", result);
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export interface SetModeArg {
+  community: string;
+  mode: Enum;
+}
+
+export async function setModeRpc(
+  nucleusId: string,
+  args: SetModeArg,
+  signature: Signature
+): Promise<string> {
+  console.log("args", args);
+  const rpcArgs = {
+    ...signature,
+    payload: args,
+  };
+  const payload = new SetModeArg(registry, rpcArgs).toHex();
+
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_post", [
+      nucleusId,
+      "set_mode",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * Result<(), String>
+     */
+    const ResultStruct = Result.with({
+      Ok: Null,
+      Err: Text,
+    });
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    if (decoded.isErr) {
+      throw new Error(decoded.toString());
+    }
+    const result = decoded.asOk.toHuman() as any;
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export interface PaysFeeArg {
+  community: string;
+  tx: string;
+}
+
+export async function payToJoinRpc(
+  nucleusId: string,
+  args: PaysFeeArg
+): Promise<string> {
+  console.log("args", args);
+  const rpcArgs = args;
+  const payload = new PaysFeeArg(registry, rpcArgs).toHex();
+
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_post", [
+      nucleusId,
+      "pay_to_join",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * Result<(), String>
+     */
+    const ResultStruct = Result.with({
+      Ok: Null,
+      Err: Text,
+    });
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    if (decoded.isErr) {
+      throw new Error(decoded.toString());
+    }
+    const result = decoded.asOk.toHuman() as any;
     return result;
   } catch (err: any) {
     console.error(err);

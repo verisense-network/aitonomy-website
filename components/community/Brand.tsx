@@ -12,6 +12,7 @@ import {
   Chip,
   Spinner,
   Tooltip,
+  useDisclosure,
 } from "@heroui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import PaymentModal from "../modal/Payment";
@@ -34,12 +35,14 @@ import {
   BadgeCheckIcon,
   CircleAlertIcon,
   CircleDollarSignIcon,
+  CogIcon,
   UserPlusIcon,
 } from "lucide-react";
 import TokenPanel from "./token/TokenPanel";
 import { CommunityMode } from "@verisense-network/vemodel-types";
 import useCanPost from "@/hooks/useCanPost";
 import JoinCommunity from "../user/JoinCommunity";
+import CommunitySettings from "./Settings";
 
 interface Props {
   communityId: string;
@@ -53,6 +56,7 @@ export default function CommunityBrand({ communityId }: Props) {
   const [isOpenInviteModal, setIsOpenInviteModal] = useState(false);
   const [isOpenJoinCommunityModal, setIsOpenJoinCommunityModal] =
     useState(false);
+  const communitySettingsDisclosure = useDisclosure();
   const { isLogin } = useUserStore();
   const { isYouAddress } = useUser();
   const { isMobile } = useAppearanceStore();
@@ -100,7 +104,8 @@ export default function CommunityBrand({ communityId }: Props) {
 
   const hasStoredSignature = c?.name === storedCommunity && storedSignature;
 
-  const shouldShowActivateCommunity = isLogin && isYouAddress(c?.creator);
+  const isCreator = isLogin && isYouAddress(c?.creator);
+  const shouldShowActivateCommunity = isLogin && isCreator;
 
   const shouldShowInviteUser =
     shouldShowActivateCommunity && isCommunityMode("InviteOnly");
@@ -272,6 +277,11 @@ export default function CommunityBrand({ communityId }: Props) {
     toast.success("Join community successful");
   }, []);
 
+  const onCommunitySettingsSuccess = useCallback(() => {
+    communitySettingsDisclosure.onClose();
+    toast.success("Community settings successful");
+  }, [communitySettingsDisclosure]);
+
   return (
     <>
       <Card className="m-2 p-2 md:p-4 min-h-40">
@@ -331,6 +341,16 @@ export default function CommunityBrand({ communityId }: Props) {
                         >
                           Join Community
                         </Button>
+                      )}
+                    {isLoaded &&
+                      isCreator &&
+                      isCommunityStatus(CommunityStatus.Active) && (
+                        <Tooltip content="Settings">
+                          <CogIcon
+                            className="ml-2 w-6 h-6 text-zinc-300"
+                            onClick={() => communitySettingsDisclosure.onOpen()}
+                          />
+                        </Tooltip>
                       )}
                   </h1>
                   {isLoaded &&
@@ -442,6 +462,15 @@ export default function CommunityBrand({ communityId }: Props) {
           community={c}
           onClose={() => setIsOpenJoinCommunityModal(false)}
           onSuccess={() => onJoinCommunitySuccess()}
+        />
+      )}
+      {communitySettingsDisclosure.isOpen && (
+        <CommunitySettings
+          isOpen={communitySettingsDisclosure.isOpen}
+          community={c}
+          onClose={communitySettingsDisclosure.onClose}
+          onSuccess={() => onCommunitySettingsSuccess()}
+          onOpenChange={communitySettingsDisclosure.onOpenChange}
         />
       )}
     </>

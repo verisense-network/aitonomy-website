@@ -25,6 +25,10 @@ import {
   setAliasRpc,
   checkPermissionRpc,
   getInviteFeeRpc,
+  setModeRpc,
+  SetModeArg,
+  payToJoinRpc,
+  PaysFeeArg,
 } from "@/utils/aitonomy";
 import { Signature } from "@/utils/aitonomy/sign";
 import { NUCLEUS_ID } from "@/utils/aitonomy/tools";
@@ -374,7 +378,7 @@ export async function getInviteFee() {
       data: res,
     };
   } catch (e: any) {
-    console.error("getCommunity error", e);
+    console.error("getInviteFee error", e);
     return {
       success: false,
       message: e.message,
@@ -392,7 +396,7 @@ export async function inviteUser(data: InviteUserArg, signature: Signature) {
       data: res,
     };
   } catch (e: any) {
-    console.error("getCommunity error", e);
+    console.error("inviteUser error", e);
     return {
       success: false,
       message: e.message,
@@ -426,7 +430,7 @@ export async function checkPermission(data: CheckPermissionParams) {
       data: res,
     };
   } catch (e: any) {
-    console.error("getBalances error", e);
+    console.error("checkPermission error", e);
     return {
       success: false,
       message: e.message,
@@ -452,7 +456,7 @@ export async function generateInviteTickets(data: GenerateInviteTicketParams) {
       data: res,
     };
   } catch (e: any) {
-    console.error("getCommunity error", e);
+    console.error("generateInviteTickets error", e);
     return {
       success: false,
       message: e.message,
@@ -486,7 +490,49 @@ export async function getInviteTickets(data: GetInviteTicketsParams) {
       data: res,
     };
   } catch (e: any) {
-    console.error("getBalances error", e);
+    console.error("getInviteTickets error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+export interface SetModeForm {
+  community: string;
+  mode: {
+    name: keyof CommunityMode;
+    value: number | null;
+  };
+}
+
+export async function setMode(form: SetModeArg, signature: Signature) {
+  try {
+    const res = await setModeRpc(NUCLEUS_ID, form, signature);
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("setMode error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+export async function payToJoin(form: PaysFeeArg) {
+  try {
+    const res = await payToJoinRpc(NUCLEUS_ID, form);
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("payToJoin error", e);
     return {
       success: false,
       message: e.message,

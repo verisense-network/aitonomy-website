@@ -12,13 +12,7 @@ import {
   registry,
 } from "@verisense-network/vemodel-types";
 import { isDev } from "@/utils/tools";
-import {
-  CircleDollarSignIcon,
-  CircleHelpIcon,
-  EarthIcon,
-  EarthLockIcon,
-  ImageUpIcon,
-} from "lucide-react";
+import { CircleHelpIcon, ImageUpIcon } from "lucide-react";
 import {
   Accordion,
   AccordionItem,
@@ -31,9 +25,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-  Radio,
   RadioGroup,
-  RadioProps,
   Select,
   SelectItem,
   Spinner,
@@ -41,13 +33,21 @@ import {
   Textarea,
   Tooltip,
 } from "@heroui/react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { useAppearanceStore } from "@/stores/appearance";
 import { formatAmount, VIEW_UNIT } from "@/utils/format";
+import {
+  CommunityModes,
+  CustomCommunityModeRadio,
+  InviteMinAmount,
+  TokenSupply,
+} from "./utils";
+import { readContract } from "@wagmi/core";
+import { wagmiConfig } from "@/config/wagmi";
 
 interface Props {
   onClose: () => void;
@@ -77,59 +77,6 @@ const MOCKDATA: CreateCommunityForm = {
   llm_api_host: null,
   llm_key: null,
 };
-
-const CommunityModes = [
-  {
-    value: "Public",
-    label: (
-      <div className="flex items-center gap-2 text-nowrap">
-        Public <EarthIcon className="w-5 h-5" />
-      </div>
-    ),
-    description: "Anyone can join",
-  },
-  {
-    value: "InviteOnly",
-    label: (
-      <div className="flex items-center gap-2 text-nowrap">
-        Invite Only <EarthLockIcon className="w-5 h-5 text-primary" />
-      </div>
-    ),
-    description: "Only invited users can join",
-  },
-  {
-    value: "PayToJoin",
-    label: (
-      <div className="flex items-center gap-2 text-nowrap">
-        Pay To Join <CircleDollarSignIcon className="w-5 h-5" />
-      </div>
-    ),
-    description: "Users must pay to join",
-  },
-];
-
-export const CustomCommunityModeRadio = (props: RadioProps) => {
-  const { children, ...otherProps } = props;
-
-  return (
-    <Radio
-      {...otherProps}
-      classNames={{
-        base: cn(
-          "inline-flex m-0 bg-content2 hover:bg-content1 items-center justify-between",
-          "flex-row-reverse max-w-none cursor-pointer rounded-lg gap-4 p-2 border-2 border-transparent",
-          "data-[selected=true]:border-primary data-[selected=true]:bg-content1"
-        ),
-      }}
-    >
-      {children}
-    </Radio>
-  );
-};
-
-const inviteMinAmount = 0.02;
-
-const TokenDecimals = [8];
 
 export default function CommunityCreate({ onClose }: Props) {
   const router = useRouter();
@@ -169,6 +116,7 @@ export default function CommunityCreate({ onClose }: Props) {
   const llmName = watch("llm_name");
   const tokenNewIssue = watch("token.new_issue");
   const tokenDecimals = watch("token.decimals");
+  const tokenContract = watch("token.contract");
 
   const [isLoadingLogo, setIsLoadingLogo] = useState(false);
   const { getRootProps, getInputProps } = useDropzone({
@@ -296,6 +244,74 @@ export default function CommunityCreate({ onClose }: Props) {
     [control, onClose, router]
   );
 
+  const readTokenContract = useCallback(
+    async (tokenContract: string) => {
+      if (!tokenContract) return;
+      const toastId = toast.loading("Fetching token information...");
+      try {
+        const abi = [
+          {
+            name: "totalSupply",
+            type: "function",
+            stateMutability: "view",
+            inputs: [],
+            outputs: [{ name: "", type: "uint256" }],
+          },
+          {
+            name: "decimals",
+            type: "function",
+            stateMutability: "view",
+            inputs: [],
+            outputs: [{ name: "", type: "uint8" }],
+          },
+        ];
+        const totalSupply = (await readContract(wagmiConfig, {
+          address: tokenContract as `0x${string}`,
+          abi: abi,
+          functionName: "totalSupply",
+        })) as bigint;
+        const decimals = (await readContract(wagmiConfig, {
+          address: tokenContract as `0x${string}`,
+          abi: abi,
+          functionName: "decimals",
+        })) as number;
+
+        setValue("token.decimals", decimals);
+        setValue("token.total_issuance", totalSupply / 10n ** BigInt(decimals));
+
+        toast.update(toastId, {
+          render: "get token information success",
+          type: "success",
+          isLoading: false,
+          autoClose: 1500,
+        });
+      } catch (error: any) {
+        console.error("Error fetching total supply:", error);
+        toast.update(toastId, {
+          render: `Failed: ${error?.message || error}`,
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
+      }
+    },
+    [setValue]
+  );
+
+  useEffect(() => {
+    if (!tokenContract) return;
+
+    readTokenContract(tokenContract);
+  }, [readTokenContract, tokenContract]);
+
+  useEffect(() => {
+    setValue("token.decimals", 8);
+    setValue("token.total_issuance", 10n);
+    if (tokenNewIssue) {
+      setValue("token.contract", null);
+    }
+  }, [tokenNewIssue, setValue]);
+
   const setMockData = useCallback(() => {
     reset(MOCKDATA);
   }, [reset]);
@@ -393,7 +409,7 @@ export default function CommunityCreate({ onClose }: Props) {
               onValueChange={(value) =>
                 field.onChange({
                   name: value,
-                  value: value === "PayToJoin" ? inviteMinAmount : null,
+                  value: value === "PayToJoin" ? InviteMinAmount : null,
                 })
               }
               isInvalid={!!fieldState.error}
@@ -489,7 +505,7 @@ export default function CommunityCreate({ onClose }: Props) {
               <Tooltip
                 content="There is no limit on the prompt length. The more detailed your prompts, the better the agent will perform. Please define your prompts carefully. It cannot be modified after it is launched."
                 classNames={{
-                  content: "w-60",
+                  content: "max-w-60",
                 }}
               >
                 <CircleHelpIcon className="w-5 h-5" />
@@ -666,32 +682,28 @@ export default function CommunityCreate({ onClose }: Props) {
         )}
       </div>
       <div className="flex items-start gap-2 mt-3 w-full">
-        {/* <Controller
-          name="token.decimals"
-          control={control}
-          rules={{
-            required: "Please enter a token decimals",
-          }}
-          render={({ field, fieldState }) => (
-            <Select
-              label="Decimals"
-              placeholder="Enter your token decimals"
-              labelPlacement="outside"
-              itemType="number"
-              selectedKeys={[field.value.toString()]}
-              defaultSelectedKeys={[field.value.toString()]}
-              onSelectionChange={(selection) => {
-                field.onChange(Number(selection.currentKey));
-              }}
-            >
-              {TokenDecimals.map((decimal) => (
-                <SelectItem key={decimal} textValue={decimal.toString()}>
-                  {decimal.toString()}
-                </SelectItem>
-              ))}
-            </Select>
-          )}
-        /> */}
+        {!tokenNewIssue && (
+          <Controller
+            name="token.decimals"
+            control={control}
+            rules={{
+              required: "Please enter a token decimals",
+            }}
+            render={({ field, fieldState }) => (
+              <NumberInput
+                label="Decimals"
+                className="w-2/5"
+                placeholder="Enter your token decimals"
+                labelPlacement="outside"
+                isInvalid={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
+                isDisabled
+                value={field.value}
+                onValueChange={field.onChange}
+              />
+            )}
+          />
+        )}
         <Controller
           name="token.total_issuance"
           control={control}
@@ -702,27 +714,63 @@ export default function CommunityCreate({ onClose }: Props) {
                 return "Total supply cannot be negative";
               }
               const issuance = BigInt(value) * 10n ** BigInt(tokenDecimals);
-              const max = BigInt(10 ** 9);
+              const max = BigInt(10 ** 10);
               if (issuance > max) {
                 return `Total supply ${issuance} exceeds maximum ${max}`;
               }
               return true;
             },
           }}
-          render={({ field, fieldState }) => (
-            <NumberInput
-              label="Total Supply"
-              labelPlacement="outside"
-              placeholder="Enter your token total supply"
-              isInvalid={!!fieldState.error}
-              errorMessage={fieldState.error?.message}
-              value={Number(field.value)}
-              onValueChange={field.onChange}
-              description="excluding the decimal part. decimal is 8 by default."
-              minValue={1}
-              maxValue={10}
-            />
-          )}
+          render={({ field, fieldState }) =>
+            tokenNewIssue ? (
+              <Select
+                label="Total Supply"
+                placeholder="Please select total supply"
+                labelPlacement="outside"
+                itemType="number"
+                selectedKeys={[field.value.toString()]}
+                defaultSelectedKeys={[field.value.toString()]}
+                startContent={
+                  <Tooltip
+                    classNames={{
+                      content: "max-w-60",
+                    }}
+                    content="The system sets Decimals to 8 by default and typically suggests a Total Supply of 10,000,000,000."
+                  >
+                    <CircleHelpIcon className="w-5 h-5" />
+                  </Tooltip>
+                }
+                isInvalid={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
+                onSelectionChange={(selection) => {
+                  field.onChange(Number(selection.currentKey));
+                }}
+              >
+                {TokenSupply.map((supply) => (
+                  <SelectItem
+                    key={supply}
+                    textValue={(10 ** supply).toLocaleString()}
+                  >
+                    {(10 ** supply).toLocaleString()}
+                  </SelectItem>
+                ))}
+              </Select>
+            ) : (
+              <NumberInput
+                label="Total Supply"
+                labelPlacement="outside"
+                className="w-3/5"
+                isDisabled
+                placeholder="Enter your token total supply"
+                isInvalid={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
+                value={Number(field.value)}
+                onValueChange={field.onChange}
+                minValue={1}
+                description="Enter the total supply of your token, excluding the decimal part."
+              />
+            )
+          }
         />
       </div>
       <Accordion
@@ -765,7 +813,7 @@ export default function CommunityCreate({ onClose }: Props) {
                   selectedKeys={[field.value]}
                   endContent={
                     <Tooltip content="currently only supports OpenAI">
-                      <CircleHelpIcon className="h-6 w-6" />
+                      <CircleHelpIcon className="h-5 w-5" />
                     </Tooltip>
                   }
                   disabledKeys={[LLmName.DeepSeek]}
