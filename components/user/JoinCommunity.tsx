@@ -110,7 +110,7 @@ export default function JoinCommunity({
         <ModalContent>
           <ModalHeader>Join Community</ModalHeader>
           <ModalBody>
-            {!isCommunityMode(currentCommunity?.mode, "InviteOnly") && (
+            {isCommunityMode(currentCommunity?.mode, "InviteOnly") && (
               <>
                 <div>
                   <p className="text-small">Community Creator Address</p>
@@ -129,7 +129,7 @@ export default function JoinCommunity({
                 </div>
               </>
             )}
-            {isCommunityMode(currentCommunity?.mode, "InviteOnly") && (
+            {isCommunityMode(currentCommunity?.mode, "PayToJoin") && (
               <>
                 <Form onSubmit={handleSubmit(onSubmit)}>
                   <div className="w-full">
