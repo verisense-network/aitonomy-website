@@ -66,6 +66,10 @@ export default function CommunitySettings({
 
   const onSubmit = useCallback(
     async (data: SetModeForm) => {
+      if (data.mode.name === "PayToJoin" && !data.mode.value) {
+        toast.error("Please enter a valid invite amount");
+        return;
+      }
       const toastId = toast.loading("Setting community mode");
       try {
         const payload = {
