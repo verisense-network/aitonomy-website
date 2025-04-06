@@ -50,6 +50,8 @@ export default function JoinCommunity({
       : 0
   );
 
+  console.log("paymentAmount", paymentAmount);
+
   const { control, setValue, handleSubmit } = useForm<PaysFeeArg>({
     defaultValues: {
       community: community?.name || "",
@@ -112,10 +114,12 @@ export default function JoinCommunity({
           <ModalBody>
             {isCommunityMode(currentCommunity?.mode, "InviteOnly") && (
               <>
-                <div>
-                  <p className="text-small">Community Creator Address</p>
+                <div className="flex items-center w-full space-x-2">
+                  <span className="text-small text-nowrap">
+                    Community Creator Address
+                  </span>
                   <div className="flex space-x-2 w-full">
-                    <div className="px-3 py-2 mt-2 text-sm bg-zinc-800 rounded-xl">
+                    <div className="px-3 py-2 text-sm bg-zinc-800 rounded-xl">
                       <Tooltip content={community.creator}>
                         <Link
                           href={getAddressLink(currentCommunity.creator)}

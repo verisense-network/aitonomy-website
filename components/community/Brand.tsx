@@ -337,7 +337,6 @@ export default function CommunityBrand({ communityId }: Props) {
                           size="sm"
                           color="primary"
                           onPress={openJoinCommunity}
-                          isDisabled={isCommunityMode("PayToJoin")}
                         >
                           Join Community
                         </Button>
