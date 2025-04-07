@@ -132,7 +132,7 @@ export default function TokenModal({
             agentBalance
               ? Number(
                   formatReadableAmount(
-                    agentBalance,
+                    agentBalance.toString(),
                     community.token_info?.decimals
                   )
                 ).toLocaleString()
@@ -155,7 +155,7 @@ export default function TokenModal({
             userBalance
               ? Number(
                   formatReadableAmount(
-                    userBalance,
+                    userBalance.toString(),
                     community.token_info?.decimals
                   )
                 ).toLocaleString()
@@ -179,6 +179,7 @@ export default function TokenModal({
         classNames={{
           body: "max-h-[85vh] overflow-y-auto md:max-h-[95vh]",
         }}
+        size="xl"
       >
         <ModalContent>
           {(onClose) => (
