@@ -203,9 +203,10 @@ export default function CommunityCreate({ onClose }: Props) {
           token: {
             ...data.token,
             contract: data.token.contract ? ` ${data.token.contract}` : null,
-            total_issuance:
-              BigInt(data.token.total_issuance) *
-              10n ** BigInt(data.token.decimals),
+            total_issuance: formatAmount(
+              data.token.total_issuance.toString(),
+              data.token.decimals
+            ),
           },
         };
 
