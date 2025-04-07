@@ -11,7 +11,7 @@ import {
   LLmName,
   registry,
 } from "@verisense-network/vemodel-types";
-import { isDev } from "@/utils/tools";
+import { BNBDecimal, isDev } from "@/utils/tools";
 import { CircleHelpIcon, ImageUpIcon } from "lucide-react";
 import {
   Accordion,
@@ -439,6 +439,9 @@ export default function CommunityCreate({ onClose }: Props) {
                 errorMessage={fieldState.error?.message}
                 value={field.value.value || 0}
                 minValue={0}
+                formatOptions={{
+                  maximumFractionDigits: BNBDecimal,
+                }}
                 onValueChange={(value) =>
                   field.onChange({
                     name: field.value.name,
@@ -704,6 +707,10 @@ export default function CommunityCreate({ onClose }: Props) {
                 isDisabled
                 value={field.value}
                 onValueChange={field.onChange}
+                formatOptions={{
+                  maximumFractionDigits: 0,
+                }}
+                minValue={0}
               />
             )}
           />
@@ -771,6 +778,9 @@ export default function CommunityCreate({ onClose }: Props) {
                 value={Number(field.value)}
                 onValueChange={field.onChange}
                 minValue={1}
+                formatOptions={{
+                  maximumFractionDigits: 0,
+                }}
                 description="Enter the total supply of your token, excluding the decimal part."
               />
             )

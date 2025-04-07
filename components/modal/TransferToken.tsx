@@ -10,23 +10,25 @@ import {
 } from "@heroui/react";
 import { useCallback, useMemo, useState } from "react";
 import { Id, toast } from "react-toastify";
-import { formatReadableAmount, VIEW_UNIT } from "@/utils/format";
-import { CHAIN } from "@/utils/chain";
+import { formatReadableAmount } from "@/utils/format";
+import { abiTransferFrom } from "@/utils/abis";
 import { isDev } from "@/utils/tools";
-import { sendTransaction } from "@wagmi/core";
+import { writeContract } from "@wagmi/core";
 import { wagmiConfig } from "@/config/wagmi";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  community: any;
   toAddress: string;
   amount: string;
-  onSuccess: (tx: string, toastId: Id) => void;
+  onSuccess: (success: boolean, toastId: Id) => void;
 }
 
-export default function PaymentModal({
+export default function TransferTokenModal({
   isOpen,
   onClose,
+  community,
   toAddress,
   amount,
   onSuccess,
@@ -50,15 +52,27 @@ export default function PaymentModal({
       console.log("toAddress", toAddress);
       console.log("readableAmount", readableAmount);
 
-      const signTx = await sendTransaction(wagmiConfig, {
-        to: toAddress as `0x${string}`,
-        value: BigInt(amount),
-      });
+      const tokenContract = community?.token_info?.contract;
+      console.log(
+        "tokenContract",
+        tokenContract,
+        fromAddress,
+        amount,
+        toAddress
+      );
 
-      console.log("signTx", signTx);
+      const success = (await writeContract(wagmiConfig, {
+        abi: abiTransferFrom,
+        functionName: "transferFrom",
+        address: tokenContract,
+        args: [
+          fromAddress as `0x${string}`,
+          toAddress as `0x${string}`,
+          BigInt(amount),
+        ],
+      })) as unknown as boolean;
 
-      const signatureHex = CHAIN === "SOL" ? "" : signTx;
-      onSuccess(signatureHex, toastId);
+      onSuccess(success, toastId);
       setIsLoading(false);
     } catch (e: any) {
       console.error("Error paying", e);
@@ -70,11 +84,16 @@ export default function PaymentModal({
         autoClose: 3000,
       });
     }
-  }, [toAddress, amount, onSuccess]);
+  }, [
+    amount,
+    toAddress,
+    community?.token_info?.contract,
+    fromAddress,
+    onSuccess,
+  ]);
 
   const mockPayment = useCallback(() => {
-    const signatureHex = `0xc712feacbd7672e3d8f4b2ff4d8c4484747e9fa2730614ddc97dc2ce9870538a`;
-    onSuccess(signatureHex, 1);
+    onSuccess(true, 1);
   }, [onSuccess]);
 
   const listData = useMemo(() => {
@@ -89,10 +108,12 @@ export default function PaymentModal({
       },
       {
         label: "Amount",
-        value: `${amount ? formatReadableAmount(amount) : ""} ${VIEW_UNIT}`,
+        value: `${amount ? formatReadableAmount(amount) : ""} ${
+          community?.token_info?.symbol
+        }`,
       },
     ];
-  }, [fromAddress, toAddress, amount]);
+  }, [fromAddress, toAddress, amount, community?.token_info?.symbol]);
 
   return (
     <Modal
@@ -105,7 +126,7 @@ export default function PaymentModal({
       <ModalContent>
         {(onClose) => (
           <>
-            <ModalHeader>Transaction</ModalHeader>
+            <ModalHeader>Transfer Token</ModalHeader>
             <ModalBody>
               <Card>
                 <CardBody>
@@ -126,7 +147,7 @@ export default function PaymentModal({
                 disabled={isLoading}
                 isLoading={isLoading}
               >
-                Payment
+                Transfer
               </Button>
               {isDev && <Button onPress={mockPayment}>Mock</Button>}
             </ModalBody>
