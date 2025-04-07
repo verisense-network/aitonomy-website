@@ -54,6 +54,9 @@ interface Props {
   onClose: () => void;
 }
 
+const defaultTokenIssuance = 10_000_000_000n;
+const defaultTokenDecimals = 8;
+
 const MOCKDATA: CreateCommunityForm = {
   name: "JOKE",
   slug: "推翻人类暴政，地球属于三体！",
@@ -69,8 +72,8 @@ const MOCKDATA: CreateCommunityForm = {
     image: null,
     name: "JOKE",
     symbol: "JOKE",
-    total_issuance: 10n,
-    decimals: 8,
+    total_issuance: defaultTokenIssuance,
+    decimals: defaultTokenDecimals,
     new_issue: true,
     contract: null,
   },
@@ -103,8 +106,8 @@ export default function CommunityCreate({ onClose }: Props) {
           image: null,
           name: "",
           symbol: "",
-          total_issuance: 10n,
-          decimals: 8,
+          total_issuance: defaultTokenIssuance,
+          decimals: defaultTokenDecimals,
           new_issue: true,
           contract: null,
         },
@@ -206,6 +209,8 @@ export default function CommunityCreate({ onClose }: Props) {
           },
         };
 
+        console.log("payload", payload);
+
         const signature = await signPayload(payload, CreateCommunityPayload);
 
         const {
@@ -294,8 +299,8 @@ export default function CommunityCreate({ onClose }: Props) {
   }, [readTokenContract, tokenContract]);
 
   useEffect(() => {
-    setValue("token.decimals", 8);
-    setValue("token.total_issuance", 10n);
+    setValue("token.decimals", defaultTokenDecimals);
+    setValue("token.total_issuance", defaultTokenIssuance);
     if (tokenNewIssue) {
       setValue("token.contract", null);
     }
@@ -710,7 +715,7 @@ export default function CommunityCreate({ onClose }: Props) {
                 return "Total supply cannot be negative";
               }
               const issuance = BigInt(value) * 10n ** BigInt(tokenDecimals);
-              const max = BigInt(10 ** 10);
+              const max = BigInt(2 ** 64);
               if (issuance > max) {
                 return `Total supply ${issuance} exceeds maximum ${max}`;
               }
@@ -742,14 +747,17 @@ export default function CommunityCreate({ onClose }: Props) {
                   field.onChange(Number(selection.currentKey));
                 }}
               >
-                {TokenSupply.map((supply) => (
-                  <SelectItem
-                    key={supply}
-                    textValue={(10 ** supply).toLocaleString()}
-                  >
-                    {(10 ** supply).toLocaleString()}
-                  </SelectItem>
-                ))}
+                {TokenSupply.map((supply) => {
+                  const key = 10n ** BigInt(supply);
+                  return (
+                    <SelectItem
+                      key={key.toString()}
+                      textValue={key.toLocaleString()}
+                    >
+                      {key.toLocaleString()}
+                    </SelectItem>
+                  );
+                })}
               </Select>
             ) : (
               <NumberInput
@@ -786,7 +794,7 @@ export default function CommunityCreate({ onClose }: Props) {
         keepContentMounted
       >
         <AccordionItem key="llm" aria-label="LLM" title="LLM">
-          <div className="flex grid grid-cols-1 gap-2 w-full">
+          <div className="grid grid-cols-1 gap-2 w-full">
             <Controller
               name="llm_name"
               control={control}
