@@ -27,6 +27,7 @@ import { useAppearanceStore } from "@/stores/appearance";
 import { Id, toast } from "react-toastify";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { ethers } from "ethers";
+import { BNBDecimal } from "@/utils/tools";
 
 interface CommunitySettingsProps {
   isOpen: boolean;
@@ -170,6 +171,9 @@ export default function CommunitySettings({
                         errorMessage={fieldState.error?.message}
                         value={field.value.value || 0}
                         minValue={0}
+                        formatOptions={{
+                          maximumFractionDigits: BNBDecimal,
+                        }}
                         onValueChange={(value) =>
                           field.onChange({
                             name: field.value.name,

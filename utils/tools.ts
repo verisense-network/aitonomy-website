@@ -111,3 +111,5 @@ export function getAddressLink(address: string) {
   }
   return link;
 }
+
+export const BNBDecimal = 18;

@@ -156,6 +156,9 @@ export default function BuyInviteCodeForm({
                 onValueChange={field.onChange}
                 maxValue={1000000}
                 minValue={1}
+                formatOptions={{
+                  maximumFractionDigits: 0,
+                }}
                 isRequired
               />
             </div>
