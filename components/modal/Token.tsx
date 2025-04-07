@@ -52,7 +52,7 @@ export default function TokenModal({
     abi: abiBalanceOf,
     address: community?.token_info?.contract,
     functionName: "balanceOf",
-    args: [userAddress],
+    args: [userAddress as `0x${string}`],
   });
 
   useEffect(() => {
@@ -122,7 +122,7 @@ export default function TokenModal({
             agentBalance
               ? Number(
                   ethers.formatUnits(
-                    agentBalance as number,
+                    agentBalance,
                     community.token_info?.decimals
                   )
                 ).toLocaleString()
@@ -145,7 +145,7 @@ export default function TokenModal({
             userBalance
               ? Number(
                   ethers.formatUnits(
-                    userBalance as number,
+                    userBalance,
                     community.token_info?.decimals
                   )
                 ).toLocaleString()
