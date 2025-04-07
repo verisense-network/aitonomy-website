@@ -95,8 +95,8 @@ export default function TokenModal({
           label: "Total Issuance",
           value: community.token_info?.total_issuance
             ? Number(
-                ethers.formatUnits(
-                  community.token_info?.total_issuance,
+                formatReadableAmount(
+                  community.token_info?.total_issuance?.toString(),
                   community.token_info?.decimals
                 )
               ).toLocaleString()
@@ -117,12 +117,22 @@ export default function TokenModal({
           type: "address",
         },
         {
+          label: "Agent Address",
+          value: community.agent_pubkey,
+          type: "address",
+        },
+        {
+          label: "Agent Creator",
+          value: community.creator,
+          type: "address",
+        },
+        {
           label: "Agent Balance",
           value: `${
             agentBalance
               ? Number(
-                  ethers.formatUnits(
-                    agentBalance,
+                  formatReadableAmount(
+                    agentBalance.toString(),
                     community.token_info?.decimals
                   )
                 ).toLocaleString()
@@ -144,8 +154,8 @@ export default function TokenModal({
           value: `${
             userBalance
               ? Number(
-                  ethers.formatUnits(
-                    userBalance,
+                  formatReadableAmount(
+                    userBalance.toString(),
                     community.token_info?.decimals
                   )
                 ).toLocaleString()
@@ -169,6 +179,7 @@ export default function TokenModal({
         classNames={{
           body: "max-h-[85vh] overflow-y-auto md:max-h-[95vh]",
         }}
+        size="xl"
       >
         <ModalContent>
           {(onClose) => (

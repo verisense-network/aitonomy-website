@@ -54,8 +54,8 @@ importers:
         specifier: ^5.69.0
         version: 5.69.0(react@19.0.0)
       '@verisense-network/vemodel-types':
-        specifier: ^1.0.12
-        version: 1.0.12
+        specifier: ^1.0.13
+        version: 1.0.13
       '@wagmi/core':
         specifier: ^2.16.7
         version: 2.16.7(@tanstack/query-core@5.69.0)(@types/react@19.0.9)(immer@10.1.1)(react@19.0.0)(typescript@5.7.3)(use-sync-external-store@1.4.0(react@19.0.0))(viem@2.23.11(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10))
@@ -2930,8 +2930,8 @@ packages:
     peerDependencies:
       '@vanilla-extract/css': ^1.0.0
 
-  '@verisense-network/vemodel-types@1.0.12':
-    resolution: {integrity: sha512-qZb5wDlbfbKoDsVcu17/Cw0wbB0N17bF4EJi4f6fpnScaHWbCOsV7VGb99eu1nAH6Gv6RbPheF/acAaLR2Tt+g==}
+  '@verisense-network/vemodel-types@1.0.13':
+    resolution: {integrity: sha512-dG32Kxvpw0GqMyVVfHUxYhpylZQ58pjkGDJhCJPnJbSF6rxz4FUtDSyBYVm6+27sXeB6kg4ornaknhLzMJx3/g==}
 
   '@wagmi/connectors@5.7.11':
     resolution: {integrity: sha512-vJWOXMeYWmczvlsEZHq52yOoC2qu5kU8Saj6Bo+BtyfYcX1tJODZTKed3TMIoKhUx0W3vna1UIwG7GskmxGKKA==}
@@ -10538,7 +10538,7 @@ snapshots:
     dependencies:
       '@vanilla-extract/css': 1.15.5
 
-  '@verisense-network/vemodel-types@1.0.12':
+  '@verisense-network/vemodel-types@1.0.13':
     dependencies:
       '@polkadot/types': 15.9.1
       '@polkadot/types-codec': 15.9.1

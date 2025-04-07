@@ -203,9 +203,10 @@ export default function CommunityCreate({ onClose }: Props) {
           token: {
             ...data.token,
             contract: data.token.contract ? ` ${data.token.contract}` : null,
-            total_issuance:
-              BigInt(data.token.total_issuance) *
-              10n ** BigInt(data.token.decimals),
+            total_issuance: formatAmount(
+              data.token.total_issuance.toString(),
+              data.token.decimals
+            ),
           },
         };
 
@@ -715,7 +716,8 @@ export default function CommunityCreate({ onClose }: Props) {
                 return "Total supply cannot be negative";
               }
               const issuance = BigInt(value) * 10n ** BigInt(tokenDecimals);
-              const max = BigInt(2 ** 64);
+              const maxU128 = BigInt(2) ** BigInt(128) - BigInt(1);
+              const max = maxU128;
               if (issuance > max) {
                 return `Total supply ${issuance} exceeds maximum ${max}`;
               }
