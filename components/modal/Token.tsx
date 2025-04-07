@@ -95,8 +95,8 @@ export default function TokenModal({
           label: "Total Issuance",
           value: community.token_info?.total_issuance
             ? Number(
-                ethers.formatUnits(
-                  community.token_info?.total_issuance,
+                formatReadableAmount(
+                  community.token_info?.total_issuance?.toString(),
                   community.token_info?.decimals
                 )
               ).toLocaleString()
@@ -121,7 +121,7 @@ export default function TokenModal({
           value: `${
             agentBalance
               ? Number(
-                  ethers.formatUnits(
+                  formatReadableAmount(
                     agentBalance,
                     community.token_info?.decimals
                   )
@@ -144,7 +144,7 @@ export default function TokenModal({
           value: `${
             userBalance
               ? Number(
-                  ethers.formatUnits(
+                  formatReadableAmount(
                     userBalance,
                     community.token_info?.decimals
                   )
