@@ -57,6 +57,7 @@ export default function TransferTokenModal({
         args: [toAddress as `0x${string}`, BigInt(amount)],
       });
       const hash = await writeContract(wagmiConfig, request);
+      console.log("hash", hash);
 
       onSuccess(!!hash, toastId);
       setIsLoading(false);

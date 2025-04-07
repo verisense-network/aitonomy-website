@@ -117,6 +117,16 @@ export default function TokenModal({
           type: "address",
         },
         {
+          label: "Agent Address",
+          value: community.agent_pubkey,
+          type: "address",
+        },
+        {
+          label: "Agent Creator",
+          value: community.creator,
+          type: "address",
+        },
+        {
           label: "Agent Balance",
           value: `${
             agentBalance
