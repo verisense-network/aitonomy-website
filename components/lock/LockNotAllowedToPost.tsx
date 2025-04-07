@@ -35,14 +35,16 @@ export default function LockNotAllowedToPost({
                 ),
                 PayToJoin: (
                   <>
-                    This is a pay-to-join community. <br /> Need{" "}
+                    This is a pay-to-join community as required by the creator.
+                    <br />
+                    Please pay the membership fee{" "}
                     <Link
                       className="text-primary"
                       href={`/c/${hexToLittleEndian(community?.id)}`}
                     >
-                      to pay
-                    </Link>{" "}
-                    before joining.
+                      to join
+                    </Link>
+                    .
                   </>
                 ),
               }[communityMode]

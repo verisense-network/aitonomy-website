@@ -67,7 +67,7 @@ export default function CommunitySettings({
   const onSubmit = useCallback(
     async (data: SetModeForm) => {
       if (data.mode.name === "PayToJoin" && !data.mode.value) {
-        toast.error("Please enter a valid invite amount");
+        toast.error("Please enter a valid membership fee");
         return;
       }
       const toastId = toast.loading("Setting community mode");
@@ -160,9 +160,9 @@ export default function CommunitySettings({
                     </RadioGroup>
                     {field.value.name === "PayToJoin" && (
                       <NumberInput
-                        label="Invite Amount"
+                        label="Membership Fee"
                         labelPlacement="outside"
-                        placeholder="Enter invite amount"
+                        placeholder="Enter membership fee"
                         endContent={
                           <span className="text-gray-500">{VIEW_UNIT}</span>
                         }
