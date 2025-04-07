@@ -11,9 +11,9 @@ import {
 import { useCallback, useMemo, useState } from "react";
 import { Id, toast } from "react-toastify";
 import { formatReadableAmount } from "@/utils/format";
-import { abiTransferFrom } from "@/utils/abis";
+import { abiTransfer } from "@/utils/abis";
 import { isDev } from "@/utils/tools";
-import { writeContract } from "@wagmi/core";
+import { simulateContract, writeContract } from "@wagmi/core";
 import { wagmiConfig } from "@/config/wagmi";
 
 interface Props {
@@ -48,31 +48,17 @@ export default function TransferTokenModal({
     );
     try {
       setIsLoading(true);
-      const readableAmount = formatReadableAmount(amount);
-      console.log("toAddress", toAddress);
-      console.log("readableAmount", readableAmount);
-
       const tokenContract = community?.token_info?.contract;
-      console.log(
-        "tokenContract",
-        tokenContract,
-        fromAddress,
-        amount,
-        toAddress
-      );
 
-      const success = (await writeContract(wagmiConfig, {
-        abi: abiTransferFrom,
-        functionName: "transferFrom",
+      const { request } = await simulateContract(wagmiConfig, {
+        abi: abiTransfer,
         address: tokenContract,
-        args: [
-          fromAddress as `0x${string}`,
-          toAddress as `0x${string}`,
-          BigInt(amount),
-        ],
-      })) as unknown as boolean;
+        functionName: "transfer",
+        args: [toAddress as `0x${string}`, BigInt(amount)],
+      });
+      const hash = await writeContract(wagmiConfig, request);
 
-      onSuccess(success, toastId);
+      onSuccess(!!hash, toastId);
       setIsLoading(false);
     } catch (e: any) {
       console.error("Error paying", e);
@@ -84,13 +70,7 @@ export default function TransferTokenModal({
         autoClose: 3000,
       });
     }
-  }, [
-    amount,
-    toAddress,
-    community?.token_info?.contract,
-    fromAddress,
-    onSuccess,
-  ]);
+  }, [amount, toAddress, community?.token_info?.contract, onSuccess]);
 
   const mockPayment = useCallback(() => {
     onSuccess(true, 1);
@@ -108,12 +88,14 @@ export default function TransferTokenModal({
       },
       {
         label: "Amount",
-        value: `${amount ? formatReadableAmount(amount) : ""} ${
-          community?.token_info?.symbol
-        }`,
+        value: `${
+          amount
+            ? formatReadableAmount(amount, community?.token_info?.decimals)
+            : ""
+        } ${community?.token_info?.symbol}`,
       },
     ];
-  }, [fromAddress, toAddress, amount, community?.token_info?.symbol]);
+  }, [fromAddress, toAddress, amount, community?.token_info]);
 
   return (
     <Modal

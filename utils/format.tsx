@@ -90,24 +90,33 @@ export function UserAddressView({
 
 export const VIEW_UNIT = CHAIN === "SOL" ? "SOL" : CHAIN === "BSC" ? "BNB" : "";
 
-export function formatReadableAmount(amount: string): string {
+export function formatReadableAmount(
+  amount: string | number,
+  decimal?: number
+): string {
   if (!amount || Number.isNaN(Number(amount))) return "";
-
+  const amt = typeof amount === "number" ? `${amount}` : amount;
   if (CHAIN === "SOL") {
-    return (Number(amount) / LAMPORTS_PER_SOL).toString();
+    return (Number(amt) / LAMPORTS_PER_SOL).toString();
   } else {
-    return ethers.formatEther(
-      typeof amount === "number" ? `${amount}` : amount
-    );
+    return typeof decimal === "number"
+      ? ethers.formatUnits(amt, decimal)
+      : ethers.formatEther(amt);
   }
 }
 
-export function formatAmount(amount: string | number): bigint {
+export function formatAmount(
+  amount: string | number,
+  decimal?: number
+): bigint {
   if (!amount || Number.isNaN(Number(amount))) return 0n;
 
+  const amt = typeof amount === "number" ? `${amount}` : amount;
   if (CHAIN === "SOL") {
-    return BigInt(amount) * BigInt(LAMPORTS_PER_SOL);
+    return BigInt(amt) * BigInt(LAMPORTS_PER_SOL);
   } else {
-    return ethers.parseEther(amount.toString());
+    return typeof decimal === "number"
+      ? ethers.parseUnits(amt, decimal)
+      : ethers.parseEther(amt);
   }
 }

@@ -48,6 +48,7 @@ import {
 } from "./utils";
 import { readContract } from "@wagmi/core";
 import { wagmiConfig } from "@/config/wagmi";
+import { abiDecimals, abiTotalSupply } from "@/utils/abis";
 
 interface Props {
   onClose: () => void;
@@ -253,30 +254,14 @@ export default function CommunityCreate({ onClose }: Props) {
       if (!tokenContract) return;
       const toastId = toast.loading("Fetching token information...");
       try {
-        const abi = [
-          {
-            name: "totalSupply",
-            type: "function",
-            stateMutability: "view",
-            inputs: [],
-            outputs: [{ name: "", type: "uint256" }],
-          },
-          {
-            name: "decimals",
-            type: "function",
-            stateMutability: "view",
-            inputs: [],
-            outputs: [{ name: "", type: "uint8" }],
-          },
-        ];
         const totalSupply = (await readContract(wagmiConfig, {
           address: tokenContract as `0x${string}`,
-          abi: abi,
+          abi: abiTotalSupply,
           functionName: "totalSupply",
         })) as bigint;
         const decimals = (await readContract(wagmiConfig, {
           address: tokenContract as `0x${string}`,
-          abi: abi,
+          abi: abiDecimals,
           functionName: "decimals",
         })) as number;
 

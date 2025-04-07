@@ -20,6 +20,10 @@ import Link from "next/link";
 import { useReadContract } from "wagmi";
 import TokenRecharge from "./TokenRecharge";
 import { isYouAddress } from "../thread/utils";
+import { useUserStore } from "@/stores/user";
+import { useEffect } from "react";
+import { formatReadableAmount } from "@/utils/format";
+import { toast } from "react-toastify";
 
 interface TokenModalProps {
   isOpen: boolean;
@@ -32,17 +36,47 @@ export default function TokenModal({
   onClose,
   community,
 }: TokenModalProps) {
+  const { isLogin, address: userAddress } = useUserStore();
   const {
     isOpen: isOpenTokenRechargeModal,
     onOpen: onOpenTokenRechargeModal,
     onClose: onCloseTokenRechargeModal,
   } = useDisclosure();
-  const { data: balance } = useReadContract({
+  const { data: agentBalance, refetch: refetchAgentBalance } = useReadContract({
     abi: abiBalanceOf,
     address: community?.token_info?.contract,
     functionName: "balanceOf",
     args: [community?.agent_contract],
   });
+  const { data: userBalance, refetch: refetchUserBalance } = useReadContract({
+    abi: abiBalanceOf,
+    address: community?.token_info?.contract,
+    functionName: "balanceOf",
+    args: [userAddress as `0x${string}`],
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      refetchAgentBalance();
+      refetchUserBalance();
+    }
+  }, [isOpen, refetchAgentBalance, refetchUserBalance]);
+
+  const agentBalanceValue = agentBalance
+    ? formatReadableAmount(
+        (agentBalance as unknown as bigint).toString(),
+        community?.token_info?.decimals
+      )
+    : "";
+
+  useEffect(() => {
+    if (!agentBalanceValue) return;
+    if (!isLogin || !isYouAddress(community.creator)) return;
+
+    if (Number(agentBalanceValue) < 50) {
+      toast.warning("Agent balance is less than 50, please recharge");
+    }
+  }, [agentBalanceValue, isLogin, community.creator]);
 
   if (!community) return;
 
@@ -55,7 +89,7 @@ export default function TokenModal({
         {
           label: "Token Contract",
           value: community.token_info?.contract,
-          type: "address",
+          type: "token",
         },
         {
           label: "Total Issuance",
@@ -85,10 +119,33 @@ export default function TokenModal({
         {
           label: "Agent Balance",
           value: `${
-            balance
+            agentBalance
               ? Number(
                   ethers.formatUnits(
-                    balance as number,
+                    agentBalance,
+                    community.token_info?.decimals
+                  )
+                ).toLocaleString()
+              : "0"
+          } ${community?.token_info?.symbol}`,
+        },
+      ],
+    },
+    {
+      label: "User",
+      items: [
+        {
+          label: "My Address",
+          value: userAddress,
+          type: "address",
+        },
+        {
+          label: "My Balance",
+          value: `${
+            userBalance
+              ? Number(
+                  ethers.formatUnits(
+                    userBalance,
                     community.token_info?.decimals
                   )
                 ).toLocaleString()
@@ -98,6 +155,11 @@ export default function TokenModal({
       ],
     },
   ];
+
+  const handleRefresh = () => {
+    refetchAgentBalance();
+    refetchUserBalance();
+  };
 
   return (
     <>
@@ -142,10 +204,14 @@ export default function TokenModal({
                                 title: "text-md",
                               }}
                               endContent={
-                                item?.type === "address" ? (
+                                item?.type &&
+                                ["address", "token"].includes(item?.type) ? (
                                   <Tooltip content={item.value}>
                                     <Link
-                                      href={getAddressLink(item.value)}
+                                      href={getAddressLink(
+                                        item.value,
+                                        item?.type as "address" | "token"
+                                      )}
                                       target="_blank"
                                     >
                                       {formatAddress(item.value)}
@@ -184,6 +250,7 @@ export default function TokenModal({
         isOpen={isOpenTokenRechargeModal}
         onClose={onCloseTokenRechargeModal}
         onOpen={onOpenTokenRechargeModal}
+        onSuccess={handleRefresh}
       />
     </>
   );

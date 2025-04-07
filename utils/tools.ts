@@ -102,12 +102,15 @@ export function isBuildEnv(env: BuildEnv) {
   return process.env.NEXT_PUBLIC_BUILD_ENV === env;
 }
 
-export function getAddressLink(address: string) {
+export function getAddressLink(
+  address: string,
+  type: "address" | "token" = "address"
+) {
   let link: string;
   if (CHAIN === "BSC") {
-    link = `https://bscscan.com/address/${address}`;
+    link = `https://bscscan.com/${type}/${address}`;
   } else {
-    link = `https://solscan.io/address/${address}`;
+    link = `https://solscan.io/${type}/${address}`;
   }
   return link;
 }

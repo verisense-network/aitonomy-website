@@ -10,10 +10,8 @@ import {
 } from "@heroui/react";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import PaymentModal from "../modal/Payment";
 import { Id, toast } from "react-toastify";
 import { formatAmount } from "@/utils/format";
-import { ethers } from "ethers";
 import TransferTokenModal from "./TransferToken";
 
 interface TokenRechargeProps {
@@ -21,6 +19,7 @@ interface TokenRechargeProps {
   community?: any;
   onClose: () => void;
   onOpen: () => void;
+  onSuccess: () => void;
 }
 
 interface TokenRechargeForm {
@@ -31,6 +30,7 @@ export default function TokenRecharge({
   isOpen,
   community,
   onClose,
+  onSuccess,
 }: TokenRechargeProps) {
   const [currentCommunity, setCurrentCommunity] = useState(community);
   const {
@@ -50,8 +50,13 @@ export default function TokenRecharge({
   const inputAmount = watch("amount");
 
   useEffect(() => {
-    setPaymentAmount(formatAmount(inputAmount).toString());
-  }, [inputAmount]);
+    setPaymentAmount(
+      formatAmount(
+        inputAmount,
+        community?.token_info?.decimals || 18
+      ).toString()
+    );
+  }, [inputAmount, community?.token_info?.decimals]);
 
   const onSubmit = useCallback(async () => {
     onOpenPaymentModal();
@@ -69,8 +74,11 @@ export default function TokenRecharge({
       });
       onClosePaymentModal();
       onClose();
+      setTimeout(() => {
+        onSuccess();
+      }, 2000);
     },
-    [onClosePaymentModal, onClose]
+    [onClosePaymentModal, onClose, onSuccess]
   );
 
   return (
@@ -83,7 +91,7 @@ export default function TokenRecharge({
         onClose={onClose}
       >
         <ModalContent>
-          <ModalHeader>Recharge Token</ModalHeader>
+          <ModalHeader>Recharge Agent</ModalHeader>
           <ModalBody>
             <Form onSubmit={handleSubmit(onSubmit)}>
               <Controller
