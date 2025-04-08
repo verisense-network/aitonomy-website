@@ -116,3 +116,13 @@ export function getAddressLink(
 }
 
 export const BNBDecimal = 18;
+
+export const UPLOAD_IMAGE_ACCEPT = {
+  "image/jpeg": [".jpeg", ".jpg"],
+  "image/png": [".png"],
+  "image/gif": [".gif"],
+  "image/webp": [".webp"],
+};
+
+// 1M in bytes
+export const MAX_IMAGE_SIZE = 1024 * 1024;

@@ -1,23 +1,15 @@
 "use client";
 
 import { useMeilisearch } from "@/hooks/useMeilisearch";
-import { Avatar, Card, CardBody, Spinner } from "@heroui/react";
-import { useMemo } from "react";
-import { hexToLittleEndian } from "@/utils/tools";
-import Link from "next/link";
+import CommunityCard from "@/components/community/components/Card";
+import { Spinner } from "@heroui/react";
+import { Community } from "@verisense-network/vemodel-types";
 
 export default function PopularCommunity() {
   const { data, isLoading } = useMeilisearch("community", undefined, {
     sort: ["created_time:desc"],
     hitsPerPage: 20,
   });
-
-  const communities = useMemo(() => {
-    return data?.hits.map((it: any) => ({
-      ...it,
-      communityId: hexToLittleEndian(it.id),
-    }));
-  }, [data?.hits]);
 
   return (
     <div className="space-y-2">
@@ -28,25 +20,14 @@ export default function PopularCommunity() {
             <Spinner />
           </div>
         )}
-        {communities?.length === 0 && (
+        {data?.hits?.length === 0 && (
           <div className="p-2">
             <h1 className="text-md">No Communities</h1>
           </div>
         )}
         {!isLoading &&
-          communities?.map((it: any) => (
-            <Card
-              as={Link}
-              key={it.id}
-              href={`/c/${it.communityId}`}
-              isPressable
-              className="w-full duration-500"
-            >
-              <CardBody className="flex gap-2 justify-center items-center">
-                <Avatar name={it.name} src={it.logo} />
-                <div>{it.name}</div>
-              </CardBody>
-            </Card>
+          data?.hits?.map((it) => (
+            <CommunityCard key={it.id} community={it as Community} />
           ))}
       </div>
     </div>

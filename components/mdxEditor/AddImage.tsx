@@ -18,11 +18,12 @@ import {
 import { useCallback, useState } from "react";
 import { toast } from "react-toastify";
 
-import Dropzone from "react-dropzone";
+import Dropzone, { FileRejection } from "react-dropzone";
 import { uploadImage } from "@/app/actions";
 import { Controller, useForm } from "react-hook-form";
 import { ImageUpIcon } from "lucide-react";
 import Image from "next/image";
+import { MAX_IMAGE_SIZE, UPLOAD_IMAGE_ACCEPT } from "@/utils/tools";
 
 export default function AddImage() {
   const insertImage = usePublisher(insertImage$);
@@ -41,10 +42,13 @@ export default function AddImage() {
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
-      setLoading(true);
+      const image = acceptedFiles[0];
+      if (!image) return;
+
       const toastId = toast.loading("Uploading image");
       try {
-        const image = acceptedFiles[0];
+        setLoading(true);
+
         const { success, data: url, message } = await uploadImage(image);
         if (!success) {
           throw new Error(`failed: ${message}`);
@@ -69,6 +73,15 @@ export default function AddImage() {
       }
     },
     [setValue]
+  );
+
+  const onDropRejected = useCallback(
+    (fileRejections: FileRejection[], _event: any) => {
+      console.log("fileRejections", fileRejections);
+      const errorMessage = fileRejections[0].errors?.[0]?.message;
+      toast.error(errorMessage);
+    },
+    []
   );
 
   const onSubmit = useCallback(
@@ -111,7 +124,13 @@ export default function AddImage() {
           {(onClose) => (
             <ModalBody>
               <div className="flex flex-col gap-2">
-                <Dropzone accept={{ "image/*": [] }} onDrop={onDrop}>
+                <Dropzone
+                  accept={UPLOAD_IMAGE_ACCEPT}
+                  maxSize={MAX_IMAGE_SIZE}
+                  maxFiles={1}
+                  onDrop={onDrop}
+                  onDropRejected={onDropRejected}
+                >
                   {({ getRootProps, getInputProps }) => (
                     <section>
                       <div

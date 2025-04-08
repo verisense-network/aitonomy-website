@@ -12,7 +12,12 @@ import {
   LLmName,
   registry,
 } from "@verisense-network/vemodel-types";
-import { BNBDecimal, isDev } from "@/utils/tools";
+import {
+  BNBDecimal,
+  isDev,
+  MAX_IMAGE_SIZE,
+  UPLOAD_IMAGE_ACCEPT,
+} from "@/utils/tools";
 import { CircleHelpIcon, ImageUpIcon } from "lucide-react";
 import {
   Accordion,
@@ -128,7 +133,9 @@ export default function CommunityCreate({ onClose }: Props) {
 
   const [isLoadingLogo, setIsLoadingLogo] = useState(false);
   const { getRootProps, getInputProps } = useDropzone({
-    accept: { "image/*": [] },
+    accept: UPLOAD_IMAGE_ACCEPT,
+    maxSize: MAX_IMAGE_SIZE,
+    maxFiles: 1,
     async onDrop(acceptedFiles) {
       console.log("acceptedFiles", acceptedFiles);
       const image = acceptedFiles[0];
@@ -148,6 +155,11 @@ export default function CommunityCreate({ onClose }: Props) {
         setIsLoadingLogo(false);
       }
     },
+    onDropRejected(fileRejections, _event) {
+      console.log("fileRejections", fileRejections);
+      const errorMessage = fileRejections[0].errors?.[0]?.message;
+      toast.error(errorMessage);
+    },
   });
 
   const [isLoadingTokenLogo, setIsLoadingTokenLogo] = useState(false);
@@ -155,7 +167,9 @@ export default function CommunityCreate({ onClose }: Props) {
     getRootProps: getTokenLogoRootProps,
     getInputProps: getTokenLogoInputProps,
   } = useDropzone({
-    accept: { "image/*": [] },
+    accept: UPLOAD_IMAGE_ACCEPT,
+    maxSize: MAX_IMAGE_SIZE,
+    maxFiles: 1,
     async onDrop(acceptedFiles) {
       console.log("acceptedFiles", acceptedFiles);
       const image = acceptedFiles[0];
@@ -174,6 +188,11 @@ export default function CommunityCreate({ onClose }: Props) {
         console.error("err", err);
         setIsLoadingTokenLogo(false);
       }
+    },
+    onDropRejected(fileRejections, _event) {
+      console.log("fileRejections", fileRejections);
+      const errorMessage = fileRejections[0].errors?.[0]?.message;
+      toast.error(errorMessage);
     },
   });
 

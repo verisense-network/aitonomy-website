@@ -1,9 +1,9 @@
 "use client";
 
+import CommunityCard from "@/components/community/components/Card";
 import { useMeilisearch } from "@/hooks/useMeilisearch";
-import { hexToLittleEndian } from "@/utils/tools";
-import { Card, CardBody, Avatar, Spinner } from "@heroui/react";
-import Link from "next/link";
+import { Spinner } from "@heroui/react";
+import { Community } from "@verisense-network/vemodel-types";
 
 export default function ExplorePage() {
   const { data, isLoading } = useMeilisearch("community", undefined, {
@@ -16,18 +16,10 @@ export default function ExplorePage() {
       <div className="w-full grid grid-cols-3 gap-2 md:grid-cols-6">
         {isLoading && <Spinner />}
         {data?.hits?.map((community) => (
-          <Card
-            as={Link}
+          <CommunityCard
             key={community.id}
-            isPressable
-            className="min-w-20 md:min-w-30"
-            href={`/c/${hexToLittleEndian(community.id)}`}
-          >
-            <CardBody className="flex gap-2 justify-center items-center">
-              <Avatar name={community.name} src={community.logo} />
-              <div>{community.name}</div>
-            </CardBody>
-          </Card>
+            community={community as Community}
+          />
         ))}
       </div>
     </div>
