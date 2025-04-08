@@ -18,7 +18,7 @@ import {
   MAX_IMAGE_SIZE,
   UPLOAD_IMAGE_ACCEPT,
 } from "@/utils/tools";
-import { CircleHelpIcon, ImageUpIcon } from "lucide-react";
+import { CircleCheckIcon, CircleHelpIcon, ImageUpIcon } from "lucide-react";
 import {
   Accordion,
   AccordionItem,
@@ -96,9 +96,9 @@ export default function CommunityCreate({ onClose }: Props) {
   const [llmAccordionSelectedKeys, setLlmAccordionSelectedKeys] = useState<
     string[]
   >([]);
-  const [llmKeyCanUse, setLlmKeyCanUse] = useState(true);
+  const [llmKeyAvailable, setLlmKeyAvailable] = useState(false);
 
-  const { watch, control, setValue, handleSubmit, reset } =
+  const { watch, control, setValue, handleSubmit, reset, clearErrors } =
     useForm<CreateCommunityForm>({
       defaultValues: {
         name: "",
@@ -199,7 +199,18 @@ export default function CommunityCreate({ onClose }: Props) {
   const onSubmit = useCallback(
     async (data: CreateCommunityForm) => {
       if (data.mode.name === "PayToJoin" && !data.mode.value) {
-        toast.error("Please enter a valid membership fee");
+        control.setError("mode", {
+          type: "manual",
+          message: "Please enter a valid membership fee",
+        });
+        return;
+      }
+      if (llmKey && !llmKeyAvailable) {
+        setLlmAccordionSelectedKeys(["llm"]);
+        control.setError("llm_key", {
+          type: "manual",
+          message: "Please check LLM key",
+        });
         return;
       }
       const toastId = toast.loading(
@@ -275,7 +286,7 @@ export default function CommunityCreate({ onClose }: Props) {
       }
       setIsLoading(false);
     },
-    [control, onClose, router]
+    [control, llmKey, llmKeyAvailable, onClose, router]
   );
 
   const readTokenContract = useCallback(
@@ -360,8 +371,11 @@ export default function CommunityCreate({ onClose }: Props) {
         isLoading: false,
         autoClose: 1500,
       });
+      setLlmKeyAvailable(true);
+      clearErrors("llm_key");
     } catch (error: any) {
       console.error("checking llm connection:", error);
+      setLlmKeyAvailable(false);
       toast.update(toastId, {
         render: `Failed: ${error?.message || error}`,
         type: "error",
@@ -939,7 +953,21 @@ export default function CommunityCreate({ onClose }: Props) {
             <Controller
               name="llm_key"
               control={control}
-              rules={{}}
+              rules={{
+                validate: (value) => {
+                  if (
+                    llmName === LLmName.OpenAI &&
+                    value &&
+                    !value?.startsWith("sk")
+                  ) {
+                    return "Please enter a openai key";
+                  }
+                  if (value && !llmKeyAvailable) {
+                    return "Please click right button Check to verify, verify failed";
+                  }
+                  return true;
+                },
+              }}
               render={({ field, fieldState }) => (
                 <div
                   className={twMerge(
@@ -950,19 +978,27 @@ export default function CommunityCreate({ onClose }: Props) {
                   <Input
                     {...field}
                     label="Key"
+                    className="w-4/5"
                     labelPlacement="outside"
                     placeholder="Enter your llm key"
-                    isInvalid={!!fieldState.error || !llmKeyCanUse}
+                    isInvalid={!!fieldState.error}
                     errorMessage={fieldState.error?.message}
                     value={field.value?.toString() || ""}
                     onChange={(value) => {
                       field.onChange(value);
+                      setLlmKeyAvailable(false);
                     }}
                   />
                   <Button
+                    className="w-1/5"
                     variant="flat"
                     onPress={checkLLmKey}
                     isDisabled={field.value?.toString() === "" || !llmName}
+                    startContent={
+                      llmKeyAvailable ? (
+                        <CircleCheckIcon className="w-5 h-5 text-success" />
+                      ) : null
+                    }
                   >
                     Check
                   </Button>
