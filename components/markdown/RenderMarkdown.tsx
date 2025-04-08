@@ -49,7 +49,7 @@ export default function RenderMarkdown({
     : content;
 
   return (
-    <div className="prose max-w-none dark:prose-invert">
+    <div className="prose md:prose-img:max-w-2xl md:prose-img:max-h-[60vh] max-w-none dark:prose-invert">
       <Markdown
         value={cleanContent(
           typeof window !== "undefined"
