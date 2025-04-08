@@ -75,7 +75,6 @@ export default function JoinCommunity({
           setIsLoading(false);
           return;
         }
-        toast.success("Successfully joined");
         setIsLoading(false);
         onSuccess();
       } catch (error) {

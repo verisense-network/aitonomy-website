@@ -28,10 +28,11 @@ export async function uploadImageWithGoogleStorage(file: File) {
     const bucket = storage.bucket(bucketName);
     const spark = new SparkArrayBuffer();
     spark.append(arrayBuffer);
-    const fileName = `${destination}/${spark.end()}-${file.name}`;
-    const bucketFile = bucket.file(fileName);
+    const filename = file.name.replace(/\s/g, "_");
+    const uploadPath = `${destination}/${spark.end()}-${filename}`;
+    const bucketFile = bucket.file(uploadPath);
 
-    const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
+    const publicUrl = `https://storage.googleapis.com/${bucketName}/${uploadPath}`;
 
     const [exists] = await bucketFile.exists();
     if (exists) {

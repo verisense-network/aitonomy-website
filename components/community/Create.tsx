@@ -89,6 +89,7 @@ export default function CommunityCreate({ onClose }: Props) {
   const [llmAccordionSelectedKeys, setLlmAccordionSelectedKeys] = useState<
     string[]
   >([]);
+  const [llmKeyCanUse, setLlmKeyCanUse] = useState(true);
 
   const { watch, control, setValue, handleSubmit, reset } =
     useForm<CreateCommunityForm>({
@@ -321,6 +322,30 @@ export default function CommunityCreate({ onClose }: Props) {
     },
     [setValue]
   );
+
+  const checkLLmKey = async () => {
+    // const toastId = toast.loading("Checking llm connection...");
+    // try {
+    //   const { success, message } = await checkLLmConnection();
+    //   if (!success) {
+    //     throw new Error(message);
+    //   }
+    //   toast.update(toastId, {
+    //     render: "LLM connection success",
+    //     type: "success",
+    //     isLoading: false,
+    //     autoClose: 1500,
+    //   });
+    // } catch (error: any) {
+    //   console.error("Error checking llm connection:", error);
+    //   toast.update(toastId, {
+    //     render: `Failed: ${error?.message || error}`,
+    //     type: "error",
+    //     isLoading: false,
+    //     autoClose: 3000,
+    //   });
+    // }
+  };
 
   useEffect(() => {
     if (!tokenContract) return;
@@ -892,15 +917,27 @@ export default function CommunityCreate({ onClose }: Props) {
               control={control}
               rules={{}}
               render={({ field, fieldState }) => (
-                <Input
-                  {...field}
-                  label="Key"
-                  labelPlacement="outside"
-                  placeholder="Enter your llm key"
-                  isInvalid={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  value={field.value?.toString() || ""}
-                />
+                <div className="flex items-center space-x-2">
+                  <Input
+                    {...field}
+                    label="Key"
+                    labelPlacement="outside"
+                    placeholder="Enter your llm key"
+                    isInvalid={!!fieldState.error || !llmKeyCanUse}
+                    errorMessage={fieldState.error?.message}
+                    value={field.value?.toString() || ""}
+                    onChange={(value) => {
+                      field.onChange(value);
+                    }}
+                  />
+                  <Button
+                    variant="flat"
+                    onPress={checkLLmKey}
+                    disabled={field.value?.toString() === ""}
+                  >
+                    Check
+                  </Button>
+                </div>
               )}
             />
           </div>
