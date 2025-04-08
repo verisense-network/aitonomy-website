@@ -24,6 +24,7 @@ import {
   ModalContent,
   ModalHeader,
   Spinner,
+  Tooltip,
   User,
 } from "@heroui/react";
 import { Suspense, useState } from "react";
@@ -166,7 +167,13 @@ export default function SideMenu() {
                           src: community.logo,
                           name: community.name,
                         }}
-                        name={community.name}
+                        name={
+                          <Tooltip content={community.name}>
+                            <span className="block text-nowrap overflow-hidden text-ellipsis text-truncate w-32">
+                              {community.name}
+                            </span>
+                          </Tooltip>
+                        }
                       />
                     }
                     onPress={() => isMobile && setSideBarIsOpen(false)}
