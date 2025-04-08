@@ -1,16 +1,17 @@
 import {
   Button,
+  Divider,
   Form,
   Input,
   Modal,
   ModalBody,
   ModalContent,
+  Spinner,
 } from "@heroui/react";
 import {
   ButtonWithTooltip,
   insertImage$,
   InsertImageParameters,
-  Separator,
   SrcImageParameters,
   usePublisher,
 } from "@mdxeditor/editor";
@@ -21,18 +22,22 @@ import Dropzone from "react-dropzone";
 import { uploadImage } from "@/app/actions";
 import { Controller, useForm } from "react-hook-form";
 import { ImageUpIcon } from "lucide-react";
+import Image from "next/image";
 
 export default function AddImage() {
   const insertImage = usePublisher(insertImage$);
   const [openImageDialog, seOpenImageDialog] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { control, handleSubmit, setValue, reset } =
+  const { control, watch, handleSubmit, setValue, reset } =
     useForm<InsertImageParameters>({
       defaultValues: {
         src: "",
         altText: "",
       },
     });
+
+  const imageSrc = watch("src");
+  const imageAltText = watch("altText");
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -115,14 +120,26 @@ export default function AddImage() {
                       >
                         <input {...getInputProps()} />
                         <div className="my-2 flex flex-col justify-center items-center w-full">
-                          <ImageUpIcon width={40} height={40} />
+                          {loading && <Spinner />}
+                          {!loading && !imageSrc && (
+                            <ImageUpIcon width={100} height={100} />
+                          )}
+                          {imageSrc && (
+                            <Image
+                              src={imageSrc}
+                              width={100}
+                              height={100}
+                              alt={imageAltText || ""}
+                            />
+                          )}
                         </div>
-                        <p>
+                        <p className="text-center text-xs">
                           Drag & drop some files here, or click to select files
                         </p>
                         <Button
                           className="mt-2 pointer-events-none"
                           variant="bordered"
+                          size="sm"
                         >
                           Upload
                         </Button>
@@ -130,15 +147,21 @@ export default function AddImage() {
                     </section>
                   )}
                 </Dropzone>
-                <div className="flex justify-center w-full">
-                  <Separator className="w-[80%] my-4 bg-light-border dark:bg-dark-border h-[2px]" />
-                </div>
+                <Divider className="my-4" />
                 <Form>
                   <Controller
                     control={control}
                     name="src"
                     rules={{
                       required: "Image source is required",
+                      validate: (value) => {
+                        if (value.includes(" ")) {
+                          return "Image source cannot contain spaces";
+                        } else if (!value.startsWith("http")) {
+                          return "Image source must start with http or https";
+                        }
+                        return true;
+                      },
                     }}
                     render={({ field, fieldState }) => (
                       <Input
@@ -177,7 +200,7 @@ export default function AddImage() {
                     </Button>
                     <Button
                       isLoading={loading}
-                      disabled={loading}
+                      isDisabled={loading || !imageSrc}
                       type="button"
                       onPress={() => handleSubmit(onSubmit)()}
                     >

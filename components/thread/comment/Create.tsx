@@ -33,7 +33,7 @@ interface Props {
 export interface CreateCommentParams {
   thread: string;
   content: string;
-  image?: string;
+  images?: string[];
   mention: string[];
   reply_to?: string;
 }
@@ -53,8 +53,8 @@ export default function CreateComment({
   const { control, handleSubmit, reset } = useForm<CreateCommentParams>({
     defaultValues: {
       thread: threadId,
-      image: "",
       content: "",
+      images: [],
       mention: [],
       reply_to: replyTo,
     },
@@ -62,6 +62,7 @@ export default function CreateComment({
 
   const onSubmit = useCallback(
     async (data: CreateCommentParams) => {
+      console.log("data", data);
       if (!isLogin) {
         toast.info("Please login first");
         return;

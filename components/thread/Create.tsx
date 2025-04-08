@@ -83,11 +83,10 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
 
   const onSubmit = useCallback(
     async (data: CreateThreadForm) => {
-      console.log(data);
+      console.log("data", data);
       const toastId = toast.loading(
         "Posting continue to complete in your wallet"
       );
-      console.log("toastId", toastId);
       try {
         const images = extractMarkdownImages(data.content);
         const content = compressString(data.content);

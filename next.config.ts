@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["i.postimg.cc"],
+    domains: ["storage.googleapis.com"],
   },
   experimental: {
     useWasmBinary: true,
