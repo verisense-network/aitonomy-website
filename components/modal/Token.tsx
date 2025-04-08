@@ -24,11 +24,12 @@ import { useUserStore } from "@/stores/user";
 import { useEffect } from "react";
 import { formatReadableAmount } from "@/utils/format";
 import { toast } from "react-toastify";
+import { Community } from "@verisense-network/vemodel-types";
 
 interface TokenModalProps {
   isOpen: boolean;
   onClose: () => void;
-  community: any;
+  community: Community;
 }
 
 export default function TokenModal({
@@ -44,13 +45,13 @@ export default function TokenModal({
   } = useDisclosure();
   const { data: agentBalance, refetch: refetchAgentBalance } = useReadContract({
     abi: abiBalanceOf,
-    address: community?.token_info?.contract,
+    address: community?.token_info?.contract as `0x${string}`,
     functionName: "balanceOf",
-    args: [community?.agent_contract],
+    args: [community?.agent_contract as `0x${string}`],
   });
   const { data: userBalance, refetch: refetchUserBalance } = useReadContract({
     abi: abiBalanceOf,
-    address: community?.token_info?.contract,
+    address: community?.token_info?.contract as `0x${string}`,
     functionName: "balanceOf",
     args: [userAddress as `0x${string}`],
   });
@@ -94,12 +95,10 @@ export default function TokenModal({
         {
           label: "Total Issuance",
           value: community.token_info?.total_issuance
-            ? Number(
-                formatReadableAmount(
-                  community.token_info?.total_issuance?.toString(),
-                  community.token_info?.decimals
-                )
-              ).toLocaleString()
+            ? formatReadableAmount(
+                community.token_info?.total_issuance?.toString(),
+                community.token_info?.decimals
+              )
             : "0",
         },
         {
@@ -130,12 +129,10 @@ export default function TokenModal({
           label: "Agent Balance",
           value: `${
             agentBalance
-              ? Number(
-                  formatReadableAmount(
-                    agentBalance.toString(),
-                    community.token_info?.decimals
-                  )
-                ).toLocaleString()
+              ? formatReadableAmount(
+                  agentBalance.toString(),
+                  community.token_info?.decimals
+                )
               : "0"
           } ${community?.token_info?.symbol}`,
         },
@@ -153,12 +150,10 @@ export default function TokenModal({
           label: "My Balance",
           value: `${
             userBalance
-              ? Number(
-                  formatReadableAmount(
-                    userBalance.toString(),
-                    community.token_info?.decimals
-                  )
-                ).toLocaleString()
+              ? formatReadableAmount(
+                  userBalance.toString(),
+                  community.token_info?.decimals
+                )
               : "0"
           } ${community?.token_info?.symbol}`,
         },
@@ -191,7 +186,7 @@ export default function TokenModal({
                 <div className="flex justify-between py-4">
                   <div className="flex flex-col justify-center items-center w-1/3">
                     <Avatar
-                      src={community?.token_info?.image}
+                      src={community?.token_info?.image || ""}
                       name={community?.token_info?.symbol}
                     />
                     <div className="flex items-center mt-1 space-x-1 text-md">
@@ -220,12 +215,14 @@ export default function TokenModal({
                                   <Tooltip content={item.value}>
                                     <Link
                                       href={getAddressLink(
-                                        item.value,
+                                        item.value as `0x${string}`,
                                         item?.type as "address" | "token"
                                       )}
                                       target="_blank"
                                     >
-                                      {formatAddress(item.value)}
+                                      {formatAddress(
+                                        item.value as `0x${string}`
+                                      )}
                                     </Link>
                                   </Tooltip>
                                 ) : (

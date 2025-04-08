@@ -9,6 +9,7 @@ import rust from "react-syntax-highlighter/dist/esm/languages/hljs/rust";
 import Link from "next/link";
 import truncateMarkdown from "markdown-truncate";
 import { ReactRenderer } from "marked-react";
+import { cleanContent } from "./utils";
 
 SyntaxHighlighter.registerLanguage("ts", typescript);
 SyntaxHighlighter.registerLanguage("js", javascript);
@@ -45,16 +46,16 @@ export default function RenderMarkdown({
         limit: truncate,
         ellipsis: true,
       })
-    : content.trim();
+    : content;
 
   return (
     <div className="prose max-w-none dark:prose-invert">
       <Markdown
-        value={
+        value={cleanContent(
           typeof window !== "undefined"
             ? DOMPurify.sanitize(truncateContent)
             : truncateContent
-        }
+        )}
         renderer={renderer as ReactRenderer}
       />
     </div>

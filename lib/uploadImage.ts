@@ -1,7 +1,7 @@
 import { Buffer } from "buffer";
 import storage from "./googleStorage";
 import { ImageUploadService } from "postimages-upload";
-import dayjs from "@/lib/dayjs";
+import { ArrayBuffer as SparkArrayBuffer } from "spark-md5";
 
 const service = new (ImageUploadService as any)(
   "postimages.org",
@@ -23,19 +23,29 @@ const destination = "upload-image";
 
 export async function uploadImageWithGoogleStorage(file: File) {
   const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
 
   try {
     const bucket = storage.bucket(bucketName);
-    const bucketFile = bucket.file(`${destination}/${file.name}`);
+    const spark = new SparkArrayBuffer();
+    spark.append(arrayBuffer);
+    const fileName = `${destination}/${spark.end()}-${file.name}`;
+    const bucketFile = bucket.file(fileName);
 
-    await bucketFile.save(buffer);
+    const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
 
-    const signedUrl = await bucketFile.getSignedUrl({
-      action: "read",
-      expires: dayjs().add(100, "year").valueOf(),
+    const [exists] = await bucketFile.exists();
+    if (exists) {
+      return publicUrl;
+    }
+
+    await bucketFile.save(Buffer.from(arrayBuffer), {
+      gzip: true,
+      metadata: {
+        cacheControl: "public, max-age=31536000",
+      },
     });
-    return signedUrl[0];
+
+    return publicUrl;
   } catch (error) {
     console.error("error uploading image", error);
     throw new Error("failed to upload image");

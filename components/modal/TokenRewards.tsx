@@ -35,6 +35,7 @@ export default function TokenRewardsModal({
               <Rewards
                 communityId={community.id}
                 agentContract={community.agent_contract}
+                tokenInfo={community.token_info}
               />
             </ModalBody>
           </>

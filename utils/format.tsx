@@ -99,9 +99,11 @@ export function formatReadableAmount(
   if (CHAIN === "SOL") {
     return (Number(amt) / LAMPORTS_PER_SOL).toString();
   } else {
-    return typeof decimal === "number"
-      ? ethers.formatUnits(amt, decimal)
-      : ethers.formatEther(amt);
+    const value =
+      typeof decimal === "number"
+        ? ethers.formatUnits(amt, decimal)
+        : ethers.formatEther(amt);
+    return Number(value).toLocaleString();
   }
 }
 

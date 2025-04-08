@@ -46,9 +46,9 @@ import {
   InviteMinAmount,
   TokenSupply,
 } from "./utils";
-import { readContract } from "@wagmi/core";
+import { readContracts } from "@wagmi/core";
 import { wagmiConfig } from "@/config/wagmi";
-import { abiDecimals, abiTotalSupply } from "@/utils/abis";
+import { abiDecimals, abiName, abiSymbol, abiTotalSupply } from "@/utils/abis";
 
 interface Props {
   onClose: () => void;
@@ -260,19 +260,48 @@ export default function CommunityCreate({ onClose }: Props) {
       if (!tokenContract) return;
       const toastId = toast.loading("Fetching token information...");
       try {
-        const totalSupply = (await readContract(wagmiConfig, {
-          address: tokenContract as `0x${string}`,
-          abi: abiTotalSupply,
-          functionName: "totalSupply",
-        })) as bigint;
-        const decimals = (await readContract(wagmiConfig, {
-          address: tokenContract as `0x${string}`,
-          abi: abiDecimals,
-          functionName: "decimals",
-        })) as number;
+        const [
+          { result: totalSupply },
+          { result: decimals },
+          { result: name },
+          { result: symbol },
+        ] = await readContracts(wagmiConfig, {
+          contracts: [
+            {
+              address: tokenContract as `0x${string}`,
+              abi: abiTotalSupply,
+              functionName: "totalSupply",
+            },
+            {
+              address: tokenContract as `0x${string}`,
+              abi: abiDecimals,
+              functionName: "decimals",
+            },
+            {
+              address: tokenContract as `0x${string}`,
+              abi: abiName,
+              functionName: "name",
+            },
+            {
+              address: tokenContract as `0x${string}`,
+              abi: abiSymbol,
+              functionName: "symbol",
+            },
+          ],
+        });
 
-        setValue("token.decimals", decimals);
-        setValue("token.total_issuance", totalSupply / 10n ** BigInt(decimals));
+        if (name) {
+          setValue("token.name", name);
+        }
+        if (symbol) {
+          setValue("token.symbol", symbol);
+        }
+        if (decimals) {
+          setValue("token.decimals", decimals);
+        }
+        if (totalSupply) {
+          setValue("token.total_issuance", totalSupply);
+        }
 
         toast.update(toastId, {
           render: "get token information success",
@@ -501,7 +530,18 @@ export default function CommunityCreate({ onClose }: Props) {
             labelPlacement="outside"
             startContent={
               <Tooltip
-                content="There is no limit on the prompt length. The more detailed your prompts, the better the agent will perform. Please define your prompts carefully. It cannot be modified after it is launched."
+                content={
+                  <div className="prose dark:prose-invert text-sm">
+                    There is no limit on the prompt length. The more detailed
+                    your prompts, the better the agent will perform. Please
+                    define your prompts carefully.{" "}
+                    <b>
+                      If you do not specify the rules for granting tokens to
+                      users, the agent will not grant tokens to the users. It
+                      cannot be modified after it is launched.
+                    </b>
+                  </div>
+                }
                 classNames={{
                   content: "max-w-60",
                 }}
@@ -570,12 +610,6 @@ export default function CommunityCreate({ onClose }: Props) {
           control={control}
           rules={{
             required: "Please enter a token name",
-            validate: (value) => {
-              if (!TOKEN_REGEX.test(value)) {
-                return "Invalid token name";
-              }
-              return true;
-            },
           }}
           render={({ field, fieldState }) => (
             <Input

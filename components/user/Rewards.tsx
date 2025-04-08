@@ -25,6 +25,8 @@ import { wagmiConfig } from "@/config/wagmi";
 import { useUser } from "@/hooks/useUser";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { formatReadableAmount } from "@/utils/format";
+import { Community } from "@verisense-network/vemodel-types";
 
 const TABLE_COLUMNS = [
   {
@@ -88,12 +90,14 @@ interface RewardsProps {
   communityId: string;
   agentContract: string;
   showTitle?: boolean;
+  tokenInfo?: Community["token_info"];
 }
 
 export default function Rewards({
   communityId,
   agentContract,
   showTitle,
+  tokenInfo,
 }: RewardsProps) {
   const [isTableLoading, setIsTableLoading] = useState(false);
   const [rewards, setRewards] = useState<Reward[]>([]);
@@ -141,27 +145,31 @@ export default function Rewards({
     }
   }, [address, communityId, agentContract]);
 
-  const receiveReward = useCallback(async (reward: Reward) => {
-    try {
-      const _messageBytes = ethers.hexlify(new Uint8Array(reward.payload));
-      console.log("_messageBytes", _messageBytes);
-      const _signature = ethers.hexlify(new Uint8Array(reward.signature));
-      console.log("_signature", _signature);
+  const receiveReward = useCallback(
+    async (reward: Reward) => {
+      try {
+        const _messageBytes = ethers.hexlify(new Uint8Array(reward.payload));
+        console.log("_messageBytes", _messageBytes);
+        const _signature = ethers.hexlify(new Uint8Array(reward.signature));
+        console.log("_signature", _signature);
 
-      const receipt = await writeContract(wagmiConfig, {
-        abi: RewardABI,
-        address: reward.agent_contract as `0x${string}`,
-        functionName: "withdraw",
-        args: [_messageBytes, _signature],
-      });
-      console.log("receipt", receipt);
-      console.log("reward", reward);
-      toast.success("receive success");
-    } catch (err: any) {
-      console.error("receiveReward err", err);
-      toast.error(`Failed: ${extractWagmiErrorDetailMessage(err)}`);
-    }
-  }, []);
+        const receipt = await writeContract(wagmiConfig, {
+          abi: RewardABI,
+          address: reward.agent_contract as `0x${string}`,
+          functionName: "withdraw",
+          args: [_messageBytes, _signature],
+        });
+        console.log("receipt", receipt);
+        console.log("reward", reward);
+        toast.success("receive success");
+        getUserRewards();
+      } catch (err: any) {
+        console.error("receiveReward err", err);
+        toast.error(`Failed: ${extractWagmiErrorDetailMessage(err)}`);
+      }
+    },
+    [getUserRewards]
+  );
 
   useEffect(() => {
     getUserRewards();
@@ -186,6 +194,7 @@ export default function Rewards({
             <TableRow key={item.sequence}>
               {(columnKey) => {
                 let cell: any = getKeyValue(item, columnKey);
+                console.log("item", item);
                 if (columnKey === "transfer") {
                   cell = (
                     <div className="flex space-x-2 items-center">
@@ -217,7 +226,9 @@ export default function Rewards({
                     </Tooltip>
                   );
                 } else if (columnKey === "amount") {
-                  cell = `${cell} ${item.token_symbol}`;
+                  cell = `${formatReadableAmount(cell, tokenInfo?.decimals)} ${
+                    tokenInfo?.symbol
+                  }`;
                 } else if (columnKey === "actions") {
                   if (!item.withdrawed) {
                     cell = (

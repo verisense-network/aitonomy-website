@@ -77,3 +77,23 @@ export const abiDecimals = [
     outputs: [{ name: "", type: "uint8" }],
   },
 ] as const;
+
+export const abiName = [
+  {
+    inputs: [],
+    name: "name",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
+
+export const abiSymbol = [
+  {
+    inputs: [],
+    name: "symbol",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;

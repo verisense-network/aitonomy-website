@@ -3,6 +3,7 @@
 import { useMeilisearch } from "@/hooks/useMeilisearch";
 import { sleep } from "@/utils/tools";
 import {
+  Avatar,
   BreadcrumbItem,
   Breadcrumbs,
   Card,
@@ -100,9 +101,19 @@ export default function ThreadView({ threadId, community }: ThreadViewProps) {
           </div>
         </BreadcrumbItem>
         <BreadcrumbItem>
-          <Link href={`/c/${threadData?.formattedId?.community}`}>
-            {threadData?.community_name}
-          </Link>
+          <div className="flex items-center space-x-1">
+            <Avatar
+              name={community?.name}
+              src={community?.logo}
+              size="sm"
+              classNames={{
+                base: "w-5 h-5",
+              }}
+            />
+            <Link href={`/c/${threadData?.formattedId?.community}`}>
+              {threadData?.community_name}
+            </Link>
+          </div>
         </BreadcrumbItem>
         <BreadcrumbItem>{threadData?.title}</BreadcrumbItem>
       </Breadcrumbs>
