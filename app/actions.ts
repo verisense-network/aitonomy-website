@@ -33,6 +33,7 @@ import {
 import { Signature } from "@/utils/aitonomy/sign";
 import { NUCLEUS_ID } from "@/utils/aitonomy/tools";
 import { CHAIN } from "@/utils/chain";
+import { checkOpenAIConnection } from "@/utils/llm";
 import { hexToBytes } from "@/utils/tools";
 import { CommunityMode, LLmName } from "@verisense-network/vemodel-types";
 import bs58 from "bs58";
@@ -59,6 +60,40 @@ export async function uploadImage(file: File): Promise<UploadImageResponse> {
     console.error("uploadImage error", e);
     return {
       data: "",
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+export async function checkLLmConnection(
+  llmName: LLmName,
+  llmKey: string
+): Promise<{
+  success: boolean;
+  message?: string;
+}> {
+  try {
+    if (llmName === LLmName.OpenAI) {
+      const res = await checkOpenAIConnection(llmKey);
+      return {
+        success: true,
+        message: res,
+      };
+    } else if (llmName === LLmName.DeepSeek) {
+      // const res = await checkDeepSeekConnection(llmKey);
+      // return {
+      //   success: true,
+      //   message: res,
+      // };
+    }
+    return {
+      success: false,
+      message: "Unsupported LLM name",
+    };
+  } catch (e: any) {
+    console.error("checkLLmConnection", e);
+    return {
       success: false,
       message: e.message,
     };

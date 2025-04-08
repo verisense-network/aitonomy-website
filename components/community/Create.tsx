@@ -1,4 +1,5 @@
 import {
+  checkLLmConnection,
   createCommunity,
   CreateCommunityForm,
   uploadImage,
@@ -49,6 +50,7 @@ import {
 import { readContracts } from "@wagmi/core";
 import { wagmiConfig } from "@/config/wagmi";
 import { abiDecimals, abiName, abiSymbol, abiTotalSupply } from "@/utils/abis";
+import { twMerge } from "tailwind-merge";
 
 interface Props {
   onClose: () => void;
@@ -119,6 +121,7 @@ export default function CommunityCreate({ onClose }: Props) {
     });
 
   const llmName = watch("llm_name");
+  const llmKey = watch("llm_key");
   const tokenNewIssue = watch("token.new_issue");
   const tokenDecimals = watch("token.decimals");
   const tokenContract = watch("token.contract");
@@ -324,27 +327,29 @@ export default function CommunityCreate({ onClose }: Props) {
   );
 
   const checkLLmKey = async () => {
-    // const toastId = toast.loading("Checking llm connection...");
-    // try {
-    //   const { success, message } = await checkLLmConnection();
-    //   if (!success) {
-    //     throw new Error(message);
-    //   }
-    //   toast.update(toastId, {
-    //     render: "LLM connection success",
-    //     type: "success",
-    //     isLoading: false,
-    //     autoClose: 1500,
-    //   });
-    // } catch (error: any) {
-    //   console.error("Error checking llm connection:", error);
-    //   toast.update(toastId, {
-    //     render: `Failed: ${error?.message || error}`,
-    //     type: "error",
-    //     isLoading: false,
-    //     autoClose: 3000,
-    //   });
-    // }
+    if (!llmKey || !llmName) return;
+
+    const toastId = toast.loading("Checking llm connection...");
+    try {
+      const { success, message } = await checkLLmConnection(llmName, llmKey);
+      if (!success) {
+        throw new Error(message);
+      }
+      toast.update(toastId, {
+        render: "LLM connection success",
+        type: "success",
+        isLoading: false,
+        autoClose: 1500,
+      });
+    } catch (error: any) {
+      console.error("checking llm connection:", error);
+      toast.update(toastId, {
+        render: `Failed: ${error?.message || error}`,
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    }
   };
 
   useEffect(() => {
@@ -917,7 +922,12 @@ export default function CommunityCreate({ onClose }: Props) {
               control={control}
               rules={{}}
               render={({ field, fieldState }) => (
-                <div className="flex items-center space-x-2">
+                <div
+                  className={twMerge(
+                    "flex items-end space-x-2",
+                    !!fieldState.error ? "items-center" : "items-end"
+                  )}
+                >
                   <Input
                     {...field}
                     label="Key"
@@ -933,7 +943,7 @@ export default function CommunityCreate({ onClose }: Props) {
                   <Button
                     variant="flat"
                     onPress={checkLLmKey}
-                    disabled={field.value?.toString() === ""}
+                    isDisabled={field.value?.toString() === "" || !llmName}
                   >
                     Check
                   </Button>
