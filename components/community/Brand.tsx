@@ -39,7 +39,7 @@ import {
   UserPlusIcon,
 } from "lucide-react";
 import TokenPanel from "./token/TokenPanel";
-import { CommunityMode } from "@verisense-network/vemodel-types";
+import { Community, CommunityMode } from "@verisense-network/vemodel-types";
 import useCanPost from "@/hooks/useCanPost";
 import JoinCommunity from "../user/JoinCommunity";
 import CommunitySettings from "./Settings";
@@ -293,12 +293,61 @@ export default function CommunityBrand({ communityId }: Props) {
     [communitySettingsDisclosure, forceUpdate]
   );
 
+  const ControlPanel = (
+    <>
+      {isLoaded &&
+        (isCommunityStatus(CommunityStatus.Active) ? (
+          <Tooltip content="Activated">
+            <BadgeCheckIcon className="ml-2 w-6 h-6 text-success" />
+          </Tooltip>
+        ) : isCommunityStatus(CommunityStatus.TokenIssued) ? (
+          <Tooltip content="Token Issued">
+            <CircleDollarSignIcon className="ml-2 w-6 h-6 text-warning" />
+          </Tooltip>
+        ) : (
+          <Tooltip content="Inactive">
+            <CircleAlertIcon className="ml-2 w-6 h-6 text-danger" />
+          </Tooltip>
+        ))}
+      {isLoaded &&
+        shouldShowInviteUser &&
+        isCommunityStatus(CommunityStatus.Active) && (
+          <Tooltip content="Invite User">
+            <UserPlusIcon
+              className="ml-2 w-6 h-6 text-sky-200"
+              onClick={() => setIsOpenInviteModal(true)}
+            />
+          </Tooltip>
+        )}
+      {isLoaded &&
+        shouldShowJoinCommunity &&
+        isCommunityStatus(CommunityStatus.Active) && (
+          <Button
+            className="ml-2"
+            size="sm"
+            color="primary"
+            onPress={openJoinCommunity}
+          >
+            Join Community
+          </Button>
+        )}
+      {isLoaded && isCreator && isCommunityStatus(CommunityStatus.Active) && (
+        <Tooltip content="Settings">
+          <CogIcon
+            className="ml-2 w-6 h-6 text-zinc-300"
+            onClick={() => communitySettingsDisclosure.onOpen()}
+          />
+        </Tooltip>
+      )}
+    </>
+  );
+
   return (
     <>
       <Card className="m-2 p-2 md:p-4 min-h-40">
         <CardHeader>
           <div className="flex flex-wrap md:flex-nowrap justify-between items-center w-full space-y-2">
-            <div className="flex flex-wrap space-x-4 items-center">
+            <div className="flex flex-wrap gap-4 items-center">
               <Badge
                 color="default"
                 isOneChar
@@ -312,57 +361,12 @@ export default function CommunityBrand({ communityId }: Props) {
               >
                 <Avatar name={c?.name} src={c?.logo} size="lg" />
               </Badge>
-              <div className="flex flex-col">
+              <div className="flex flex-wrap items-center gap-1 md:flex-col md:items-start">
                 <div className="flex flex-wrap space-x-4 items-center">
-                  <h1 className="flex items-center text-2xl font-bold">
-                    {c?.name}
-                    {isLoaded &&
-                      (isCommunityStatus(CommunityStatus.Active) ? (
-                        <Tooltip content="Activated">
-                          <BadgeCheckIcon className="ml-2 w-6 h-6 text-success" />
-                        </Tooltip>
-                      ) : isCommunityStatus(CommunityStatus.TokenIssued) ? (
-                        <Tooltip content="Token Issued">
-                          <CircleDollarSignIcon className="ml-2 w-6 h-6 text-warning" />
-                        </Tooltip>
-                      ) : (
-                        <Tooltip content="Inactive">
-                          <CircleAlertIcon className="ml-2 w-6 h-6 text-danger" />
-                        </Tooltip>
-                      ))}
-                    {isLoaded &&
-                      shouldShowInviteUser &&
-                      isCommunityStatus(CommunityStatus.Active) && (
-                        <Tooltip content="Invite User">
-                          <UserPlusIcon
-                            className="ml-2 w-6 h-6 text-sky-200"
-                            onClick={() => setIsOpenInviteModal(true)}
-                          />
-                        </Tooltip>
-                      )}
-                    {isLoaded &&
-                      shouldShowJoinCommunity &&
-                      isCommunityStatus(CommunityStatus.Active) && (
-                        <Button
-                          className="ml-2"
-                          size="sm"
-                          color="primary"
-                          onPress={openJoinCommunity}
-                        >
-                          Join Community
-                        </Button>
-                      )}
-                    {isLoaded &&
-                      isCreator &&
-                      isCommunityStatus(CommunityStatus.Active) && (
-                        <Tooltip content="Settings">
-                          <CogIcon
-                            className="ml-2 w-6 h-6 text-zinc-300"
-                            onClick={() => communitySettingsDisclosure.onOpen()}
-                          />
-                        </Tooltip>
-                      )}
-                  </h1>
+                  <div className="flex flex-wrap items-center text-2xl font-bold">
+                    <h1>{c?.name}</h1>
+                    <div className="hidden md:flex">{ControlPanel}</div>
+                  </div>
                   {isLoaded &&
                     shouldShowActivateCommunity &&
                     Number(viewAmount) > 0 && (
@@ -429,14 +433,18 @@ export default function CommunityBrand({ communityId }: Props) {
                   {isLoading && <Spinner />}
                   {isActivatingLoading && <Spinner title="Activating..." />}
                 </div>
-                <div>
+                <div className="flex md:hidden">{ControlPanel}</div>
+                <div className="hidden md:block">
                   <p className="text-sm text-zinc-400">{c?.slug}</p>
                 </div>
+              </div>
+              <div className="md:hidden">
+                <p className="text-sm text-zinc-400">{c?.slug}</p>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-2">
               {isCommunityStatus(CommunityStatus.Active) && (
-                <TokenPanel community={c} />
+                <TokenPanel community={c as Community} />
               )}
             </div>
           </div>
@@ -446,7 +454,7 @@ export default function CommunityBrand({ communityId }: Props) {
           {c?.description}
           <div className="flex md:hidden items-center space-x-2 w-full justify-center mt-4">
             {isCommunityStatus(CommunityStatus.Active) && (
-              <TokenPanel community={c} />
+              <TokenPanel community={c as Community} />
             )}
           </div>
         </CardBody>
