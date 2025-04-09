@@ -31,6 +31,8 @@ import { useUserStore } from "@/stores/user";
 import { updateLastPostAt } from "@/utils/user";
 import LockNotAllowedToPost from "../lock/LockNotAllowedToPost";
 import useCanPost from "@/hooks/useCanPost";
+import { MentionProvider } from "../mdxEditor/mentionCtx";
+import { Mention } from "../mdxEditor/AddMention";
 
 const ContentEditor = dynamic(() => import("../mdxEditor/ContentEditor"), {
   ssr: false,
@@ -45,6 +47,8 @@ interface Props {
 export default function ThreadCreate({ community, replyTo, onClose }: Props) {
   const router = useRouter();
   const { lastPostAt } = useUserStore();
+  // accounts for mention
+  const [accounts, setAccounts] = useState<Mention[]>([]);
   const { control, watch, handleSubmit } = useForm<CreateThreadForm>({
     defaultValues: {
       community: community?.name || "",
@@ -138,7 +142,13 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
 
   useEffect(() => {
     updateLastPostAt();
-  }, []);
+    setAccounts([
+      {
+        name: "Agent",
+        address: selectedCommunity?.agent_pubkey,
+      },
+    ]);
+  }, [selectedCommunity]);
 
   return (
     <Form
@@ -214,22 +224,29 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
               Content
             </span>
             <Suspense fallback={<Spinner />}>
-              {canPost ? (
-                <LockCountdown countdownTime={lastPostAt || 0} />
-              ) : (
-                <LockNotAllowedToPost community={selectedCommunity} />
-              )}
-              <ContentEditor
-                className="mt-2 w-full rounded-xl"
-                {...field}
-                markdown={field.value}
-                contentEditableClassName="min-h-72"
-              />
-              {fieldState.error?.message && (
-                <p className="mt-2 text-sm text-red-500">
-                  {fieldState.error.message}
-                </p>
-              )}
+              <MentionProvider
+                value={{
+                  accounts,
+                  setAccounts,
+                }}
+              >
+                {canPost ? (
+                  <LockCountdown countdownTime={lastPostAt || 0} />
+                ) : (
+                  <LockNotAllowedToPost community={selectedCommunity} />
+                )}
+                <ContentEditor
+                  className="mt-2 w-full rounded-xl"
+                  {...field}
+                  markdown={field.value}
+                  contentEditableClassName="min-h-72"
+                />
+                {fieldState.error?.message && (
+                  <p className="mt-2 text-sm text-red-500">
+                    {fieldState.error.message}
+                  </p>
+                )}
+              </MentionProvider>
             </Suspense>
           </div>
         )}
