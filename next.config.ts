@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   experimental: {
     useWasmBinary: true,
     serverActions: {
-      allowedOrigins: ["aitonomy-website.vercel.app"],
+      allowedOrigins: ["aitonomy.world", "aitonomy-website.vercel.app"],
     },
   },
   compiler: isProd
