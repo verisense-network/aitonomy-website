@@ -11,11 +11,10 @@ import {
 } from "@heroui/react";
 import {
   ButtonWithTooltip,
-  insertDirective$,
   insertMarkdown$,
   usePublisher,
 } from "@mdxeditor/editor";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { toast } from "react-toastify";
 
 import { Controller, useForm } from "react-hook-form";
@@ -106,11 +105,13 @@ export default function AddMention() {
                             field.onChange(value);
                           }}
                         >
-                          {accounts.map((it) => (
-                            <AutocompleteItem key={it.address}>
-                              {`${it.name} (${formatAddress(it.address)})`}
-                            </AutocompleteItem>
-                          ))}
+                          {accounts
+                            .filter((it) => it.address)
+                            .map((it) => (
+                              <AutocompleteItem key={it.address}>
+                                {`${it.name} (${formatAddress(it.address)})`}
+                              </AutocompleteItem>
+                            ))}
                         </Autocomplete>
                       )}
                     />

@@ -1,5 +1,6 @@
 import dayjs from "@/lib/dayjs";
 import { CHAIN } from "./chain";
+import bs58 from "bs58";
 
 export function stringToHex(str: string) {
   return Buffer.from(str, "utf-8").toString("hex");
@@ -93,6 +94,22 @@ export function extractWagmiErrorDetailMessage(err: any) {
     return match[1].trim();
   } else {
     return err?.message || err;
+  }
+}
+
+export function isBase58Encoded(str: string) {
+  const base58Chars =
+    /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
+
+  if (!str || !base58Chars.test(str)) {
+    return false;
+  }
+
+  try {
+    const decoded = bs58.decode(str);
+    return decoded.length > 0;
+  } catch (e) {
+    return false;
   }
 }
 

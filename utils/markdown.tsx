@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import bs58 from "bs58";
 import { CHAIN } from "./chain";
+import { isBase58Encoded } from "./tools";
 
 export function extractMarkdownImages(markdownText: string): string[] {
   const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
@@ -29,11 +30,15 @@ export function extractMentions(markdownText: string): string[] {
 }
 
 export function mentionsToAccountId(mentions: string[]): Uint8Array[] {
-  return mentions.map((mention) => {
-    if (CHAIN === "SOL") {
-      return bs58.decode(mention);
-    } else {
-      return ethers.toBeArray(mention);
+  const accounts: Uint8Array[] = [];
+
+  mentions.forEach((mention) => {
+    if (CHAIN === "SOL" && isBase58Encoded(mention)) {
+      accounts.push(bs58.decode(mention));
+    } else if (CHAIN === "BSC" && ethers.isAddress(mention)) {
+      accounts.push(ethers.toBeArray(mention));
     }
   });
+
+  return accounts;
 }
