@@ -61,7 +61,7 @@ interface Props {
   onClose: () => void;
 }
 
-const defaultTokenIssuance = 10_000_000_000n;
+const defaultTokenIssuance = 1_000_000_000n;
 const defaultTokenDecimals = 8;
 
 const MOCKDATA: CreateCommunityForm = {
