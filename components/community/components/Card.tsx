@@ -7,8 +7,6 @@ export default function CommunityCard({
 }: {
   community: Community & { formattedId?: string };
 }) {
-  console.log("community", community);
-
   return (
     <Card
       as={Link}
