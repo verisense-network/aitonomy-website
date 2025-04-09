@@ -18,7 +18,7 @@ export enum CommunityStatus {
 
 export const InviteMinAmount = 0.02;
 
-export const TokenSupply = [10, 9, 8];
+export const TokenSupply = [9, 8];
 
 export const CommunityModes = [
   {
