@@ -1,7 +1,7 @@
 "use client";
 
 import { useMeilisearch } from "@/hooks/useMeilisearch";
-import { hexToLittleEndian, sleep } from "@/utils/tools";
+import { sleep } from "@/utils/tools";
 import {
   Avatar,
   Badge,
@@ -45,12 +45,12 @@ import JoinCommunity from "../user/JoinCommunity";
 import CommunitySettings from "./Settings";
 
 interface Props {
-  communityId: string;
+  community: Community;
 }
 
 const MAX_RETRY = 15;
 
-export default function CommunityBrand({ communityId }: Props) {
+export default function CommunityBrand({ community }: Props) {
   const [isOpenPaymentModal, setIsOpenPaymentModal] = useState(false);
   const [isActivatingLoading, setIsActivatingLoading] = useState(false);
   const [isOpenInviteModal, setIsOpenInviteModal] = useState(false);
@@ -66,45 +66,35 @@ export default function CommunityBrand({ communityId }: Props) {
     signature: storedSignature,
   } = usePaymentCommunityStore();
 
-  const { data, isLoading, forceUpdate, isValidating } = useMeilisearch(
-    "community",
-    undefined,
-    {
-      filter: `id = ${hexToLittleEndian(communityId)}`,
-      limit: 1,
-    }
-  );
+  const canPost = useCanPost(community);
 
-  const community = data?.hits[0];
-  const communityRef = useRef(community);
-  const c = communityRef.current || community;
-
-  const canPost = useCanPost(c);
-
-  const amount = c?.status?.WaitingTx;
+  const amount = `${community?.status?.WaitingTx}`;
   const viewAmount = amount ? formatReadableAmount(amount) : "";
-
-  const isLoaded = !isLoading && c;
 
   const isCommunityMode = useCallback(
     (mode: keyof CommunityMode) => {
-      const cRef = communityRef.current || community;
-      return cRef && (cRef?.mode?.[mode] || cRef?.mode === mode);
+      return (
+        community &&
+        (community?.mode?.[mode] || (community as any)?.mode === mode)
+      );
     },
     [community]
   );
 
   const isCommunityStatus = useCallback(
     (status: CommunityStatus) => {
-      const cRef = communityRef.current || community;
-      return cRef && (cRef?.status?.[status] || cRef?.status === status);
+      return (
+        community &&
+        (community?.status?.[status] || (community as any)?.status === status)
+      );
     },
     [community]
   );
 
-  const hasStoredSignature = c?.name === storedCommunity && storedSignature;
+  const hasStoredSignature =
+    community?.name === storedCommunity && storedSignature;
 
-  const isCreator = isLogin && isYouAddress(c?.creator);
+  const isCreator = isLogin && isYouAddress(community?.creator);
   const shouldShowActivateCommunity = isLogin && isCreator;
 
   const shouldShowInviteUser =
@@ -117,13 +107,9 @@ export default function CommunityBrand({ communityId }: Props) {
     setIsOpenPaymentModal(true);
   }, []);
 
-  useEffect(() => {
-    communityRef.current = community;
-  }, [community]);
-
   const checkCommunityActivateStatus = useCallback(
     async (txHash: string, toastId: Id, retryCount: number = 0) => {
-      if (!c) return;
+      if (!community) return;
       if (
         isCommunityStatus(CommunityStatus.WaitingTx) ||
         isCommunityStatus(CommunityStatus.TokenIssued)
@@ -131,7 +117,7 @@ export default function CommunityBrand({ communityId }: Props) {
         setIsActivatingLoading(true);
         if (retryCount < MAX_RETRY) {
           if (!txHash) return;
-          const payload = { community: c.name, tx: txHash };
+          const payload = { community: community.name, tx: txHash };
 
           const tx = await waitForTransactionReceipt(wagmiConfig, {
             hash: txHash as `0x${string}`,
@@ -165,7 +151,6 @@ export default function CommunityBrand({ communityId }: Props) {
           toast.update(toastId, {
             render: `Checking community activation status...${renderCount}`,
           });
-          forceUpdate();
           await sleep(5000);
           await checkCommunityActivateStatus(txHash, toastId, retryCount + 1);
         } else {
@@ -182,7 +167,6 @@ export default function CommunityBrand({ communityId }: Props) {
           });
         }
       } else if (isCommunityStatus(CommunityStatus.Active)) {
-        forceUpdate();
         setTimeout(() => {
           setIsActivatingLoading(false);
           console.log("Token is issued!");
@@ -192,19 +176,17 @@ export default function CommunityBrand({ communityId }: Props) {
             isLoading: false,
             autoClose: 2000,
           });
-          forceUpdate();
         }, 2000);
       }
-      forceUpdate();
     },
-    [c, forceUpdate, isCommunityStatus]
+    [community, isCommunityStatus]
   );
 
   const onActivateSuccess = useCallback(
     async (txHash: string, toastId: Id) => {
       console.log("onSuccess", txHash);
-      const payload = { community: c?.name, signature: txHash };
-      storePaymentSignature({ community: c?.name, signature: txHash });
+      const payload = { community: community?.name, signature: txHash };
+      storePaymentSignature({ community: community?.name, signature: txHash });
       console.log("storePaymentSignature", payload);
       toast.update(toastId, {
         render: "Checking community activation status...",
@@ -214,7 +196,7 @@ export default function CommunityBrand({ communityId }: Props) {
       await checkCommunityActivateStatus(txHash, toastId, 0);
       setIsOpenPaymentModal(false);
     },
-    [checkCommunityActivateStatus, c?.name, storePaymentSignature]
+    [checkCommunityActivateStatus, community?.name, storePaymentSignature]
   );
 
   const retryWithStoreSignature = useCallback(async () => {
@@ -229,7 +211,7 @@ export default function CommunityBrand({ communityId }: Props) {
       data: res,
       message: errorMessage,
     } = await activateCommunity({
-      community: c?.name,
+      community: community?.name,
       tx: signature,
     });
     if (!success) {
@@ -239,29 +221,7 @@ export default function CommunityBrand({ communityId }: Props) {
     const toastId = toast.loading("checking activation status");
     checkCommunityActivateStatus(signature, toastId, 0);
     console.log("res", res);
-  }, [checkCommunityActivateStatus, c?.name]);
-
-  useEffect(() => {
-    (async () => {
-      if (isLoading || isValidating) return;
-
-      if (!data?.hits?.length) {
-        console.log("not found force update");
-        await sleep(1500);
-        forceUpdate();
-        return;
-      }
-      const hasCommunity = data?.hits?.some(
-        (hit: any) => hit.id === hexToLittleEndian(communityId)
-      );
-      if (!hasCommunity) {
-        console.log("not has");
-        await sleep(1500);
-        console.log("not has force update");
-        forceUpdate();
-      }
-    })();
-  }, [communityId, data, forceUpdate, isLoading, isValidating]);
+  }, [checkCommunityActivateStatus, community?.name]);
 
   const onInviteSuccess = useCallback(() => {
     setIsOpenInviteModal(false);
@@ -286,52 +246,44 @@ export default function CommunityBrand({ communityId }: Props) {
         isLoading: false,
         autoClose: 2000,
       });
-      setTimeout(() => {
-        forceUpdate();
-      }, 2000);
     },
-    [communitySettingsDisclosure, forceUpdate]
+    [communitySettingsDisclosure]
   );
 
   const ControlPanel = (
     <>
-      {isLoaded &&
-        (isCommunityStatus(CommunityStatus.Active) ? (
-          <Tooltip content="Activated">
-            <BadgeCheckIcon className="ml-2 w-6 h-6 text-success" />
-          </Tooltip>
-        ) : isCommunityStatus(CommunityStatus.TokenIssued) ? (
-          <Tooltip content="Token Issued">
-            <CircleDollarSignIcon className="ml-2 w-6 h-6 text-warning" />
-          </Tooltip>
-        ) : (
-          <Tooltip content="Inactive">
-            <CircleAlertIcon className="ml-2 w-6 h-6 text-danger" />
-          </Tooltip>
-        ))}
-      {isLoaded &&
-        shouldShowInviteUser &&
-        isCommunityStatus(CommunityStatus.Active) && (
-          <Tooltip content="Invite User">
-            <UserPlusIcon
-              className="ml-2 w-6 h-6 text-sky-200"
-              onClick={() => setIsOpenInviteModal(true)}
-            />
-          </Tooltip>
-        )}
-      {isLoaded &&
-        shouldShowJoinCommunity &&
-        isCommunityStatus(CommunityStatus.Active) && (
-          <Button
-            className="ml-2"
-            size="sm"
-            color="primary"
-            onPress={openJoinCommunity}
-          >
-            Join Community
-          </Button>
-        )}
-      {isLoaded && isCreator && isCommunityStatus(CommunityStatus.Active) && (
+      {isCommunityStatus(CommunityStatus.Active) ? (
+        <Tooltip content="Activated">
+          <BadgeCheckIcon className="ml-2 w-6 h-6 text-success" />
+        </Tooltip>
+      ) : isCommunityStatus(CommunityStatus.TokenIssued) ? (
+        <Tooltip content="Token Issued">
+          <CircleDollarSignIcon className="ml-2 w-6 h-6 text-warning" />
+        </Tooltip>
+      ) : (
+        <Tooltip content="Inactive">
+          <CircleAlertIcon className="ml-2 w-6 h-6 text-danger" />
+        </Tooltip>
+      )}
+      {shouldShowInviteUser && isCommunityStatus(CommunityStatus.Active) && (
+        <Tooltip content="Invite User">
+          <UserPlusIcon
+            className="ml-2 w-6 h-6 text-sky-200"
+            onClick={() => setIsOpenInviteModal(true)}
+          />
+        </Tooltip>
+      )}
+      {shouldShowJoinCommunity && isCommunityStatus(CommunityStatus.Active) && (
+        <Button
+          className="ml-2"
+          size="sm"
+          color="primary"
+          onPress={openJoinCommunity}
+        >
+          Join Community
+        </Button>
+      )}
+      {isCreator && isCommunityStatus(CommunityStatus.Active) && (
         <Tooltip content="Settings">
           <CogIcon
             className="ml-2 w-6 h-6 text-zinc-300"
@@ -352,61 +304,63 @@ export default function CommunityBrand({ communityId }: Props) {
                 color="default"
                 isOneChar
                 content={
-                  <Tooltip content={getCommunityMode(c?.mode)}>
-                    {getCommunityModeIcon(c?.mode)}
+                  <Tooltip content={getCommunityMode(community?.mode)}>
+                    {getCommunityModeIcon(community?.mode)}
                   </Tooltip>
                 }
                 showOutline={false}
                 placement="bottom-right"
               >
-                <Avatar name={c?.name} src={c?.logo} size="lg" />
+                <Avatar
+                  name={community?.name}
+                  src={community?.logo}
+                  size="lg"
+                />
               </Badge>
               <div className="flex flex-wrap items-center gap-1 md:flex-col md:items-start">
                 <div className="flex flex-wrap space-x-4 items-center">
                   <div className="flex flex-wrap items-center text-2xl font-bold">
-                    <h1>{c?.name}</h1>
+                    <h1>{community?.name}</h1>
                     <div className="hidden md:flex">{ControlPanel}</div>
                   </div>
-                  {isLoaded &&
-                    shouldShowActivateCommunity &&
-                    Number(viewAmount) > 0 && (
-                      <div className="flex">
-                        <Chip
-                          color="warning"
-                          size={isMobile ? "sm" : "lg"}
-                          classNames={{
-                            base: "h-9",
-                            content: "flex space-x-2 items-center",
-                          }}
-                        >
-                          <span>
-                            Waiting tx {viewAmount} {VIEW_UNIT}
-                          </span>
-                          {!isLoading && (
-                            <>
-                              {hasStoredSignature && (
-                                <Button
-                                  variant="shadow"
-                                  size="sm"
-                                  color="primary"
-                                  onPress={retryWithStoreSignature}
-                                >
-                                  Retry
-                                </Button>
-                              )}
+                  {shouldShowActivateCommunity && Number(viewAmount) > 0 && (
+                    <div className="flex">
+                      <Chip
+                        color="warning"
+                        size={isMobile ? "sm" : "lg"}
+                        classNames={{
+                          base: "h-9",
+                          content: "flex space-x-2 items-center",
+                        }}
+                      >
+                        <span>
+                          Waiting tx {viewAmount} {VIEW_UNIT}
+                        </span>
+                        {
+                          <>
+                            {hasStoredSignature && (
                               <Button
                                 variant="shadow"
                                 size="sm"
                                 color="primary"
-                                onPress={toPayment}
+                                onPress={retryWithStoreSignature}
                               >
-                                Payment
+                                Retry
                               </Button>
-                            </>
-                          )}
-                        </Chip>
-                      </div>
-                    )}
+                            )}
+                            <Button
+                              variant="shadow"
+                              size="sm"
+                              color="primary"
+                              onPress={toPayment}
+                            >
+                              Payment
+                            </Button>
+                          </>
+                        }
+                      </Chip>
+                    </div>
+                  )}
                   {shouldShowActivateCommunity &&
                     isCommunityStatus(CommunityStatus.CreateFailed) && (
                       <Chip
@@ -418,7 +372,7 @@ export default function CommunityBrand({ communityId }: Props) {
                         }}
                       >
                         <span>Create Failed</span>
-                        {!isLoading && hasStoredSignature && (
+                        {hasStoredSignature && (
                           <Button
                             variant="shadow"
                             size="sm"
@@ -430,31 +384,29 @@ export default function CommunityBrand({ communityId }: Props) {
                         )}
                       </Chip>
                     )}
-                  {isLoading && <Spinner />}
                   {isActivatingLoading && <Spinner title="Activating..." />}
                 </div>
                 <div className="flex md:hidden">{ControlPanel}</div>
                 <div className="hidden md:block">
-                  <p className="text-sm text-zinc-400">{c?.slug}</p>
+                  <p className="text-sm text-zinc-400">{community?.slug}</p>
                 </div>
               </div>
               <div className="md:hidden">
-                <p className="text-sm text-zinc-400">{c?.slug}</p>
+                <p className="text-sm text-zinc-400">{community?.slug}</p>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-2">
               {isCommunityStatus(CommunityStatus.Active) && (
-                <TokenPanel community={c as Community} />
+                <TokenPanel community={community as Community} />
               )}
             </div>
           </div>
         </CardHeader>
         <CardBody>
-          {isLoading && <Spinner />}
-          {c?.description}
+          {community?.description}
           <div className="flex md:hidden items-center space-x-2 w-full justify-center mt-4">
             {isCommunityStatus(CommunityStatus.Active) && (
-              <TokenPanel community={c as Community} />
+              <TokenPanel community={community as Community} />
             )}
           </div>
         </CardBody>
@@ -462,14 +414,14 @@ export default function CommunityBrand({ communityId }: Props) {
       <PaymentModal
         isOpen={isOpenPaymentModal}
         onClose={() => setIsOpenPaymentModal(false)}
-        toAddress={c?.agent_pubkey}
+        toAddress={community?.agent_pubkey}
         amount={amount}
         onSuccess={onActivateSuccess}
       />
       {isOpenInviteModal && (
         <InviteUser
           isOpen={isOpenInviteModal}
-          community={c}
+          community={community}
           onClose={() => setIsOpenInviteModal(false)}
           onSuccess={() => onInviteSuccess()}
         />
@@ -477,7 +429,7 @@ export default function CommunityBrand({ communityId }: Props) {
       {isOpenJoinCommunityModal && (
         <JoinCommunity
           isOpen={isOpenJoinCommunityModal}
-          community={c}
+          community={community}
           onClose={() => setIsOpenJoinCommunityModal(false)}
           onSuccess={() => onJoinCommunitySuccess()}
         />
@@ -485,7 +437,7 @@ export default function CommunityBrand({ communityId }: Props) {
       {communitySettingsDisclosure.isOpen && (
         <CommunitySettings
           isOpen={communitySettingsDisclosure.isOpen}
-          community={c}
+          community={community}
           onClose={communitySettingsDisclosure.onClose}
           onSuccess={onCommunitySettingsSuccess}
           onOpenChange={communitySettingsDisclosure.onOpenChange}

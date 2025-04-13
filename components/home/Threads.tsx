@@ -1,6 +1,6 @@
 "use client";
 
-import { useMeilisearch, useMeilisearchInfinite } from "@/hooks/useMeilisearch";
+import { useMeilisearchInfinite } from "@/hooks/useMeilisearch";
 import {
   Button,
   Card,
@@ -11,7 +11,6 @@ import {
   User,
 } from "@heroui/react";
 import { useMemo } from "react";
-import { hexToLittleEndian } from "@/utils/tools";
 import { twMerge } from "tailwind-merge";
 import CreateThread from "../community/thread/Create";
 import { decompressString } from "@/utils/compressString";
@@ -19,6 +18,7 @@ import Link from "next/link";
 import TooltipTime from "../formatTime/TooltipTime";
 import RenderMarkdown from "../markdown/RenderMarkdown";
 import { sort } from "radash";
+import { Community } from "@verisense-network/vemodel-types";
 
 export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full px-1 py-2 rounded-small">{children}</div>
@@ -26,28 +26,18 @@ export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
 
 interface ThreadsProps {
   className?: string;
-  communityId?: string;
+  community?: Community;
   userAddress?: string;
   isShowPostButton?: boolean;
 }
 
 export default function Threads({
   className,
-  communityId,
+  community,
   userAddress,
   isShowPostButton,
 }: ThreadsProps) {
-  const { data: communities, forceUpdate: forceUpdateCommunity } =
-    useMeilisearch("community", undefined, {
-      filter: `id = "${hexToLittleEndian(communityId || "")}"`,
-      limit: 1,
-    });
-
-  const community = communities?.hits[0];
-
-  const filterWithCommunity = communityId
-    ? `id CONTAINS ${hexToLittleEndian(communityId)}`
-    : "";
+  const filterWithCommunity = community ? `id CONTAINS ${community.id}` : "";
   const filterWithUser = userAddress ? `author = "${userAddress}"` : "";
   const filter = `${filterWithCommunity}${
     filterWithUser
@@ -70,26 +60,6 @@ export default function Threads({
     return sort(allThreads, (thread: any) => -thread.created_time);
   }, [data]);
 
-  // TODO: support thread view community logo
-  // const { data: communities logo, setParams } = useMeilisearch(
-  //   "community",
-  //   undefined,
-  //   {
-  //     filter: `name IN [${(
-  //       threads?.map((thread: any) => thread.community_name) || []
-  //     ).join(", ")}]`,
-  //   }
-  // );
-
-  // useEffect(() => {
-  //   if (!threads) return;
-  //   setParams({
-  //     filter: `name IN [${(
-  //       unique(threads?.map((thread) => thread.community_name)) || []
-  //     ).join(", ")}]`,
-  //   });
-  // }, [threads, setParams]);
-
   return (
     <div className={twMerge("w-full px-2 mx-auto", className)}>
       <h1 className="py-4 text-lg font-bold">Threads</h1>
@@ -97,8 +67,7 @@ export default function Threads({
         {isLoading && <Spinner />}
         {isShowPostButton && !isLoading && (
           <CreateThread
-            community={community}
-            reloadCommunity={forceUpdateCommunity}
+            community={community as Community}
             onSuccess={() => {}}
           />
         )}

@@ -26,20 +26,11 @@ import { HomeIcon } from "lucide-react";
 import { Community } from "@verisense-network/vemodel-types";
 
 interface ThreadViewProps {
-  threadId: string;
+  thread: any;
   community: Community;
 }
 
-export default function ThreadView({ threadId, community }: ThreadViewProps) {
-  const { data, isLoading, isValidating, forceUpdate } = useMeilisearch(
-    "thread",
-    undefined,
-    {
-      filter: `id = ${threadId}`,
-    }
-  );
-
-  const threadData = data?.hits[0];
+export default function ThreadView({ thread, community }: ThreadViewProps) {
   const [threadAccount, setThreadAccount] = useState<GetAccountInfoResponse>({
     address: "",
     alias: "",
@@ -48,13 +39,13 @@ export default function ThreadView({ threadId, community }: ThreadViewProps) {
     nonce: 0,
   });
 
-  const content = decompressString(threadData?.content || "");
+  const content = decompressString(thread?.content || "");
 
   useEffect(() => {
-    if (!threadData?.author) return;
+    if (!thread?.author) return;
 
     (async () => {
-      const userAddress = threadData?.author;
+      const userAddress = thread?.author;
 
       const { success, data } = await getAccountInfo({
         accountId: userAddress,
@@ -64,27 +55,7 @@ export default function ThreadView({ threadId, community }: ThreadViewProps) {
 
       setThreadAccount(data);
     })();
-  }, [threadData]);
-
-  useEffect(() => {
-    (async () => {
-      if (isLoading || isValidating) return;
-
-      if (!data?.hits?.length) {
-        console.log("not found force update");
-        await sleep(1500);
-        forceUpdate();
-        return;
-      }
-      const hasThread = data?.hits?.some((hit: any) => hit.id === threadId);
-      if (!hasThread) {
-        console.log("not has");
-        await sleep(1500);
-        console.log("not has force update");
-        forceUpdate();
-      }
-    })();
-  }, [data, forceUpdate, isLoading, isValidating, threadId]);
+  }, [thread]);
 
   return (
     <div className="w-full">
@@ -110,21 +81,21 @@ export default function ThreadView({ threadId, community }: ThreadViewProps) {
                 base: "w-5 h-5",
               }}
             />
-            <Link href={`/c/${threadData?.formattedId?.community}`}>
-              {threadData?.community_name}
+            <Link href={`/c/${thread?.formattedId?.community}`}>
+              {thread?.community_name}
             </Link>
           </div>
         </BreadcrumbItem>
-        <BreadcrumbItem>{threadData?.title}</BreadcrumbItem>
+        <BreadcrumbItem>{thread?.title}</BreadcrumbItem>
       </Breadcrumbs>
       <Card className="m-2 mt-5 p-2 min-h-20">
-        {isLoading && <Spinner />}
-        {!isLoading && threadData && (
+        {!thread && <Spinner />}
+        {thread && (
           <>
             <CardHeader className="flex flex-wrap justify-between space-y-2">
-              <h1 className="text-xl font-bold">{threadData.title}</h1>
+              <h1 className="text-xl font-bold">{thread.title}</h1>
               <div className="flex justify-end">
-                <ShareButtons title={threadData.title} url={location.href} />
+                <ShareButtons title={thread.title} url={location.href} />
               </div>
             </CardHeader>
             <CardBody>
@@ -132,24 +103,24 @@ export default function ThreadView({ threadId, community }: ThreadViewProps) {
             </CardBody>
             <CardFooter className="text-sm text-gray-500 justify-between">
               <div>
-                <Link href={`/u/${threadData.author}`}>
+                <Link href={`/u/${thread.author}`}>
                   <User
                     className="cursor-pointer"
                     avatarProps={{
-                      name: threadAccount?.alias || threadData.author,
+                      name: threadAccount?.alias || thread.author,
                     }}
                     name={
                       <UserAddressView
                         creator={community?.creator}
-                        address={threadAccount?.address || threadData.author}
-                        name={threadAccount?.alias || threadData.author}
+                        address={threadAccount?.address || thread.author}
+                        name={threadAccount?.alias || thread.author}
                       />
                     }
                   />
                 </Link>
               </div>
               <div className="flex space-x-2 items-center">
-                <TooltipTime time={threadData.created_time} />
+                <TooltipTime time={thread.created_time} />
               </div>
             </CardFooter>
           </>

@@ -12,22 +12,17 @@ import { toast } from "react-toastify";
 import LockCountdown from "@/components/lock/LockCountdown";
 import LockNotAllowedToPost from "@/components/lock/LockNotAllowedToPost";
 import useCanPost from "@/hooks/useCanPost";
+import { Community } from "@verisense-network/vemodel-types";
 
 interface Props {
   communityName?: string;
   communityId?: string;
-  community?: any;
+  community?: Community;
   replyTo?: string;
   onSuccess: (id: string) => void;
-  reloadCommunity?: () => void;
 }
 
-export default function CreateThread({
-  community,
-  replyTo,
-  onSuccess,
-  reloadCommunity,
-}: Props) {
+export default function CreateThread({ community, replyTo, onSuccess }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const { isLogin, lastPostAt } = useUserStore();
 
@@ -38,11 +33,8 @@ export default function CreateThread({
       toast.info("Please login first");
       return;
     }
-    if (!community?.name) {
-      await reloadCommunity?.();
-    }
     setIsOpen(true);
-  }, [community, isLogin, reloadCommunity]);
+  }, [isLogin]);
 
   return (
     <>

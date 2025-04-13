@@ -10,7 +10,6 @@ type SetUser = {
   address?: string;
   publicKey?: Uint8Array;
   lastPostAt?: number | null;
-  cookieAgreement?: boolean;
 };
 
 type Store = {
@@ -19,7 +18,6 @@ type Store = {
   address: string;
   publicKey: Uint8Array;
   lastPostAt: number | null;
-  cookieAgreement: boolean;
   setUser: (data: SetUser) => void;
   logout: () => void;
 };
@@ -42,7 +40,6 @@ export const useUserStore = create<Store>()(
       address: "",
       publicKey: new Uint8Array(0),
       lastPostAt: null,
-      cookieAgreement: false,
       setUser: (data) => set(data),
       logout: () =>
         set({
@@ -50,7 +47,6 @@ export const useUserStore = create<Store>()(
           publicKey: new Uint8Array(0),
           address: "",
           lastPostAt: null,
-          cookieAgreement: false,
         }),
     })),
     {

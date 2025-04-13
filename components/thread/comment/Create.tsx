@@ -2,12 +2,11 @@ import { createComment } from "@/app/actions";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { PostCommentPayload } from "@verisense-network/vemodel-types";
 import { decodeId } from "@/utils/thread";
-import { hexToBytes, hexToLittleEndian } from "@/utils/tools";
+import { hexToLittleEndian } from "@/utils/tools";
 import { Form, Button, Card, Spinner } from "@heroui/react";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import ContentEditor from "../../mdxEditor/ContentEditor";
 import { CreateCommentArg } from "@/utils/aitonomy";
 import { useUserStore } from "@/stores/user";
 import {
@@ -22,6 +21,7 @@ import { Mention } from "@/components/mdxEditor/AddMention";
 import { updateLastPostAt } from "@/utils/user";
 import useCanPost from "@/hooks/useCanPost";
 import LockNotAllowedToPost from "@/components/lock/LockNotAllowedToPost";
+import dynamic from "next/dist/shared/lib/dynamic";
 
 interface Props {
   threadId: string;
@@ -37,6 +37,10 @@ export interface CreateCommentParams {
   mention: string[];
   reply_to?: string;
 }
+
+const ContentEditor = dynamic(() => import("@/components/mdxEditor/ContentEditor"), {
+  ssr: false,
+});
 
 export default function CreateComment({
   threadId,
@@ -79,10 +83,10 @@ export default function CreateComment({
         const payload = {
           ...data,
           content: Array.from(content),
-          thread: hexToBytes(data.thread),
+          thread: `0x${hexToLittleEndian(data.thread)}`,
           images,
           mention: mentionsToAccountId(mention),
-          reply_to: data.reply_to ? hexToBytes(data.reply_to) : undefined,
+          reply_to: data.reply_to ? `0x${hexToLittleEndian(data.reply_to)}` : undefined,
         } as CreateCommentArg;
 
         console.log("payload", payload);

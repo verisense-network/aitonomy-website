@@ -1,9 +1,8 @@
 "use client";
 
 import { useMeilisearchInfinite } from "@/hooks/useMeilisearch";
-import { decodeId } from "@/utils/thread";
 import { hexToLittleEndian } from "@/utils/tools";
-import { Button, Card, Spinner } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { sort } from "radash";
 import { Community } from "@verisense-network/vemodel-types";
@@ -11,21 +10,23 @@ import CreateComment from "./comment/Create";
 import { GetAccountInfoResponse } from "@/utils/aitonomy";
 import { getAccounts } from "@/app/actions";
 import Comment from "./comment/Comment";
+import { decompressString } from "@/utils/compressString";
+import { RefreshCwIcon } from "lucide-react";
+import { updateLastPostAt } from "@/utils/user";
 
 interface Props {
-  threadId: string;
+  thread: any;
   community: Community;
 }
 
-export default function ThreadComments({ threadId, community }: Props) {
-  const { thread, community: communityId } = decodeId(threadId);
+export default function ThreadComments({ thread, community }: Props) {
   const { data, isLoading, isValidating, hasMore, loadMore, forceUpdate } =
     useMeilisearchInfinite("comment", undefined, {
       sort: ["created_time:desc"],
-      filter: `id CONTAINS ${hexToLittleEndian(thread)}${hexToLittleEndian(
-        communityId
-      )}`,
-      hitsPerPage: 20,
+      filter: `id CONTAINS ${hexToLittleEndian(
+        thread?.formattedId?.thread
+      )}${hexToLittleEndian(thread?.formattedId?.community)}`,
+      hitsPerPage: 25,
     });
 
   const comments = useMemo(() => {
@@ -33,32 +34,56 @@ export default function ThreadComments({ threadId, community }: Props) {
 
     const allComments = data.flatMap((page) => page.hits);
 
-    const groupedReplies: Record<string, Set<any>> = {};
-
+    const commentMap: Record<string, any> = {};
     allComments.forEach((comment) => {
-      if (comment.reply_to !== null) {
-        if (!groupedReplies[comment.reply_to]) {
-          groupedReplies[comment.reply_to] = new Set();
-        }
-        groupedReplies[comment.reply_to].add(comment);
-      }
+      commentMap[comment.id] = {
+        ...comment,
+        c: decompressString(comment.content || ""),
+        replies: [],
+      };
     });
 
-    const uniqueMainComments = allComments.filter(
-      (comment) => comment.reply_to === null
-    );
+    const rootComments: any[] = [];
+    const processedComments = new Set<string>();
 
-    const output = uniqueMainComments.map((comment) => ({
-      ...comment,
-      replies: groupedReplies[comment.id]
-        ? Array.from(groupedReplies[comment.id])
-        : [],
-    }));
+    const addComment = (comment: any) => {
+      if (processedComments.has(comment.id)) return;
+      processedComments.add(comment.id);
 
-    return sort(output, (comment: any) => -comment.created_time);
+      const commentWithReplies = commentMap[comment.id];
+      if (comment.reply_to === null) {
+        rootComments.push(commentWithReplies);
+      } else {
+        const parentComment = commentMap[comment.reply_to];
+        if (parentComment) {
+          if (!parentComment.replies) parentComment.replies = [];
+          parentComment.replies.push(commentWithReplies);
+          if (!processedComments.has(comment.reply_to)) {
+            const parentCommentFull = allComments.find(
+              (c) => c.id === comment.reply_to
+            );
+            if (parentCommentFull) addComment(parentCommentFull);
+          }
+        }
+      }
+    };
+
+    allComments.forEach(addComment);
+
+    const sortComments = (comments: any[]): any[] => {
+      return sort(comments, (comment: any) => -comment.created_time).map(
+        (comment) => ({
+          ...comment,
+          replies: sortComments(comment.replies),
+        })
+      );
+    };
+
+    return sortComments(rootComments);
   }, [data]);
 
   const onSuccessCreateCommunity = useCallback(() => {
+    updateLastPostAt();
     setTimeout(() => {
       forceUpdate();
     }, 2000);
@@ -97,26 +122,30 @@ export default function ThreadComments({ threadId, community }: Props) {
       <div className="flex items-center space-x-2">
         <h1 className="text-lg font-bold">Comments</h1>
       </div>
-      {!isLoading && (
-        <CreateComment
-          threadId={threadId}
-          onSuccess={onSuccessCreateCommunity}
-          community={community}
-        />
-      )}
-      {isLoading && (
-        <Card>
-          <Spinner />
-        </Card>
-      )}
+      <CreateComment
+        threadId={thread.id}
+        onSuccess={onSuccessCreateCommunity}
+        community={community}
+      />
+      <Button
+        className="my-2"
+        variant="flat"
+        size="sm"
+        onPress={() => forceUpdate()}
+        isIconOnly
+      >
+        <RefreshCwIcon />
+      </Button>
       {!isLoading &&
         comments.map((comment: any) => (
           <div key={comment.id}>
             <Comment
-              key={comment.id}
               comment={comment}
               community={community}
+              threadId={thread.id}
               viewCommentAccount={viewCommentAccount}
+              forceUpdate={onSuccessCreateCommunity}
+              isShowReply={true}
             />
           </div>
         ))}
