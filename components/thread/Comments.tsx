@@ -119,23 +119,22 @@ export default function ThreadComments({ thread, community }: Props) {
 
   return (
     <div className="mx-2 space-y-3">
-      <div className="flex items-center space-x-2">
+      <div className="flex justify-between items-center space-x-2">
         <h1 className="text-lg font-bold">Comments</h1>
+        <Button
+          variant="flat"
+          size="sm"
+          onPress={() => forceUpdate()}
+          isIconOnly
+        >
+          <RefreshCwIcon />
+        </Button>
       </div>
       <CreateComment
         threadId={thread.id}
         onSuccess={onSuccessCreateCommunity}
         community={community}
       />
-      <Button
-        className="my-2"
-        variant="flat"
-        size="sm"
-        onPress={() => forceUpdate()}
-        isIconOnly
-      >
-        <RefreshCwIcon />
-      </Button>
       {!isLoading &&
         comments.map((comment: any) => (
           <div key={comment.id}>

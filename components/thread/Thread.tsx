@@ -74,8 +74,8 @@ export default function ThreadView({ thread, community }: ThreadViewProps) {
         <BreadcrumbItem>
           <div className="flex items-center space-x-1">
             <Avatar
-              name={community?.name}
-              src={community?.logo}
+              name={community.name.slice(0, 2)}
+              src={community.logo}
               size="sm"
               classNames={{
                 base: "w-5 h-5",

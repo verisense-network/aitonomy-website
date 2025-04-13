@@ -14,6 +14,7 @@ import {
 } from "@verisense-network/vemodel-types";
 import {
   BNBDecimal,
+  hexToLittleEndian,
   isDev,
   MAX_IMAGE_SIZE,
   UPLOAD_IMAGE_ACCEPT,
@@ -56,6 +57,7 @@ import { readContracts } from "@wagmi/core";
 import { wagmiConfig } from "@/config/wagmi";
 import { abiDecimals, abiName, abiSymbol, abiTotalSupply } from "@/utils/abis";
 import { twMerge } from "tailwind-merge";
+import { checkIndexed, meiliSearchFetcher } from "@/utils/fetcher/meilisearch";
 
 interface Props {
   onClose: () => void;
@@ -265,16 +267,32 @@ export default function CommunityCreate({ onClose }: Props) {
         }
         console.log("communityId", communityId);
         if (!communityId) return;
-        onClose();
         toast.update(toastId, {
-          render: "Success, redirecting...",
+          render: "Community indexing...",
           type: "success",
-          isLoading: false,
-          autoClose: 1500,
         });
-        setTimeout(() => {
+        const isIndexed = await checkIndexed(() =>
+          meiliSearchFetcher("community", undefined, {
+            filter: `id = ${hexToLittleEndian(communityId)}`,
+          })
+        );
+        if (isIndexed) {
+          toast.update(toastId, {
+            render: "Create community success",
+            type: "success",
+            isLoading: false,
+            autoClose: 1500,
+          });
           router.push(`/c/${communityId}`);
-        }, 1500);
+        } else {
+          toast.update(toastId, {
+            render: "Failed to index community",
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+          });
+        }
+        onClose();
       } catch (e: any) {
         console.error("e", e);
         toast.update(toastId, {

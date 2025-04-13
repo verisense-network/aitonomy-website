@@ -1,6 +1,5 @@
 "use client";
 
-import { useMeilisearch } from "@/hooks/useMeilisearch";
 import { sleep } from "@/utils/tools";
 import {
   Avatar,
@@ -14,15 +13,16 @@ import {
   Tooltip,
   useDisclosure,
 } from "@heroui/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 import PaymentModal from "../modal/Payment";
 import { activateCommunity } from "@/app/actions";
 import { useUserStore } from "@/stores/user";
 import { usePaymentCommunityStore } from "@/stores/paymentCommunity";
 import {
-  CommunityStatus,
   getCommunityMode,
   getCommunityModeIcon,
+  isCommunityMode,
+  isCommunityStatus,
 } from "./utils";
 import { waitForTransactionReceipt } from "@wagmi/core";
 import { Id, toast } from "react-toastify";
@@ -39,10 +39,12 @@ import {
   UserPlusIcon,
 } from "lucide-react";
 import TokenPanel from "./token/TokenPanel";
-import { Community, CommunityMode } from "@verisense-network/vemodel-types";
+import { Community } from "@verisense-network/vemodel-types";
 import useCanPost from "@/hooks/useCanPost";
 import JoinCommunity from "../user/JoinCommunity";
 import CommunitySettings from "./Settings";
+import { meiliSearchFetcher } from "@/utils/fetcher/meilisearch";
+import { useRouter } from "next/navigation";
 
 interface Props {
   community: Community;
@@ -65,43 +67,25 @@ export default function CommunityBrand({ community }: Props) {
     community: storedCommunity,
     signature: storedSignature,
   } = usePaymentCommunityStore();
+  const router = useRouter();
 
   const canPost = useCanPost(community);
 
-  const amount = `${community?.status?.WaitingTx}`;
+  const amount = `${community.status?.WaitingTx}`;
   const viewAmount = amount ? formatReadableAmount(amount) : "";
 
-  const isCommunityMode = useCallback(
-    (mode: keyof CommunityMode) => {
-      return (
-        community &&
-        (community?.mode?.[mode] || (community as any)?.mode === mode)
-      );
-    },
-    [community]
-  );
-
-  const isCommunityStatus = useCallback(
-    (status: CommunityStatus) => {
-      return (
-        community &&
-        (community?.status?.[status] || (community as any)?.status === status)
-      );
-    },
-    [community]
-  );
-
   const hasStoredSignature =
-    community?.name === storedCommunity && storedSignature;
+    community.name === storedCommunity && storedSignature;
 
-  const isCreator = isLogin && isYouAddress(community?.creator);
+  const isCreator = isLogin && isYouAddress(community.creator);
   const shouldShowActivateCommunity = isLogin && isCreator;
 
   const shouldShowInviteUser =
-    shouldShowActivateCommunity && isCommunityMode("InviteOnly");
+    shouldShowActivateCommunity &&
+    isCommunityMode(community.mode, "InviteOnly");
 
   const shouldShowJoinCommunity =
-    isLogin && !canPost && !isCommunityMode("Public");
+    isLogin && !canPost && !isCommunityMode(community.mode, "Public");
 
   const toPayment = useCallback(() => {
     setIsOpenPaymentModal(true);
@@ -109,15 +93,28 @@ export default function CommunityBrand({ community }: Props) {
 
   const checkCommunityActivateStatus = useCallback(
     async (txHash: string, toastId: Id, retryCount: number = 0) => {
-      if (!community) return;
+      if (!community.id) return;
+      const data = await meiliSearchFetcher("community", undefined, {
+        filter: `id = ${community.id}`,
+        limit: 1,
+      });
+      const newData = data?.hits?.[0];
+      if (!newData) return;
+
+      console.log(
+        "newData.status",
+        newData.status,
+        isCommunityStatus(newData.status, "Active")
+      );
+
       if (
-        isCommunityStatus(CommunityStatus.WaitingTx) ||
-        isCommunityStatus(CommunityStatus.TokenIssued)
+        isCommunityStatus(newData.status, "WaitingTx") ||
+        isCommunityStatus(newData.status, "TokenIssued")
       ) {
         setIsActivatingLoading(true);
         if (retryCount < MAX_RETRY) {
           if (!txHash) return;
-          const payload = { community: community.name, tx: txHash };
+          const payload = { community: newData.name, tx: txHash };
 
           const tx = await waitForTransactionReceipt(wagmiConfig, {
             hash: txHash as `0x${string}`,
@@ -145,18 +142,12 @@ export default function CommunityBrand({ community }: Props) {
             });
             return;
           }
-          console.log(
-            `Checking community activation status: attempt ${renderCount}`
-          );
           toast.update(toastId, {
             render: `Checking community activation status...${renderCount}`,
           });
           await sleep(5000);
           await checkCommunityActivateStatus(txHash, toastId, retryCount + 1);
         } else {
-          console.log(
-            "Maximum retry attempts reached. Community still not active."
-          );
           setIsActivatingLoading(false);
           toast.update(toastId, {
             render:
@@ -166,20 +157,18 @@ export default function CommunityBrand({ community }: Props) {
             autoClose: 2000,
           });
         }
-      } else if (isCommunityStatus(CommunityStatus.Active)) {
-        setTimeout(() => {
-          setIsActivatingLoading(false);
-          console.log("Token is issued!");
-          toast.update(toastId, {
-            render: "Token is now issued, community is activating...",
-            type: "success",
-            isLoading: false,
-            autoClose: 2000,
-          });
-        }, 2000);
+      } else if (isCommunityStatus(newData.status, "Active")) {
+        setIsActivatingLoading(false);
+        toast.update(toastId, {
+          render: "Community is Activated",
+          type: "success",
+          isLoading: false,
+          autoClose: 1200,
+        });
+        router.refresh();
       }
     },
-    [community, isCommunityStatus]
+    [community, router]
   );
 
   const onActivateSuccess = useCallback(
@@ -219,8 +208,7 @@ export default function CommunityBrand({ community }: Props) {
       return;
     }
     const toastId = toast.loading("checking activation status");
-    checkCommunityActivateStatus(signature, toastId, 0);
-    console.log("res", res);
+    checkCommunityActivateStatus(signature, toastId);
   }, [checkCommunityActivateStatus, community?.name]);
 
   const onInviteSuccess = useCallback(() => {
@@ -252,11 +240,11 @@ export default function CommunityBrand({ community }: Props) {
 
   const ControlPanel = (
     <>
-      {isCommunityStatus(CommunityStatus.Active) ? (
+      {isCommunityStatus(community.status, "Active") ? (
         <Tooltip content="Activated">
           <BadgeCheckIcon className="ml-2 w-6 h-6 text-success" />
         </Tooltip>
-      ) : isCommunityStatus(CommunityStatus.TokenIssued) ? (
+      ) : isCommunityStatus(community.status, "TokenIssued") ? (
         <Tooltip content="Token Issued">
           <CircleDollarSignIcon className="ml-2 w-6 h-6 text-warning" />
         </Tooltip>
@@ -265,25 +253,27 @@ export default function CommunityBrand({ community }: Props) {
           <CircleAlertIcon className="ml-2 w-6 h-6 text-danger" />
         </Tooltip>
       )}
-      {shouldShowInviteUser && isCommunityStatus(CommunityStatus.Active) && (
-        <Tooltip content="Invite User">
-          <UserPlusIcon
-            className="ml-2 w-6 h-6 text-sky-200"
-            onClick={() => setIsOpenInviteModal(true)}
-          />
-        </Tooltip>
-      )}
-      {shouldShowJoinCommunity && isCommunityStatus(CommunityStatus.Active) && (
-        <Button
-          className="ml-2"
-          size="sm"
-          color="primary"
-          onPress={openJoinCommunity}
-        >
-          Join Community
-        </Button>
-      )}
-      {isCreator && isCommunityStatus(CommunityStatus.Active) && (
+      {shouldShowInviteUser &&
+        isCommunityStatus(community.status, "Active") && (
+          <Tooltip content="Invite User">
+            <UserPlusIcon
+              className="ml-2 w-6 h-6 text-sky-200"
+              onClick={() => setIsOpenInviteModal(true)}
+            />
+          </Tooltip>
+        )}
+      {shouldShowJoinCommunity &&
+        isCommunityStatus(community.status, "Active") && (
+          <Button
+            className="ml-2"
+            size="sm"
+            color="primary"
+            onPress={openJoinCommunity}
+          >
+            Join Community
+          </Button>
+        )}
+      {isCreator && isCommunityStatus(community.status, "Active") && (
         <Tooltip content="Settings">
           <CogIcon
             className="ml-2 w-6 h-6 text-zinc-300"
@@ -299,113 +289,115 @@ export default function CommunityBrand({ community }: Props) {
       <Card className="m-2 p-2 md:p-4 min-h-40">
         <CardHeader>
           <div className="flex flex-wrap md:flex-nowrap justify-between items-center w-full space-y-2">
-            <div className="flex flex-wrap gap-4 items-center">
-              <Badge
-                color="default"
-                isOneChar
-                content={
-                  <Tooltip content={getCommunityMode(community?.mode)}>
-                    {getCommunityModeIcon(community?.mode)}
-                  </Tooltip>
-                }
-                showOutline={false}
-                placement="bottom-right"
-              >
-                <Avatar
-                  name={community?.name}
-                  src={community?.logo}
-                  size="lg"
-                />
-              </Badge>
-              <div className="flex flex-wrap items-center gap-1 md:flex-col md:items-start">
-                <div className="flex flex-wrap space-x-4 items-center">
-                  <div className="flex flex-wrap items-center text-2xl font-bold">
-                    <h1>{community?.name}</h1>
-                    <div className="hidden md:flex">{ControlPanel}</div>
-                  </div>
-                  {shouldShowActivateCommunity && Number(viewAmount) > 0 && (
-                    <div className="flex">
-                      <Chip
-                        color="warning"
-                        size={isMobile ? "sm" : "lg"}
-                        classNames={{
-                          base: "h-9",
-                          content: "flex space-x-2 items-center",
-                        }}
-                      >
-                        <span>
-                          Waiting tx {viewAmount} {VIEW_UNIT}
-                        </span>
-                        {
-                          <>
-                            {hasStoredSignature && (
+            <Suspense fallback={<div>Loading...</div>}>
+              <div className="flex flex-wrap gap-4 items-center">
+                <Badge
+                  color="default"
+                  isOneChar
+                  content={
+                    <Tooltip content={getCommunityMode(community?.mode)}>
+                      {getCommunityModeIcon(community?.mode)}
+                    </Tooltip>
+                  }
+                  showOutline={false}
+                  placement="bottom-right"
+                >
+                  <Avatar
+                    name={community?.name}
+                    src={community?.logo}
+                    size="lg"
+                  />
+                </Badge>
+                <div className="flex flex-wrap items-center gap-1 md:flex-col md:items-start">
+                  <div className="flex flex-wrap space-x-4 items-center">
+                    <div className="flex flex-wrap items-center text-2xl font-bold">
+                      <h1>{community?.name}</h1>
+                      <div className="hidden md:flex">{ControlPanel}</div>
+                    </div>
+                    {shouldShowActivateCommunity && Number(viewAmount) > 0 && (
+                      <div className="flex">
+                        <Chip
+                          color="warning"
+                          size={isMobile ? "sm" : "lg"}
+                          classNames={{
+                            base: "h-9",
+                            content: "flex space-x-2 items-center",
+                          }}
+                        >
+                          <span>
+                            Waiting tx {viewAmount} {VIEW_UNIT}
+                          </span>
+                          {
+                            <>
+                              {hasStoredSignature && (
+                                <Button
+                                  variant="shadow"
+                                  size="sm"
+                                  color="primary"
+                                  onPress={retryWithStoreSignature}
+                                >
+                                  Retry
+                                </Button>
+                              )}
                               <Button
                                 variant="shadow"
                                 size="sm"
                                 color="primary"
-                                onPress={retryWithStoreSignature}
+                                onPress={toPayment}
                               >
-                                Retry
+                                Payment
                               </Button>
-                            )}
+                            </>
+                          }
+                        </Chip>
+                      </div>
+                    )}
+                    {shouldShowActivateCommunity &&
+                      isCommunityStatus(community.status, "CreateFailed") && (
+                        <Chip
+                          color="danger"
+                          size="lg"
+                          classNames={{
+                            base: "h-9",
+                            content: "flex space-x-2 items-center",
+                          }}
+                        >
+                          <span>Create Failed</span>
+                          {hasStoredSignature && (
                             <Button
                               variant="shadow"
                               size="sm"
                               color="primary"
-                              onPress={toPayment}
+                              onPress={retryWithStoreSignature}
                             >
-                              Payment
+                              Retry
                             </Button>
-                          </>
-                        }
-                      </Chip>
-                    </div>
-                  )}
-                  {shouldShowActivateCommunity &&
-                    isCommunityStatus(CommunityStatus.CreateFailed) && (
-                      <Chip
-                        color="danger"
-                        size="lg"
-                        classNames={{
-                          base: "h-9",
-                          content: "flex space-x-2 items-center",
-                        }}
-                      >
-                        <span>Create Failed</span>
-                        {hasStoredSignature && (
-                          <Button
-                            variant="shadow"
-                            size="sm"
-                            color="primary"
-                            onPress={retryWithStoreSignature}
-                          >
-                            Retry
-                          </Button>
-                        )}
-                      </Chip>
-                    )}
-                  {isActivatingLoading && <Spinner title="Activating..." />}
+                          )}
+                        </Chip>
+                      )}
+                    {isActivatingLoading && <Spinner title="Activating..." />}
+                  </div>
+                  <div className="flex md:hidden">{ControlPanel}</div>
+                  <div className="hidden md:block">
+                    <p className="text-sm text-zinc-400">{community?.slug}</p>
+                  </div>
                 </div>
-                <div className="flex md:hidden">{ControlPanel}</div>
-                <div className="hidden md:block">
+                <div className="md:hidden">
                   <p className="text-sm text-zinc-400">{community?.slug}</p>
                 </div>
               </div>
-              <div className="md:hidden">
-                <p className="text-sm text-zinc-400">{community?.slug}</p>
+              <div className="hidden md:flex items-center space-x-2">
+                {isCommunityStatus(community.status, "Active") && (
+                  <TokenPanel community={community as Community} />
+                )}
               </div>
-            </div>
-            <div className="hidden md:flex items-center space-x-2">
-              {isCommunityStatus(CommunityStatus.Active) && (
-                <TokenPanel community={community as Community} />
-              )}
-            </div>
+            </Suspense>
           </div>
         </CardHeader>
         <CardBody>
           {community?.description}
           <div className="flex md:hidden items-center space-x-2 w-full justify-center mt-4">
-            {isCommunityStatus(CommunityStatus.Active) && (
+            {isCommunityStatus(community.status, "Active") && (
               <TokenPanel community={community as Community} />
             )}
           </div>
