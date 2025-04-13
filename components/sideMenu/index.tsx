@@ -216,7 +216,7 @@ export default function SideMenu() {
             <div className="flex text-xs space-x-2">
               {FooterLegals.map((it) => (
                 <Link
-                  className="hover:text-zinc-300"
+                  className="text-nowrap hover:text-zinc-300"
                   key={it.name}
                   href={it.href}
                 >

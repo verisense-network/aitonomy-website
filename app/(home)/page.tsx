@@ -1,5 +1,13 @@
 import Threads from "@/components/home/Threads";
 import Sidebar from "@/components/home/Sidebar";
+import { MetaData } from "@/config/website";
+
+export async function generateMetadata() {
+  return {
+    title: MetaData.title,
+    description: MetaData.description,
+  };
+}
 
 export default async function Home() {
   return (

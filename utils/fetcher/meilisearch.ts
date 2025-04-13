@@ -2,7 +2,7 @@ const api_url = process.env.NEXT_PUBLIC_MEILISEARCH_URL;
 
 import { MeiliSearch, SearchParams } from "meilisearch";
 import { decodeId } from "../thread";
-import { hexToLittleEndian } from "../tools";
+import { hexToLittleEndian, sleep } from "../tools";
 
 const client = new MeiliSearch({
   host: api_url!,
@@ -35,4 +35,15 @@ export async function meiliSearchFetcher(
   });
 
   return res;
+}
+
+export async function checkIndexed(fetcher: () => Promise<any>, count = 20) {
+  for (let i = 0; i < count; i++) {
+    const data = await fetcher();
+    if (data?.hits?.length > 0) {
+      return true;
+    }
+    await sleep(1500);
+  }
+  return false;
 }

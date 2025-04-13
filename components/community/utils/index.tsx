@@ -1,20 +1,14 @@
 import { cn, Radio, RadioProps } from "@heroui/react";
-import { CommunityMode } from "@verisense-network/vemodel-types";
+import {
+  CommunityMode,
+  CommunityStatus,
+} from "@verisense-network/vemodel-types";
 import {
   EarthIcon,
   DollarSignIcon,
   EarthLockIcon,
   CircleDollarSignIcon,
 } from "lucide-react";
-
-export enum CommunityStatus {
-  PendingCreation = "PendingCreation",
-  WaitingTx = "WaitingTx",
-  CreateFailed = "CreateFailed",
-  Active = "Active",
-  TokenIssued = "TokenIssued",
-  Frozen = "Frozen",
-}
 
 export const InviteMinAmount = 0.02;
 
@@ -80,6 +74,18 @@ export const isCommunityMode = (
   mode: keyof CommunityMode
 ) => {
   return getCommunityMode(communityMode) === mode;
+};
+
+export function getCommunityStatus(status: CommunityStatus) {
+  if (!status) return null;
+  return typeof status === "string" ? status : Object.keys(status)[0];
+}
+
+export const isCommunityStatus = (
+  communityStatus: CommunityStatus,
+  status: keyof CommunityStatus
+) => {
+  return getCommunityStatus(communityStatus) === status;
 };
 
 export function getCommunityModeIcon(mode: CommunityMode) {

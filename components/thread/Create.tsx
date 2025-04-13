@@ -33,6 +33,7 @@ import LockNotAllowedToPost from "../lock/LockNotAllowedToPost";
 import useCanPost from "@/hooks/useCanPost";
 import { MentionProvider } from "../mdxEditor/mentionCtx";
 import { Mention } from "../mdxEditor/AddMention";
+import { checkIndexed, meiliSearchFetcher } from "@/utils/fetcher/meilisearch";
 
 const ContentEditor = dynamic(() => import("../mdxEditor/ContentEditor"), {
   ssr: false,
@@ -113,18 +114,33 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
           throw new Error(errorMessage);
         }
         if (!contentId) return;
-
-        const { community, thread } = decodeId(hexToLittleEndian(contentId));
-
         toast.update(toastId, {
-          render: "post a thread success",
+          render: "Thread indexing...",
           type: "success",
-          isLoading: false,
-          autoClose: 1500,
         });
-        setTimeout(() => {
+
+        const isIndexed = await checkIndexed(() =>
+          meiliSearchFetcher("thread", undefined, {
+            filter: `id = ${hexToLittleEndian(contentId)}`,
+          })
+        );
+        if (isIndexed) {
+          const { community, thread } = decodeId(hexToLittleEndian(contentId));
+          toast.update(toastId, {
+            render: "Post a thread success",
+            type: "success",
+            isLoading: false,
+            autoClose: 1500,
+          });
           router.push(`/c/${community}/${thread}`);
-        }, 1500);
+        } else {
+          toast.update(toastId, {
+            render: "Failed to index thread",
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+          });
+        }
         onClose();
         updateLastPostAt();
       } catch (e: any) {

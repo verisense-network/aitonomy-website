@@ -18,14 +18,18 @@ SyntaxHighlighter.registerLanguage("rust", rust);
 const renderer: Partial<ReactRenderer> = {
   link(href, text) {
     return (
-      <Link href={href} target={href.startsWith("http") ? "_blank" : "_self"}>
+      <Link
+        key={href}
+        href={href}
+        target={href.startsWith("http") ? "_blank" : "_self"}
+      >
         {text}
       </Link>
     );
   },
   code(snippet: string, lang: string) {
     return (
-      <SyntaxHighlighter language={lang} style={atomOneDark}>
+      <SyntaxHighlighter key={snippet} language={lang} style={atomOneDark}>
         {snippet}
       </SyntaxHighlighter>
     );

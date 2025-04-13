@@ -168,7 +168,7 @@ export async function createThreadRpc(
 }
 
 export interface CreateCommentArg {
-  thread: Uint8Array;
+  thread: string;
   content: Array<number>;
   image?: string;
   mention: Uint8Array[];
