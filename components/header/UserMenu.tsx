@@ -74,7 +74,6 @@ export default function UserMenu() {
       <DropdownTrigger>
         <Button
           color={!isLogin ? "primary" : "default"}
-          isLoading={isShowSpinner}
           variant={isLogin ? "faded" : "shadow"}
           size={isMobile ? "sm" : "md"}
         >
@@ -114,7 +113,7 @@ export default function UserMenu() {
             <DropdownItem key="disconnect">Disconnect</DropdownItem>
           </>
         ) : (
-          <DropdownItem key="connect">Connect</DropdownItem>
+          <DropdownItem key="disconnect">Disconnect</DropdownItem>
         )}
       </DropdownMenu>
     </Dropdown>
