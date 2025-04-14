@@ -106,6 +106,7 @@ function Content({
             threadId={threadId}
             community={community}
             replyTo={comment.id}
+            mention={[comment.author]}
             onSuccess={onSuccessCreateCommunity}
           />
         </div>
@@ -133,7 +134,7 @@ export default function Comment({
         forceUpdate={forceUpdate}
       />
       {comment.replies?.length ? (
-        <div className="ml-6 mt-2">
+        <div className="ml-6 my-2">
           {comment.replies.map((reply: any) => (
             <Comment
               key={reply.id}

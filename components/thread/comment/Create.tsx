@@ -23,12 +23,12 @@ import useCanPost from "@/hooks/useCanPost";
 import LockNotAllowedToPost from "@/components/lock/LockNotAllowedToPost";
 import dynamic from "next/dist/shared/lib/dynamic";
 import { checkIndexed, meiliSearchFetcher } from "@/utils/fetcher/meilisearch";
-import { useRouter } from "next/navigation";
 
 interface Props {
   threadId: string;
   replyTo?: string;
   community: any;
+  mention?: string[];
   onSuccess: (id: string) => void;
 }
 
@@ -51,6 +51,7 @@ export default function CreateComment({
   threadId,
   replyTo,
   community,
+  mention,
   onSuccess,
 }: Props) {
   const { isLogin, lastPostAt } = useUserStore();
@@ -64,7 +65,7 @@ export default function CreateComment({
       thread: threadId,
       content: "",
       images: [],
-      mention: [],
+      mention: mention || [],
       reply_to: replyTo,
     },
   });
@@ -90,7 +91,7 @@ export default function CreateComment({
           content: Array.from(content),
           thread: `0x${hexToLittleEndian(data.thread)}`,
           images,
-          mention: mentionsToAccountId(mention),
+          mention: mentionsToAccountId(data.mention.concat(mention || [])),
           reply_to: data.reply_to
             ? `0x${hexToLittleEndian(data.reply_to)}`
             : undefined,

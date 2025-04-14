@@ -1,7 +1,5 @@
 "use client";
 
-import { useMeilisearch } from "@/hooks/useMeilisearch";
-import { sleep } from "@/utils/tools";
 import {
   Avatar,
   BreadcrumbItem,
@@ -89,42 +87,37 @@ export default function ThreadView({ thread, community }: ThreadViewProps) {
         <BreadcrumbItem>{thread?.title}</BreadcrumbItem>
       </Breadcrumbs>
       <Card className="m-2 mt-5 p-2 min-h-20">
-        {!thread && <Spinner />}
-        {thread && (
-          <>
-            <CardHeader className="flex flex-wrap justify-between space-y-2">
-              <h1 className="text-xl font-bold">{thread.title}</h1>
-              <div className="flex justify-end">
-                <ShareButtons title={thread.title} url={location.href} />
-              </div>
-            </CardHeader>
-            <CardBody>
-              <RenderMarkdown content={content} />
-            </CardBody>
-            <CardFooter className="text-sm text-gray-500 justify-between">
-              <div>
-                <Link href={`/u/${thread.author}`}>
-                  <User
-                    className="cursor-pointer"
-                    avatarProps={{
-                      name: threadAccount?.alias || thread.author,
-                    }}
-                    name={
-                      <UserAddressView
-                        creator={community?.creator}
-                        address={threadAccount?.address || thread.author}
-                        name={threadAccount?.alias || thread.author}
-                      />
-                    }
+        <CardHeader className="flex flex-wrap justify-between space-y-2">
+          <h1 className="text-xl font-bold">{thread.title}</h1>
+          <div className="flex justify-end">
+            <ShareButtons title={thread.title} url={location.href} />
+          </div>
+        </CardHeader>
+        <CardBody>
+          <RenderMarkdown content={content} />
+        </CardBody>
+        <CardFooter className="text-sm text-gray-500 justify-between">
+          <div>
+            <Link href={`/u/${thread.author}`}>
+              <User
+                className="cursor-pointer"
+                avatarProps={{
+                  name: threadAccount?.alias || thread.author,
+                }}
+                name={
+                  <UserAddressView
+                    creator={community?.creator}
+                    address={threadAccount?.address || thread.author}
+                    name={threadAccount?.alias || thread.author}
                   />
-                </Link>
-              </div>
-              <div className="flex space-x-2 items-center">
-                <TooltipTime time={thread.created_time} />
-              </div>
-            </CardFooter>
-          </>
-        )}
+                }
+              />
+            </Link>
+          </div>
+          <div className="flex space-x-2 items-center">
+            <TooltipTime time={thread.created_time} />
+          </div>
+        </CardFooter>
       </Card>
     </div>
   );
