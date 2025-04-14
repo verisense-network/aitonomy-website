@@ -844,7 +844,7 @@ export default function CommunityCreate({ onClose }: Props) {
               <Select
                 label="Total Supply"
                 placeholder="Please select total supply"
-                labelPlacement="outside"
+                labelPlacement="inside"
                 itemType="number"
                 selectedKeys={[field.value.toString()]}
                 defaultSelectedKeys={[field.value.toString()]}
@@ -928,14 +928,14 @@ export default function CommunityCreate({ onClose }: Props) {
                 <Select
                   {...field}
                   label="Name"
-                  labelPlacement="outside"
+                  labelPlacement="inside"
                   placeholder="Select an llm"
                   isInvalid={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   value={field.value}
                   defaultSelectedKeys={field.value ? ["OpenAI"] : []}
                   selectedKeys={[field.value]}
-                  endContent={
+                  startContent={
                     <Tooltip content="currently only supports OpenAI">
                       <CircleHelpIcon className="h-5 w-5" />
                     </Tooltip>
