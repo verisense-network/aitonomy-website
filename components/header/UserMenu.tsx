@@ -5,6 +5,7 @@ import {
   DropdownMenu,
   DropdownItem,
   User,
+  Spinner,
 } from "@heroui/react";
 import { Key, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -74,6 +75,9 @@ export default function UserMenu() {
       <DropdownTrigger>
         <Button
           color={!isLogin ? "primary" : "default"}
+          startContent={
+            isShowSpinner ? <Spinner size="sm" color="secondary" /> : null
+          }
           variant={isLogin ? "faded" : "shadow"}
           size={isMobile ? "sm" : "md"}
         >
