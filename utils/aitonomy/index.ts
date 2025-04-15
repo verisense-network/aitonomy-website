@@ -20,6 +20,7 @@ import {
   GenerateInviteTicketArg,
   SetModeArg,
   PaysFeeArg,
+  SetCommunityArg,
 } from "@verisense-network/vemodel-types";
 import {
   Result,
@@ -818,6 +819,59 @@ export async function setModeRpc(
     const response = await provider.send<any>("nucleus_post", [
       nucleusId,
       "set_mode",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * Result<(), String>
+     */
+    const ResultStruct = Result.with({
+      Ok: Null,
+      Err: Text,
+    });
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    if (decoded.isErr) {
+      throw new Error(decoded.toString());
+    }
+    const result = decoded.asOk.toHuman() as any;
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export interface SetCommunityArg {
+  community: string;
+  logo: string;
+  description: string;
+  slug: string;
+  mode: Enum;
+}
+
+export async function setCommunityRpc(
+  nucleusId: string,
+  args: SetCommunityArg,
+  signature: Signature
+): Promise<string> {
+  console.log("args", args);
+  const rpcArgs = {
+    ...signature,
+    payload: args,
+  };
+  console.log("rpcArgs", rpcArgs);
+
+  const payload = new SetCommunityArg(registry, rpcArgs).toHex();
+
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_post", [
+      nucleusId,
+      "set_community",
       payload,
     ]);
     console.log("response", response);

@@ -29,6 +29,8 @@ import {
   SetModeArg,
   payToJoinRpc,
   PaysFeeArg,
+  setCommunityRpc,
+  SetCommunityArg,
 } from "@/utils/aitonomy";
 import { Signature } from "@/utils/aitonomy/sign";
 import { NUCLEUS_ID } from "@/utils/aitonomy/tools";
@@ -551,6 +553,37 @@ export async function setMode(form: SetModeArg, signature: Signature) {
     };
   } catch (e: any) {
     console.error("setMode error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+export interface SetCommunityForm {
+  community: string;
+  logo: string;
+  description: string;
+  slug: string;
+  mode: {
+    name: keyof CommunityMode;
+    value: number | null;
+  };
+}
+
+export async function setCommunity(
+  form: SetCommunityArg,
+  signature: Signature
+) {
+  try {
+    const res = await setCommunityRpc(NUCLEUS_ID, form, signature);
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("setCommunity error", e);
     return {
       success: false,
       message: e.message,

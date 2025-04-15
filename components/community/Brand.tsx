@@ -229,13 +229,17 @@ export default function CommunityBrand({ community }: Props) {
     (toastId: Id) => {
       communitySettingsDisclosure.onClose();
       toast.update(toastId, {
-        render: "Community settings successful",
+        render:
+          "Community settings successful, data update may take a few seconds, please wait.",
         type: "success",
         isLoading: false,
         autoClose: 2000,
       });
+      setTimeout(() => {
+        router.refresh();
+      }, 2000);
     },
-    [communitySettingsDisclosure]
+    [communitySettingsDisclosure, router]
   );
 
   const ControlPanel = (
