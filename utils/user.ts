@@ -3,6 +3,8 @@ import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
 import { ethers } from "ethers";
 import { formatAddress } from "./tools";
+import dayjs from "@/lib/dayjs";
+import { isEqual } from "radash";
 
 export const NAME_NOT_SET = "Name not set";
 
@@ -15,7 +17,12 @@ export async function updateAccountInfo(address: string) {
       publicKey = ethers.toBeArray(address);
     }
 
-    const { setUser, logout } = useUserStore.getState();
+    const {
+      setUser,
+      logout,
+      address: storedAddress,
+      publicKey: storedPublicKey,
+    } = useUserStore.getState();
 
     if (!address || !publicKey) {
       return;
@@ -25,6 +32,10 @@ export async function updateAccountInfo(address: string) {
     if (!address.startsWith("0x")) {
       logout();
       toast.info("Please login");
+    }
+
+    if (address === storedAddress && isEqual(publicKey, storedPublicKey)) {
+      return;
     }
 
     const {
@@ -55,10 +66,19 @@ export async function updateAccountInfo(address: string) {
   }
 }
 
-export async function updateLastPostAt() {
+export async function updateLastPostAt(force = false) {
   try {
-    const { setUser, address } = useUserStore.getState();
+    const { setUser, address, updated, lastPostAt } = useUserStore.getState();
     if (!address) {
+      return;
+    }
+    if (lastPostAt && dayjs(lastPostAt).isAfter(dayjs())) {
+      return;
+    }
+    if (updated && dayjs(updated).isAfter(dayjs().subtract(3, "m"))) {
+      return;
+    }
+    if (!force) {
       return;
     }
     const {
@@ -73,6 +93,7 @@ export async function updateLastPostAt() {
     }
     setUser({
       lastPostAt: account.last_post_at,
+      updated: Date.now(),
     });
   } catch (e: any) {
     console.error("updateLastPostAt error", e);

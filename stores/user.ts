@@ -10,6 +10,7 @@ type SetUser = {
   address?: string;
   publicKey?: Uint8Array;
   lastPostAt?: number | null;
+  updated?: number | null;
 };
 
 type Store = {
@@ -18,6 +19,7 @@ type Store = {
   address: string;
   publicKey: Uint8Array;
   lastPostAt: number | null;
+  updated: number | null;
   setUser: (data: SetUser) => void;
   logout: () => void;
 };
@@ -40,6 +42,7 @@ export const useUserStore = create<Store>()(
       address: "",
       publicKey: new Uint8Array(0),
       lastPostAt: null,
+      updated: null,
       setUser: (data) => set(data),
       logout: () =>
         set({
@@ -47,6 +50,7 @@ export const useUserStore = create<Store>()(
           publicKey: new Uint8Array(0),
           address: "",
           lastPostAt: null,
+          updated: null,
         }),
     })),
     {
@@ -58,6 +62,7 @@ export const useUserStore = create<Store>()(
           return {
             ...persistedState,
             wallet: "MetaMask",
+            updated: null,
           };
         }
         return persistedState;

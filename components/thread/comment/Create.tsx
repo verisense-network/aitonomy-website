@@ -23,6 +23,7 @@ import useCanPost from "@/hooks/useCanPost";
 import LockNotAllowedToPost from "@/components/lock/LockNotAllowedToPost";
 import dynamic from "next/dist/shared/lib/dynamic";
 import { checkIndexed, meiliSearchFetcher } from "@/utils/fetcher/meilisearch";
+import { useUser } from "@/hooks/useUser";
 
 interface Props {
   threadId: string;
@@ -54,7 +55,9 @@ export default function CreateComment({
   mention,
   onSuccess,
 }: Props) {
-  const { isLogin, lastPostAt } = useUserStore();
+  const { user } = useUser();
+  const lastPostAt = user?.lastPostAt;
+  const isLogin = user?.isLogin;
   // accounts for mention
   const [accounts, setAccounts] = useState<Mention[]>([]);
 
@@ -148,7 +151,7 @@ export default function CreateComment({
           autoClose: 2000,
         });
       }
-      updateLastPostAt();
+      updateLastPostAt(true);
     },
     [isLogin, onSuccess, reset]
   );

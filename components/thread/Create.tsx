@@ -142,7 +142,7 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
           });
         }
         onClose();
-        updateLastPostAt();
+        updateLastPostAt(true);
       } catch (e: any) {
         console.error("e", e);
         toast.update(toastId, {

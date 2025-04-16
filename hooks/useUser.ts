@@ -17,6 +17,7 @@ export const useUser = () => {
     const isBscChain = chainId === bsc.id;
     const isChangedAddress =
       storedAddress.toLowerCase() !== address?.toLowerCase();
+    if (status === "connecting" || status === "reconnecting") return;
     if (isConnected && address && isBscChain && isChangedAddress) {
       setUser({ address });
 
