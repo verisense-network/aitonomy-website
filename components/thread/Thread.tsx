@@ -94,7 +94,10 @@ export default function ThreadView({ thread, community }: ThreadViewProps) {
         <CardHeader className="flex flex-wrap justify-between space-y-2">
           <h1 className="text-xl font-bold">{thread.title}</h1>
           <div className="flex justify-end">
-            <ShareButtons title={thread.title} url={location.href} />
+            <ShareButtons
+              title={thread.title}
+              url={typeof window !== "undefined" ? window.location.href : ""}
+            />
           </div>
         </CardHeader>
         <CardBody>

@@ -17,18 +17,18 @@ SyntaxHighlighter.registerLanguage("rust", rust);
 
 const renderer: Partial<ReactRenderer> = {
   link(href, text) {
-    const url = new URL(href);
-    const hrefFormat = url.href.replace(/\/_/g, "_");
+    const hrefFormat = href.replace(/\/_/g, "_");
     const textFormat = (text as string[])?.map?.(
       (item) =>
         (item && typeof item === "string" && item.replace(/\\/g, "")) || item
     );
+    const isStartsWithHttp = hrefFormat.startsWith("http");
     return (
       <Link
         key={hrefFormat}
         href={hrefFormat}
-        target={url.origin === window.location.origin ? "_self" : "_blank"}
-        rel={url.origin === window.location.origin ? "" : "noopener noreferrer"}
+        target={isStartsWithHttp ? "_self" : "_blank"}
+        rel={isStartsWithHttp ? "" : "noopener noreferrer"}
       >
         {textFormat}
       </Link>
@@ -42,7 +42,6 @@ const renderer: Partial<ReactRenderer> = {
     );
   },
   image(src, alt, title) {
-    // 检测是否为emoji
     if (src.includes("emoji")) {
       return (
         // eslint-disable-next-line @next/next/no-img-element
