@@ -17,7 +17,7 @@ SyntaxHighlighter.registerLanguage("rust", rust);
 
 const renderer: Partial<ReactRenderer> = {
   link(href, text) {
-    const hrefFormat = href.replace(/\/_/g, "_");
+    const hrefFormat = href.replace(/\\_/g, "_");
     const textFormat = (text as string[])?.map?.(
       (item) =>
         (item && typeof item === "string" && item.replace(/\\/g, "")) || item
