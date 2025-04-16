@@ -42,6 +42,10 @@ export default function ThreadView({ thread, community }: ThreadViewProps) {
   useEffect(() => {
     if (!thread?.author) return;
 
+    if (!threadAccount.address) {
+      return;
+    }
+
     (async () => {
       const userAddress = thread?.author;
 
@@ -53,7 +57,7 @@ export default function ThreadView({ thread, community }: ThreadViewProps) {
 
       setThreadAccount(data);
     })();
-  }, [thread]);
+  }, [thread, threadAccount.address]);
 
   return (
     <div className="w-full">

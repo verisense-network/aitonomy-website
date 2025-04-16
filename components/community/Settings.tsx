@@ -1,13 +1,20 @@
-import { setMode, SetModeForm } from "@/app/actions";
+import { setCommunity, SetCommunityForm, uploadImage } from "@/app/actions";
 import {
+  Avatar,
   Button,
   Form,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalHeader,
   NumberInput,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   RadioGroup,
+  Spinner,
+  Textarea,
 } from "@heroui/react";
 import { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -20,14 +27,16 @@ import {
 import {
   CommunityMode,
   registry,
-  SetModePayload,
+  SetCommunityPayload,
 } from "@verisense-network/vemodel-types";
 import { formatAmount, VIEW_UNIT } from "@/utils/format";
 import { useAppearanceStore } from "@/stores/appearance";
 import { Id, toast } from "react-toastify";
 import { signPayload } from "@/utils/aitonomy/sign";
 import { ethers } from "ethers";
-import { BNBDecimal } from "@/utils/tools";
+import { BNBDecimal, MAX_IMAGE_SIZE, UPLOAD_IMAGE_ACCEPT } from "@/utils/tools";
+import { ImageUpIcon } from "lucide-react";
+import { useDropzone } from "react-dropzone";
 
 interface CommunitySettingsProps {
   isOpen: boolean;
@@ -49,9 +58,12 @@ export default function CommunitySettings({
     currentCommunity.mode
   ) as keyof CommunityMode;
 
-  const { control, handleSubmit } = useForm<SetModeForm>({
+  const { control, setValue, handleSubmit } = useForm<SetCommunityForm>({
     defaultValues: {
       community: currentCommunity.name,
+      logo: currentCommunity.logo,
+      description: currentCommunity.description,
+      slug: currentCommunity.slug,
       mode: {
         name: communityMode,
         value: currentCommunity.mode?.[communityMode]
@@ -65,16 +77,47 @@ export default function CommunitySettings({
     },
   });
 
+  const [isLoadingLogo, setIsLoadingLogo] = useState(false);
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: UPLOAD_IMAGE_ACCEPT,
+    maxSize: MAX_IMAGE_SIZE,
+    maxFiles: 1,
+    async onDrop(acceptedFiles) {
+      console.log("acceptedFiles", acceptedFiles);
+      const image = acceptedFiles[0];
+      if (!image) {
+        return;
+      }
+      try {
+        setIsLoadingLogo(true);
+        const { success, data: imageUrl, message } = await uploadImage(image);
+        if (!success) {
+          throw new Error(`failed: ${message}`);
+        }
+        setValue("logo", imageUrl);
+        setIsLoadingLogo(false);
+      } catch (err: any) {
+        console.error("err", err);
+        setIsLoadingLogo(false);
+      }
+    },
+    onDropRejected(fileRejections, _event) {
+      console.log("fileRejections", fileRejections);
+      const errorMessage = fileRejections[0].errors?.[0]?.message;
+      toast.error(errorMessage);
+    },
+  });
+
   const onSubmit = useCallback(
-    async (data: SetModeForm) => {
+    async (data: SetCommunityForm) => {
       if (data.mode.name === "PayToJoin" && !data.mode.value) {
         toast.error("Please enter a valid membership fee");
         return;
       }
-      const toastId = toast.loading("Setting community mode");
+      const toastId = toast.loading("Setting community updating...");
       try {
         const payload = {
-          community: data.community,
+          ...data,
           mode: new CommunityMode(
             registry,
             data.mode.name === "PayToJoin"
@@ -88,8 +131,8 @@ export default function CommunitySettings({
           ),
         };
         console.log("payload", payload);
-        const signature = await signPayload(payload, SetModePayload);
-        const { success, message } = await setMode(payload, signature);
+        const signature = await signPayload(payload, SetCommunityPayload);
+        const { success, message } = await setCommunity(payload, signature);
 
         if (!success) {
           toast.update(toastId, {
@@ -102,7 +145,7 @@ export default function CommunitySettings({
         }
         onSuccess(toastId);
       } catch (e: any) {
-        console.error("setting mode error", e);
+        console.error("setting community error", e);
         toast.update(toastId, {
           render: e.message,
           type: "error",
@@ -125,9 +168,59 @@ export default function CommunitySettings({
         size="xl"
       >
         <ModalContent>
-          <ModalHeader>Community Settings</ModalHeader>
+          <ModalHeader>{currentCommunity.name} Settings</ModalHeader>
           <ModalBody>
             <Form onSubmit={handleSubmit(onSubmit)}>
+              <Controller
+                name="logo"
+                control={control}
+                rules={{}}
+                render={({ field }) => (
+                  <div className="flex items-center space-x-2">
+                    <div className="text-sm">Logo</div>
+                    <div className="flex justify-center items-center m-2 w-14 h-14 aspect-square">
+                      {field.value ? (
+                        <Popover placement="bottom">
+                          <PopoverTrigger>
+                            <Avatar
+                              src={field.value}
+                              className="w-full h-full"
+                              imgProps={{
+                                style: {
+                                  objectFit: "contain",
+                                },
+                              }}
+                            />
+                          </PopoverTrigger>
+                          <PopoverContent>
+                            <Button
+                              size="sm"
+                              variant="light"
+                              onPress={() => setValue("logo", "")}
+                            >
+                              Remove logo
+                            </Button>
+                          </PopoverContent>
+                        </Popover>
+                      ) : (
+                        <div
+                          {...getRootProps()}
+                          className="flex justify-center items-center rounded-full overflow-hidden cursor-pointer"
+                        >
+                          <input {...getInputProps()} />
+                          <div className="flex justify-center items-center bg-gray-500 p-3">
+                            {isLoadingLogo ? (
+                              <Spinner />
+                            ) : (
+                              <ImageUpIcon className="w-8 h-8" />
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              />
               <Controller
                 name="mode"
                 control={control}
@@ -183,6 +276,51 @@ export default function CommunitySettings({
                       />
                     )}
                   </div>
+                )}
+              />
+
+              <Controller
+                name="slug"
+                control={control}
+                rules={{
+                  required: "Please enter a slug",
+                  maxLength: {
+                    value: 80,
+                    message: "Slug is too long",
+                  },
+                }}
+                render={({ field, fieldState }) => (
+                  <Input
+                    {...field}
+                    label="Slug"
+                    labelPlacement="outside"
+                    placeholder="Enter a community slogan or short description"
+                    isInvalid={!!fieldState.error}
+                    errorMessage={fieldState.error?.message}
+                    maxLength={80}
+                  />
+                )}
+              />
+              <Controller
+                name="description"
+                control={control}
+                rules={{
+                  required: "Please enter a description",
+                  maxLength: {
+                    value: 300,
+                    message: "Description is too long",
+                  },
+                }}
+                render={({ field, fieldState }) => (
+                  <Textarea
+                    {...field}
+                    label="Description"
+                    labelPlacement="outside"
+                    placeholder="Enter your description (max 300 characters)"
+                    isInvalid={!!fieldState.error}
+                    errorMessage={fieldState.error?.message}
+                    maxLength={300}
+                  />
                 )}
               />
               <div className="flex items-center w-full mt-4 px-2">

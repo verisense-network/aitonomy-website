@@ -23,6 +23,7 @@ import useCanPost from "@/hooks/useCanPost";
 import LockNotAllowedToPost from "@/components/lock/LockNotAllowedToPost";
 import dynamic from "next/dist/shared/lib/dynamic";
 import { checkIndexed, meiliSearchFetcher } from "@/utils/fetcher/meilisearch";
+import { useUser } from "@/hooks/useUser";
 
 interface Props {
   threadId: string;
@@ -54,9 +55,12 @@ export default function CreateComment({
   mention,
   onSuccess,
 }: Props) {
-  const { isLogin, lastPostAt } = useUserStore();
+  const { user } = useUser();
+  const lastPostAt = user?.lastPostAt;
+  const isLogin = user?.isLogin;
   // accounts for mention
   const [accounts, setAccounts] = useState<Mention[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const canPost = useCanPost(community);
 
@@ -81,7 +85,7 @@ export default function CreateComment({
       const toastId = toast.loading(
         "Posting, continue to complete in your wallet"
       );
-
+      setIsLoading(true);
       try {
         const images = extractMarkdownImages(data.content);
         const content = compressString(data.content);
@@ -139,7 +143,9 @@ export default function CreateComment({
             autoClose: 3000,
           });
         }
+        setIsLoading(false);
       } catch (e: any) {
+        setIsLoading(false);
         console.error("e", e);
         toast.update(toastId, {
           render: `failed: ${e?.message || e?.toString()}`,
@@ -148,7 +154,7 @@ export default function CreateComment({
           autoClose: 2000,
         });
       }
-      updateLastPostAt();
+      updateLastPostAt(true);
     },
     [isLogin, onSuccess, reset]
   );
@@ -199,7 +205,11 @@ export default function CreateComment({
               </Suspense>
             )}
           />
-          <Button type="submit" className="absolute bottom-2 right-2 z-20">
+          <Button
+            isLoading={isLoading}
+            type="submit"
+            className="absolute bottom-2 right-2 z-20"
+          >
             Submit
           </Button>
         </Form>

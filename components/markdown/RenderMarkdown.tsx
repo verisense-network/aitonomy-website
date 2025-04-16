@@ -34,6 +34,22 @@ const renderer: Partial<ReactRenderer> = {
       </SyntaxHighlighter>
     );
   },
+  image(src, alt, title) {
+    // 检测是否为emoji
+    if (src.includes("emoji")) {
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          className="inline-block mx-1 w-4 h-4"
+          src={src}
+          alt={alt}
+          title={title || ""}
+        />
+      );
+    }
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt={alt} title={title || ""} />;
+  },
 };
 
 interface RenderMarkdownProps {

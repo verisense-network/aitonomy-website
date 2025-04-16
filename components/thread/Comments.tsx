@@ -13,6 +13,7 @@ import Comment from "./comment/Comment";
 import { decompressString } from "@/utils/compressString";
 import { RefreshCwIcon } from "lucide-react";
 import { updateLastPostAt } from "@/utils/user";
+import { useUser } from "@/hooks/useUser";
 
 interface Props {
   thread: any;
@@ -20,6 +21,8 @@ interface Props {
 }
 
 export default function ThreadComments({ thread, community }: Props) {
+  const { user } = useUser();
+  const lastPostAt = user?.lastPostAt;
   const { data, isLoading, isValidating, hasMore, loadMore, forceUpdate } =
     useMeilisearchInfinite("comment", undefined, {
       sort: ["created_time:desc"],
@@ -82,11 +85,9 @@ export default function ThreadComments({ thread, community }: Props) {
     return sortComments(rootComments);
   }, [data]);
 
-  const onSuccessCreateCommunity = useCallback(() => {
-    updateLastPostAt();
-    setTimeout(() => {
-      forceUpdate();
-    }, 2000);
+  const refreshLastPostAt = useCallback(() => {
+    forceUpdate();
+    updateLastPostAt(true);
   }, [forceUpdate]);
 
   const [commentAccounts, setCommentAccounts] = useState<
@@ -124,7 +125,7 @@ export default function ThreadComments({ thread, community }: Props) {
         <Button
           variant="flat"
           size="sm"
-          onPress={() => forceUpdate()}
+          onPress={() => refreshLastPostAt()}
           isIconOnly
         >
           <RefreshCwIcon />
@@ -132,8 +133,9 @@ export default function ThreadComments({ thread, community }: Props) {
       </div>
       <CreateComment
         threadId={thread.id}
-        onSuccess={onSuccessCreateCommunity}
+        onSuccess={refreshLastPostAt}
         community={community}
+        key={lastPostAt}
       />
       {!isLoading &&
         comments.map((comment: any) => (
@@ -143,7 +145,7 @@ export default function ThreadComments({ thread, community }: Props) {
               community={community}
               threadId={thread.id}
               viewCommentAccount={viewCommentAccount}
-              forceUpdate={onSuccessCreateCommunity}
+              forceUpdate={refreshLastPostAt}
               isShowReply={true}
             />
           </div>
