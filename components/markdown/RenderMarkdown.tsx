@@ -17,13 +17,20 @@ SyntaxHighlighter.registerLanguage("rust", rust);
 
 const renderer: Partial<ReactRenderer> = {
   link(href, text) {
+    const url = new URL(href);
+    const hrefFormat = url.href.replace(/\/_/g, "_");
+    const textFormat = (text as string[])?.map?.(
+      (item) =>
+        (item && typeof item === "string" && item.replace(/\\/g, "")) || item
+    );
     return (
       <Link
-        key={href}
-        href={href}
-        target={href.startsWith("http") ? "_blank" : "_self"}
+        key={hrefFormat}
+        href={hrefFormat}
+        target={url.origin === window.location.origin ? "_self" : "_blank"}
+        rel={url.origin === window.location.origin ? "" : "noopener noreferrer"}
       >
-        {text}
+        {textFormat}
       </Link>
     );
   },
