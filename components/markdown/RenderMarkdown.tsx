@@ -40,7 +40,7 @@ const renderer: Partial<ReactRenderer> = {
       return (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          className="inline-block mx-1 w-4 h-4"
+          className="inline-block mx-1 mt-0 mb-0 my-1 w-4 h-4"
           src={src}
           alt={alt}
           title={title || ""}
