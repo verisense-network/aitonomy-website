@@ -60,6 +60,7 @@ export default function CreateComment({
   const isLogin = user?.isLogin;
   // accounts for mention
   const [accounts, setAccounts] = useState<Mention[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const canPost = useCanPost(community);
 
@@ -84,7 +85,7 @@ export default function CreateComment({
       const toastId = toast.loading(
         "Posting, continue to complete in your wallet"
       );
-
+      setIsLoading(true);
       try {
         const images = extractMarkdownImages(data.content);
         const content = compressString(data.content);
@@ -142,7 +143,9 @@ export default function CreateComment({
             autoClose: 3000,
           });
         }
+        setIsLoading(false);
       } catch (e: any) {
+        setIsLoading(false);
         console.error("e", e);
         toast.update(toastId, {
           render: `failed: ${e?.message || e?.toString()}`,
@@ -202,7 +205,11 @@ export default function CreateComment({
               </Suspense>
             )}
           />
-          <Button type="submit" className="absolute bottom-2 right-2 z-20">
+          <Button
+            isLoading={isLoading}
+            type="submit"
+            className="absolute bottom-2 right-2 z-20"
+          >
             Submit
           </Button>
         </Form>
