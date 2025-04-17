@@ -1,89 +1,79 @@
-"use client";
-import DOMPurify from "dompurify";
-import Markdown from "marked-react";
-import { LightAsync as SyntaxHighlighter } from "react-syntax-highlighter";
-import { atomOneDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import typescript from "react-syntax-highlighter/dist/esm/languages/hljs/typescript";
-import javascript from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
-import rust from "react-syntax-highlighter/dist/esm/languages/hljs/rust";
-import Link from "next/link";
+import {
+  headingsPlugin,
+  listsPlugin,
+  quotePlugin,
+  thematicBreakPlugin,
+  markdownShortcutPlugin,
+  MDXEditor,
+  type MDXEditorMethods,
+  type MDXEditorProps,
+  imagePlugin,
+  linkPlugin,
+  codeBlockPlugin,
+  codeMirrorPlugin,
+  linkDialogPlugin,
+} from "@mdxeditor/editor";
 import truncateMarkdown from "markdown-truncate";
-import { ReactRenderer } from "marked-react";
-import { cleanContent } from "./utils";
+import { ForwardedRef } from "react";
+import { twMerge } from "tailwind-merge";
+import { basicDark } from "cm6-theme-basic-dark";
 
-SyntaxHighlighter.registerLanguage("ts", typescript);
-SyntaxHighlighter.registerLanguage("js", javascript);
-SyntaxHighlighter.registerLanguage("rust", rust);
-
-const renderer: Partial<ReactRenderer> = {
-  link(href, text) {
-    const hrefFormat = href.replace(/\\_/g, "_");
-    const textFormat = (text as string[])?.map?.(
-      (item) =>
-        (item && typeof item === "string" && item.replace(/\\/g, "")) || item
-    );
-    const isStartsWithHttp = hrefFormat.startsWith("http");
-    return (
-      <Link
-        key={hrefFormat}
-        href={hrefFormat}
-        target={isStartsWithHttp ? "_self" : "_blank"}
-        rel={isStartsWithHttp ? "" : "noopener noreferrer"}
-      >
-        {textFormat}
-      </Link>
-    );
-  },
-  code(snippet: string, lang: string) {
-    return (
-      <SyntaxHighlighter key={snippet} language={lang} style={atomOneDark}>
-        {snippet}
-      </SyntaxHighlighter>
-    );
-  },
-  image(src, alt, title) {
-    if (src.includes("emoji")) {
-      return (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          className="inline-block mx-1 mt-0 mb-0 my-1 w-4 h-4"
-          src={src}
-          alt={alt}
-          title={title || ""}
-        />
-      );
-    }
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={alt} title={title || ""} />;
-  },
-};
-
-interface RenderMarkdownProps {
-  content: string;
+interface RenderMarkdownProps extends MDXEditorProps {
+  editorRef?: ForwardedRef<MDXEditorMethods> | null;
   truncate?: number;
 }
 
 export default function RenderMarkdown({
-  content,
-  truncate,
+  editorRef,
+  ...props
 }: RenderMarkdownProps) {
-  const truncateContent = truncate
-    ? truncateMarkdown(content.trim(), {
-        limit: truncate,
+  const truncateContent = props.truncate
+    ? truncateMarkdown(props.markdown.trim(), {
+        limit: props.truncate,
         ellipsis: true,
       })
-    : content;
+    : props.markdown;
 
   return (
-    <div className="prose md:prose-img:max-w-2xl md:prose-img:max-h-[60vh] max-w-none dark:prose-invert">
-      <Markdown
-        value={cleanContent(
-          typeof window !== "undefined"
-            ? DOMPurify.sanitize(truncateContent)
-            : truncateContent
-        )}
-        renderer={renderer as ReactRenderer}
-      />
-    </div>
+    <MDXEditor
+      plugins={[
+        headingsPlugin(),
+        listsPlugin(),
+        quotePlugin(),
+        thematicBreakPlugin(),
+        markdownShortcutPlugin(),
+        imagePlugin(),
+        linkPlugin(),
+        linkDialogPlugin(),
+        codeBlockPlugin({ defaultCodeBlockLanguage: "txt" }),
+        codeMirrorPlugin({
+          codeMirrorExtensions: [basicDark],
+          autoLoadLanguageSupport: true,
+          codeBlockLanguages: {
+            txt: "Text",
+            rust: "Rust",
+            ts: "TypeScript",
+            js: "JavaScript",
+            c: "C",
+            cpp: "C++",
+            css: "CSS",
+            html: "HTML",
+            mdx: "MDX",
+          },
+        }),
+      ]}
+      {...props}
+      ref={editorRef}
+      className={twMerge(
+        `w-full overflow-hidden max-w-none dark-theme dark-editor dark-editor-readonly`,
+        props.className
+      )}
+      contentEditableClassName={twMerge(
+        `prose dark:prose-invert md:prose-img:max-w-2xl md:prose-img:max-h-[60vh] w-full max-w-full p-0!`,
+        props.contentEditableClassName
+      )}
+      markdown={truncateContent}
+      readOnly
+    />
   );
 }

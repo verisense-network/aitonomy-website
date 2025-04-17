@@ -11,11 +11,11 @@ import {
 } from "@heroui/react";
 import { Key, Suspense, useCallback } from "react";
 import CommunityCreate from "../community/Create";
-import ThreadCreate from "../thread/Create";
 import { useUserStore } from "@/stores/user";
 import { toast } from "react-toastify";
 import { CirclePlusIcon, PenIcon, PlusIcon } from "lucide-react";
 import { useModalStore } from "@/stores/modal";
+import { useRouter } from "next/navigation";
 
 const menuList = [
   {
@@ -31,13 +31,9 @@ const menuList = [
 ];
 
 export default function CreateMenu() {
-  const {
-    isShowCreateCommunity,
-    setIsShowCreateCommunity,
-    isShowCreateThread,
-    setIsShowCreateThread,
-  } = useModalStore();
+  const { isShowCreateCommunity, setIsShowCreateCommunity } = useModalStore();
   const { isLogin } = useUserStore();
+  const router = useRouter();
 
   const openMenu = useCallback(
     (key: Key) => {
@@ -52,10 +48,10 @@ export default function CreateMenu() {
       if (item.name === "community") {
         setIsShowCreateCommunity(true);
       } else if (item.name === "thread") {
-        setIsShowCreateThread(true);
+        router.push("/post-thread");
       }
     },
-    [isLogin, setIsShowCreateCommunity, setIsShowCreateThread]
+    [isLogin, setIsShowCreateCommunity, router]
   );
 
   return (
@@ -79,10 +75,9 @@ export default function CreateMenu() {
         </DropdownMenu>
       </Dropdown>
       <Modal
-        isOpen={isShowCreateCommunity || isShowCreateThread}
+        isOpen={isShowCreateCommunity}
         onClose={() => {
           setIsShowCreateCommunity(false);
-          setIsShowCreateThread(false);
         }}
         isDismissable={false}
         size="xl"
@@ -93,15 +88,10 @@ export default function CreateMenu() {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader>
-                {isShowCreateCommunity ? "Create community" : "Post thread"}
-              </ModalHeader>
+              <ModalHeader>Create community</ModalHeader>
               <ModalBody>
                 <Suspense>
-                  {isShowCreateCommunity && (
-                    <CommunityCreate onClose={onClose} />
-                  )}
-                  {isShowCreateThread && <ThreadCreate onClose={onClose} />}
+                  <CommunityCreate onClose={onClose} />
                 </Suspense>
               </ModalBody>
             </>

@@ -612,7 +612,7 @@ export default function CommunityCreate({ onClose }: Props) {
             startContent={
               <Tooltip
                 content={
-                  <div className="prose dark:prose-invert text-sm">
+                  <div className="prose prose-zinc prose-p:my-1 dark:prose-invert text-sm">
                     There is no limit on the prompt length. The more detailed
                     your prompts, the better the agent will perform. Please
                     define your prompts carefully.{" "}

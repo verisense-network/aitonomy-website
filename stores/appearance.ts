@@ -52,7 +52,6 @@ if (typeof window !== "undefined") {
       window.addEventListener(
         "resize",
         debounce(() => {
-          console.log("resize");
           const isMobile = checkIsMobile();
           useAppearanceStore.getState().setIsMobile(isMobile);
 

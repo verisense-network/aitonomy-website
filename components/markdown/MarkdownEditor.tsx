@@ -1,3 +1,5 @@
+"use client";
+
 import {
   headingsPlugin,
   listsPlugin,
@@ -21,11 +23,8 @@ import {
   linkDialogPlugin,
 } from "@mdxeditor/editor";
 import { ForwardedRef } from "react";
-import "@mdxeditor/editor/style.css";
-import "./dark-editor.css";
 import { twMerge } from "tailwind-merge";
 import AddImage from "./AddImage";
-import { useTheme } from "next-themes";
 import AddMention from "./AddMention";
 import { basicDark } from "cm6-theme-basic-dark";
 
@@ -33,8 +32,7 @@ interface EditorProps extends MDXEditorProps {
   editorRef?: ForwardedRef<MDXEditorMethods> | null;
 }
 
-export default function ContentEditor({ editorRef, ...props }: EditorProps) {
-  const { theme } = useTheme();
+export default function MarkdownEditor({ editorRef, ...props }: EditorProps) {
   return (
     <MDXEditor
       plugins={[
@@ -79,14 +77,13 @@ export default function ContentEditor({ editorRef, ...props }: EditorProps) {
       ]}
       {...props}
       ref={editorRef}
+      placeholder="Write something..."
       className={twMerge(
-        `w-full overflow-hidden prose max-w-none dark:prose-invert border-1 border-zinc-200 dark:border-zinc-800 ${
-          theme === "dark" ? "dark-theme dark-editor" : ""
-        }`,
+        `w-full overflow-hidden max-w-none dark-theme dark-editor`,
         props.className
       )}
       contentEditableClassName={twMerge(
-        `w-full max-w-full`,
+        `prose dark:prose-invert md:prose-img:max-w-2xl md:prose-img:max-h-[60vh] w-full max-w-full overflow-auto`,
         props.contentEditableClassName
       )}
     />

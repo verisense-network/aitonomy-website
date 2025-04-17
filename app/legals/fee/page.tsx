@@ -5,7 +5,7 @@ export default function Fee() {
   return (
     <div className="w-full">
       <div className="mt-3 py-2">
-        <RenderMarkdown content={feeDocs} />
+        <RenderMarkdown markdown={feeDocs} />
       </div>
     </div>
   );

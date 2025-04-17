@@ -12,7 +12,7 @@ import {
 } from "@heroui/react";
 import { useMemo } from "react";
 import { twMerge } from "tailwind-merge";
-import CreateThread from "../community/thread/Create";
+import CreateThread from "../community/thread/CreateButton";
 import { decompressString } from "@/utils/compressString";
 import Link from "next/link";
 import TooltipTime from "../formatTime/TooltipTime";
@@ -66,10 +66,7 @@ export default function Threads({
       <div className="space-y-3">
         {isLoading && <Spinner />}
         {isShowPostButton && !isLoading && (
-          <CreateThread
-            community={community as Community}
-            onSuccess={() => {}}
-          />
+          <CreateThread community={community as Community} />
         )}
         {!isLoading && threads?.length === 0 && (
           <div className="p-2">
@@ -104,7 +101,7 @@ export default function Threads({
                 <CardBody>
                   <h1 className="text-xl font-bold mb-2">{thread.title}</h1>
                   <RenderMarkdown
-                    content={decompressString(thread.content || "")}
+                    markdown={decompressString(thread.content || "")}
                     truncate={120}
                   />
                 </CardBody>

@@ -8,7 +8,6 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { CreateCommentArg } from "@/utils/aitonomy";
-import { useUserStore } from "@/stores/user";
 import {
   extractMarkdownImages,
   extractMentions,
@@ -16,8 +15,8 @@ import {
 } from "@/utils/markdown";
 import { compressString } from "@/utils/compressString";
 import LockCountdown from "@/components/lock/LockCountdown";
-import { MentionProvider } from "@/components/mdxEditor/mentionCtx";
-import { Mention } from "@/components/mdxEditor/AddMention";
+import { MentionProvider } from "@/components/markdown/mentionCtx";
+import { Mention } from "@/components/markdown/AddMention";
 import { updateLastPostAt } from "@/utils/user";
 import useCanPost from "@/hooks/useCanPost";
 import LockNotAllowedToPost from "@/components/lock/LockNotAllowedToPost";
@@ -41,8 +40,8 @@ export interface CreateCommentParams {
   reply_to?: string;
 }
 
-const ContentEditor = dynamic(
-  () => import("@/components/mdxEditor/ContentEditor"),
+const MarkdownEditor = dynamic(
+  () => import("@/components/markdown/MarkdownEditor"),
   {
     ssr: false,
   }
@@ -88,7 +87,7 @@ export default function CreateComment({
       setIsLoading(true);
       try {
         const images = extractMarkdownImages(data.content);
-        const content = compressString(data.content);
+        const content = compressString(data.content.trim());
         const mention = extractMentions(data.content);
         const payload = {
           ...data,
@@ -191,11 +190,11 @@ export default function CreateComment({
             }}
             render={({ field, fieldState }) => (
               <Suspense fallback={<Spinner />}>
-                <ContentEditor
-                  className="w-full border-1 rounded-xl"
+                <MarkdownEditor
+                  className="w-full rounded-xl"
                   {...field}
                   markdown={field.value}
-                  contentEditableClassName="min-h-44 !pb-10"
+                  contentEditableClassName="min-h-44 max-h-[70vh] !pb-10"
                 />
                 {fieldState.error?.message && (
                   <p className="absolute bottom-2 left-2 text-sm text-red-500">

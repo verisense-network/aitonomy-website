@@ -5,7 +5,7 @@ export default function IncentivePlan() {
   return (
     <div className="w-full">
       <div className="mt-3 py-2">
-        <RenderMarkdown content={incentivePlanDocs} />
+        <RenderMarkdown markdown={incentivePlanDocs} />
       </div>
     </div>
   );
