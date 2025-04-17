@@ -941,3 +941,33 @@ export async function payToJoinRpc(
     throw err;
   }
 }
+
+export async function getAccountCountRpc(
+  nucleusId: string,
+  args: string
+): Promise<bigint> {
+  const payload = new Text(registry, args).toHex();
+  try {
+    const provider = await getRpcClient();
+    const response = await provider.send<any>("nucleus_get", [
+      nucleusId,
+      "get_account_count",
+      payload,
+    ]);
+    console.log("response", response);
+
+    const responseBytes = Buffer.from(response, "hex");
+
+    /**
+     * u128
+     */
+    const ResultStruct = u128;
+    const decoded = new ResultStruct(registry, responseBytes);
+
+    const result = decoded.toBigInt();
+    return result;
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
+}
