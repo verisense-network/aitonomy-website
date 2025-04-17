@@ -61,7 +61,7 @@ export default function WelcomeModal() {
                 How it works
               </ModalHeader>
               <ModalBody>
-                <RenderMarkdown content={welcomeDoc} />
+                <RenderMarkdown markdown={welcomeDoc} />
               </ModalBody>
               <ModalFooter>
                 <Button

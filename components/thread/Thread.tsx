@@ -101,7 +101,7 @@ export default function ThreadView({ thread, community }: ThreadViewProps) {
           </div>
         </CardHeader>
         <CardBody>
-          <RenderMarkdown markdown={content} readOnly />
+          <RenderMarkdown markdown={content} />
         </CardBody>
         <CardFooter className="text-sm text-gray-500 justify-between">
           <div>
