@@ -12,13 +12,14 @@ import {
 } from "@heroui/react";
 import { useMemo } from "react";
 import { twMerge } from "tailwind-merge";
-import CreateThread from "../community/thread/Create";
+import CreateThread from "../community/thread/CreateButton";
 import { decompressString } from "@/utils/compressString";
 import Link from "next/link";
 import TooltipTime from "../formatTime/TooltipTime";
 import RenderMarkdown from "../markdown/RenderMarkdown";
 import { sort } from "radash";
 import { Community } from "@verisense-network/vemodel-types";
+import Hot from "./components/Hot";
 
 export const ListboxWrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full px-1 py-2 rounded-small">{children}</div>
@@ -62,14 +63,14 @@ export default function Threads({
 
   return (
     <div className={twMerge("w-full px-2 mx-auto", className)}>
+      <div className="block md:hidden">
+        <Hot />
+      </div>
       <h1 className="py-4 text-lg font-bold">Threads</h1>
       <div className="space-y-3">
         {isLoading && <Spinner />}
         {isShowPostButton && !isLoading && (
-          <CreateThread
-            community={community as Community}
-            onSuccess={() => {}}
-          />
+          <CreateThread community={community as Community} />
         )}
         {!isLoading && threads?.length === 0 && (
           <div className="p-2">
@@ -104,7 +105,7 @@ export default function Threads({
                 <CardBody>
                   <h1 className="text-xl font-bold mb-2">{thread.title}</h1>
                   <RenderMarkdown
-                    content={decompressString(thread.content || "")}
+                    markdown={decompressString(thread.content || "")}
                     truncate={120}
                   />
                 </CardBody>

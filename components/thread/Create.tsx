@@ -1,3 +1,5 @@
+"use client";
+
 import { createThread, CreateThreadForm } from "@/app/actions";
 import { useMeilisearch } from "@/hooks/useMeilisearch";
 import { CreateThreadArg } from "@/utils/aitonomy";
@@ -31,25 +33,26 @@ import { useUserStore } from "@/stores/user";
 import { updateLastPostAt } from "@/utils/user";
 import LockNotAllowedToPost from "../lock/LockNotAllowedToPost";
 import useCanPost from "@/hooks/useCanPost";
-import { MentionProvider } from "../mdxEditor/mentionCtx";
-import { Mention } from "../mdxEditor/AddMention";
+import { MentionProvider } from "../markdown/mentionCtx";
+import { Mention } from "../markdown/AddMention";
 import { checkIndexed, meiliSearchFetcher } from "@/utils/fetcher/meilisearch";
 
-const ContentEditor = dynamic(() => import("../mdxEditor/ContentEditor"), {
+const MarkdownEditor = dynamic(() => import("../markdown/MarkdownEditor"), {
   ssr: false,
 });
 
 interface Props {
   community?: any;
-  replyTo?: string;
-  onClose: () => void;
+  onClose?: () => void;
+  onSuccess?: (id: string) => void;
 }
 
-export default function ThreadCreate({ community, replyTo, onClose }: Props) {
+export default function ThreadCreate({ community, onClose, onSuccess }: Props) {
   const router = useRouter();
   const { lastPostAt } = useUserStore();
   // accounts for mention
   const [accounts, setAccounts] = useState<Mention[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { control, watch, handleSubmit } = useForm<CreateThreadForm>({
     defaultValues: {
       community: community?.name || "",
@@ -62,13 +65,10 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
 
   const [searchCommunity, setSearchCommunity] = useState(community?.name || "");
 
-  const { data: communitiesData, isLoading } = useMeilisearch(
-    "community",
-    searchCommunity,
-    {
+  const { data: communitiesData, isLoading: isLoadingCommunities } =
+    useMeilisearch("community", searchCommunity, {
       limit: 10,
-    }
-  );
+    });
 
   const communities = useMemo(
     () => communitiesData?.hits ?? [],
@@ -93,11 +93,14 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
         "Posting continue to complete in your wallet"
       );
       try {
+        setIsLoading(true);
+        const title = data.title.trim();
         const images = extractMarkdownImages(data.content);
-        const content = compressString(data.content);
+        const content = compressString(data.content.trim());
         const mention = extractMentions(data.content);
         const payload = {
           ...data,
+          title,
           content: Array.from(content),
           images,
           mention: mentionsToAccountId(mention),
@@ -141,8 +144,10 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
             autoClose: 3000,
           });
         }
-        onClose();
         updateLastPostAt(true);
+        onClose?.();
+        onSuccess?.(contentId);
+        setIsLoading(false);
       } catch (e: any) {
         console.error("e", e);
         toast.update(toastId, {
@@ -151,9 +156,10 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
           isLoading: false,
           autoClose: 3000,
         });
+        setIsLoading(false);
       }
     },
-    [onClose, router]
+    [onClose, onSuccess, router]
   );
 
   useEffect(() => {
@@ -168,9 +174,12 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
 
   return (
     <Form
-      className="w-full max-w-2xl flex flex-col gap-4"
+      className="w-full flex flex-col gap-4"
       onSubmit={handleSubmit(onSubmit)}
     >
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-2xl font-bold">Post a thread</span>
+      </div>
       <Controller
         name="community"
         control={control}
@@ -192,7 +201,7 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
             isInvalid={!!fieldState.error}
             errorMessage={fieldState.error?.message}
             defaultInputValue={community?.name}
-            isLoading={isLoading}
+            isLoading={isLoadingCommunities}
             value={field.value}
             onValueChange={(value) => {
               field.onChange(value);
@@ -251,11 +260,11 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
                 ) : (
                   <LockNotAllowedToPost community={selectedCommunity} />
                 )}
-                <ContentEditor
-                  className="mt-2 w-full rounded-xl"
+                <MarkdownEditor
+                  className="mt-2 w-full rounded-xl border-1 border-zinc-800"
                   {...field}
                   markdown={field.value}
-                  contentEditableClassName="min-h-72"
+                  contentEditableClassName="min-h-72 max-h-[70vh] !pb-10"
                 />
                 {fieldState.error?.message && (
                   <p className="mt-2 text-sm text-red-500">
@@ -268,7 +277,7 @@ export default function ThreadCreate({ community, replyTo, onClose }: Props) {
         )}
       />
       <div className="flex gap-2">
-        <Button color="primary" type="submit">
+        <Button color="primary" type="submit" isLoading={isLoading}>
           Submit
         </Button>
         <Button type="reset" variant="flat">

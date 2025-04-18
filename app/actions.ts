@@ -31,6 +31,7 @@ import {
   PaysFeeArg,
   setCommunityRpc,
   SetCommunityArg,
+  getAccountCountRpc,
 } from "@/utils/aitonomy";
 import { Signature } from "@/utils/aitonomy/sign";
 import { NUCLEUS_ID } from "@/utils/aitonomy/tools";
@@ -601,6 +602,24 @@ export async function payToJoin(form: PaysFeeArg) {
     };
   } catch (e: any) {
     console.error("payToJoin error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+export async function getAccountCount() {
+  try {
+    const args = "";
+    const res = await getAccountCountRpc(NUCLEUS_ID, args);
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("getAccountCount error", e);
     return {
       success: false,
       message: e.message,

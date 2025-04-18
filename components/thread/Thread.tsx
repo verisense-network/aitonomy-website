@@ -91,8 +91,8 @@ export default function ThreadView({ thread, community }: ThreadViewProps) {
         <BreadcrumbItem>{thread?.title}</BreadcrumbItem>
       </Breadcrumbs>
       <Card className="m-2 mt-5 p-2 min-h-20">
-        <CardHeader className="flex flex-wrap justify-between space-y-2">
-          <h1 className="text-xl font-bold">{thread.title}</h1>
+        <CardHeader className="flex flex-wrap justify-between items-center space-y-2">
+          <h1 className="text-xl font-bold mb-0">{thread.title}</h1>
           <div className="flex justify-end">
             <ShareButtons
               title={thread.title}
@@ -101,7 +101,7 @@ export default function ThreadView({ thread, community }: ThreadViewProps) {
           </div>
         </CardHeader>
         <CardBody>
-          <RenderMarkdown content={content} />
+          <RenderMarkdown markdown={content} />
         </CardBody>
         <CardFooter className="text-sm text-gray-500 justify-between">
           <div>

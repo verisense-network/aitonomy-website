@@ -1,5 +1,4 @@
 import TooltipTime from "@/components/formatTime/TooltipTime";
-import RenderMarkdown from "@/components/markdown/RenderMarkdown";
 import { decompressString } from "@/utils/compressString";
 import { UserAddressView } from "@/utils/format";
 import { Button, Card, CardBody, CardFooter, User } from "@heroui/react";
@@ -8,6 +7,7 @@ import { isEqualAddress } from "../utils";
 import Link from "next/link";
 import CreateComment from "./Create";
 import { useCallback, useState } from "react";
+import RenderMarkdown from "@/components/markdown/RenderMarkdown";
 
 interface CommentProps {
   comment: any;
@@ -36,7 +36,10 @@ function Content({
     <>
       <Card className="p-1">
         <CardBody>
-          <RenderMarkdown content={decompressString(comment.content || "")} />
+          <RenderMarkdown
+            className="w-full rounded-xl"
+            markdown={decompressString(comment.content || "")}
+          />
         </CardBody>
         <CardFooter className="flex flex-wrap items-center text-sm text-gray-500 justify-between">
           <div className="flex items-center space-x-2">
