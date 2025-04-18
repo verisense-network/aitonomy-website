@@ -56,4 +56,5 @@
 
 .dark-editor-readonly {
   background: transparent;
+  overflow-y: auto;
 }
