@@ -54,6 +54,10 @@
   background: var(--basePageBg);
 }
 
+.mdxeditor-toolbar {
+  flex-wrap: wrap;
+}
+
 .dark-editor-readonly {
   background: transparent;
   overflow-y: auto;

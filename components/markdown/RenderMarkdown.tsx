@@ -14,6 +14,7 @@ import {
   codeBlockPlugin,
   codeMirrorPlugin,
   linkDialogPlugin,
+  tablePlugin,
 } from "@mdxeditor/editor";
 import truncateMarkdown from "markdown-truncate";
 import { ForwardedRef } from "react";
@@ -63,6 +64,7 @@ export default function RenderMarkdown({
             mdx: "MDX",
           },
         }),
+        tablePlugin(),
       ]}
       {...props}
       ref={editorRef}

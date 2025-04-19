@@ -21,6 +21,8 @@ import {
   InsertCodeBlock,
   codeMirrorPlugin,
   linkDialogPlugin,
+  tablePlugin,
+  InsertTable,
 } from "@mdxeditor/editor";
 import { ForwardedRef } from "react";
 import { twMerge } from "tailwind-merge";
@@ -43,6 +45,7 @@ export default function MarkdownEditor({ editorRef, ...props }: EditorProps) {
               <BlockTypeSelect />
               <BoldItalicUnderlineToggles />
               <ListsToggle />
+              <InsertTable />
               <AddImage />
               <CreateLink />
               <InsertCodeBlock />
@@ -74,6 +77,7 @@ export default function MarkdownEditor({ editorRef, ...props }: EditorProps) {
             mdx: "MDX",
           },
         }),
+        tablePlugin(),
       ]}
       {...props}
       ref={editorRef}
