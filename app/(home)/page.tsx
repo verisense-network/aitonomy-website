@@ -12,7 +12,7 @@ export async function generateMetadata() {
 export default async function Home() {
   return (
     <div className="w-full mx-auto py-4 md:inline-flex md:space-x-4">
-      <Threads className="md:w-3/4" isShowPostButton />
+      <Threads className="md:w-3/4" isShowPostButton isShowHot />
       <Sidebar className="md:w-1/4" />
     </div>
   );

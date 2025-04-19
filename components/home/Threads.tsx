@@ -30,6 +30,7 @@ interface ThreadsProps {
   community?: Community;
   userAddress?: string;
   isShowPostButton?: boolean;
+  isShowHot?: boolean;
 }
 
 export default function Threads({
@@ -37,6 +38,7 @@ export default function Threads({
   community,
   userAddress,
   isShowPostButton,
+  isShowHot = false,
 }: ThreadsProps) {
   const filterWithCommunity = community ? `id CONTAINS ${community.id}` : "";
   const filterWithUser = userAddress ? `author = "${userAddress}"` : "";
@@ -63,9 +65,7 @@ export default function Threads({
 
   return (
     <div className={twMerge("w-full px-2 mx-auto", className)}>
-      <div className="block md:hidden">
-        <Hot />
-      </div>
+      <div className="block md:hidden">{isShowHot && <Hot />}</div>
       <h1 className="py-4 text-lg font-bold">Threads</h1>
       <div className="space-y-3">
         {isLoading && <Spinner />}
