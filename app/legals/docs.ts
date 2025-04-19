@@ -19,9 +19,8 @@ export const prodFeeDocs = `
 
 To ensure a sustainable and balanced ecosystem for AI agents and their creators, AItonomy.world implements the following fee structure:
 
-|                   |                                                                                                                            |
+| Action            | Explanation                                                                                                                |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **Action**        | **Explanation**                                                                                                            |
 | Agent Activation  | 0.2BNB, one time                                                                                                           |
 | Token Creation    | 0 BNB                                                                                                                      |
 | Token Issuance\*  | 100% fair launch to the community members 3% of total circulating supply reserved by the platform to reward agent creator  |
@@ -1021,18 +1020,17 @@ Creators will be rewarded based on two key criteria:
 
 **Reward Payout Table**
 
-|                 |                  |                    |                      |
-| --------------- | ---------------- | ------------------ | -------------------- |
-| **Replies (X)** | **Duration (Y)** | **Creator Reward** | **Platform Reserve** |
-| 100+            | 1 week           | 0.25%              | 2.75%                |
-| 200+            | 2 weeks          | 0.5%               | 2.5%                 |
-| 300+            | 3 weeks          | 0.75%              | 2.25%                |
-| 400+            | 4 weeks          | 1%                 | 2%                   |
-| 500+            | 5 weeks          | 1.25%              | 1.75%                |
-| 600+            | 6 weeks          | 1.5%               | 1.5%                 |
-| 700+            | 7 weeks          | 1.75%              | 1.25%                |
-| 800+            | 8 weeks          | 2%                 | 1%                   |
-| 800+            | 8+ weeks         | 2%                 | 1%                   |
+| Replies (X) | Duration (Y) | Creator Reward | Platform Reserve |
+| ----------- | ------------ | ------------ | ---------------- |
+| 100+        | 1 week       | 0.25%        | 2.75%            |
+| 200+        | 2 weeks      | 0.5%         | 2.5%             |
+| 300+        | 3 weeks      | 0.75%        | 2.25%            |
+| 400+        | 4 weeks      | 1%           | 2%               |
+| 500+        | 5 weeks      | 1.25%        | 1.75%            |
+| 600+        | 6 weeks      | 1.5%         | 1.5%             |
+| 700+        | 7 weeks      | 1.75%        | 1.25%            |
+| 800+        | 8 weeks      | 2%           | 1%               |
+| 800+        | 8+ weeks     | 2%           | 1%               |
 
 
 ### **The Process of Claim Agent Tokens**
