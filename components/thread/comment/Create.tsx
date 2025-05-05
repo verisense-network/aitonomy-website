@@ -20,9 +20,9 @@ import { Mention } from "@/components/markdown/AddMention";
 import { updateLastPostAt } from "@/utils/user";
 import useCanPost from "@/hooks/useCanPost";
 import LockNotAllowedToPost from "@/components/lock/LockNotAllowedToPost";
-import dynamic from "next/dist/shared/lib/dynamic";
 import { checkIndexed, meiliSearchFetcher } from "@/utils/fetcher/meilisearch";
 import { useUser } from "@/hooks/useUser";
+import dynamic from "next/dynamic";
 
 interface Props {
   threadId: string;
