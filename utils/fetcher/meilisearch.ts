@@ -47,3 +47,8 @@ export async function checkIndexed(fetcher: () => Promise<any>, count = 20) {
   }
   return false;
 }
+
+export async function meilisearchGetStats(index: string) {
+  const res = await client.index(index).getStats();
+  return res;
+}

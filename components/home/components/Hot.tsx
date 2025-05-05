@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getAccountCount } from "@/app/actions";
-import { meiliSearchFetcher } from "@/utils/fetcher/meilisearch";
+import { meilisearchGetStats } from "@/utils/fetcher/meilisearch";
 import Counter from "@/components/framer/Counter";
 
 export default function Hot() {
@@ -19,23 +19,17 @@ export default function Hot() {
       if (success) {
         setUserCount(userCountData as bigint);
       }
-      const communityData = await meiliSearchFetcher("community", undefined, {
-        limit: 1,
-      });
-      if (communityData?.estimatedTotalHits > 0) {
-        setCommunityCount(BigInt(communityData?.estimatedTotalHits));
+      const communityData = await meilisearchGetStats("community");
+      if (communityData?.numberOfDocuments) {
+        setCommunityCount(BigInt(communityData?.numberOfDocuments));
       }
-      const threadData = await meiliSearchFetcher("thread", undefined, {
-        limit: 1,
-      });
-      if (threadData?.estimatedTotalHits > 0) {
-        setThreadCount(BigInt(threadData?.estimatedTotalHits));
+      const threadData = await meilisearchGetStats("thread");
+      if (threadData?.numberOfDocuments > 0) {
+        setThreadCount(BigInt(threadData?.numberOfDocuments));
       }
-      const commentData = await meiliSearchFetcher("comment", undefined, {
-        limit: 1,
-      });
-      if (commentData?.estimatedTotalHits > 0) {
-        setCommentCount(BigInt(commentData?.estimatedTotalHits));
+      const commentData = await meilisearchGetStats("comment");
+      if (commentData?.numberOfDocuments > 0) {
+        setCommentCount(BigInt(commentData?.numberOfDocuments));
       }
     }
     const interval = setInterval(fetchData, 60 * 1000);
