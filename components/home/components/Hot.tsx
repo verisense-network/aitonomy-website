@@ -37,7 +37,7 @@ export default function Hot() {
     return () => clearInterval(interval);
   }, []);
   return (
-    <div className="flex space-x-2 text-sm">
+    <div className="flex space-x-2 text-sm whitespace-nowrap">
       <span>🔥</span>
       <p className="flex items-center space-x-2">
         <label>User Count:</label>
