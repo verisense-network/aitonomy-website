@@ -37,10 +37,12 @@ import { Signature } from "@/utils/aitonomy/sign";
 import { NUCLEUS_ID } from "@/utils/aitonomy/tools";
 import { CHAIN } from "@/utils/chain";
 import { checkOpenAIConnection } from "@/utils/llm";
+import { getSupportedChain, getTokenPrice } from "@/utils/okxDex";
 import { hexToBytes } from "@/utils/tools";
 import { CommunityMode, LLmName } from "@verisense-network/vemodel-types";
 import bs58 from "bs58";
 import { ethers } from "ethers";
+import { bsc } from "wagmi/chains";
 
 if (!NUCLEUS_ID) {
   throw new Error("Nucleus ID is not defined");
@@ -620,6 +622,40 @@ export async function getAccountCount() {
     };
   } catch (e: any) {
     console.error("getAccountCount error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+export async function getTokenPriceByOkxDex(tokenAddress: string) {
+  try {
+    const res = await getTokenPrice(bsc.id, tokenAddress);
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("getTokenPrice error", e);
+    return {
+      success: false,
+      message: e.message,
+    };
+  }
+}
+
+export async function getSupportedChainByOkxDex() {
+  try {
+    const res = await getSupportedChain();
+
+    return {
+      success: true,
+      data: res,
+    };
+  } catch (e: any) {
+    console.error("getSupportedChain error", e);
     return {
       success: false,
       message: e.message,

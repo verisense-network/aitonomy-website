@@ -30,12 +30,14 @@ interface TokenModalProps {
   isOpen: boolean;
   onClose: () => void;
   community: Community;
+  tokenPrice?: string;
 }
 
 export default function TokenModal({
   isOpen,
   onClose,
   community,
+  tokenPrice,
 }: TokenModalProps) {
   const { isLogin, address: userAddress } = useUserStore();
   const {
@@ -91,6 +93,10 @@ export default function TokenModal({
           label: "Token Contract",
           value: community.token_info?.contract,
           type: "token",
+        },
+        {
+          label: "Token Price",
+          value: tokenPrice,
         },
         {
           label: "Total Issuance",
